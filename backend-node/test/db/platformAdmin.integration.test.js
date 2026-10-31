@@ -22,7 +22,7 @@ describe('platform admin screens on PostgreSQL (restricted role)', { skip: !url 
   const adminEmail = `root-${randomBytes(4).toString('hex')}@example.test`;
   const get = (who, path) => api.call('GET', `${BASE}${path}`, { token: who.token });
   const addCustomer = async (who, name) => {
-    const r = await api.call('POST', '/api/customers', { token: who.token, body: { fullName: name, email: `${randomBytes(3).toString('hex')}@example.test`, phone: '+2348011112222' } });
+    const r = await api.call('POST', '/api/customers', { token: who.token, body: { fullName: name, email: `${randomBytes(3).toString('hex')}@example.test`, phone: `+234801${(randomBytes(4).readUInt32BE(0) % 10000000).toString().padStart(7, '0')}` } });
     assert.equal(r.status, 201, r.text);
   };
   async function seedNotification(businessId, status) {

@@ -1,0 +1,1547 @@
+diff --git a/STATUS.md b/STATUS.md
+index 6be2a67..29d38f4 100644
+--- a/STATUS.md
++++ b/STATUS.md
+@@ -10,7 +10,7 @@ Written from the code and `Avzar-Master-Audit.md` (rev 19) at base `aee43e2bc2ff
+ 
+ ## CI evidence
+ 
+-Latest run: `a8cf53ca3f48aa69b3e001804cb11ab3b6a55a6b` (2026-10-31, all three jobs, first run with 16d in the tree): **green**. node-api 910 of 910 in 225 suites (0 vulnerabilities); node-db 319 of 319 in 48 suites (migrations `0001` to `0042` applied; the migration 0042 subtest passed); web 852 of 852 in 87 files, build compiled and 14 of 14 static pages, `npm audit` 2 moderate (decision 8); latency (indicative, runner noise) plain pool 0.4 ms, scoped wrapper 1.52 ms, list routes 7.6 to 7.8 ms. The first web run of this commit failed only in its build step (`next/font` could not read its Google Fonts download: `TypeError: Cannot read properties of null`, in `src/app/fonts.ts`, which 16d did not touch); a re-run was green, so it is recorded as a transient network fault, not a code fault; if it recurs, stop the build depending on a live font download. Totals, build, audit and latency lines read, not every test line. Previous run: `f439b6653b2893dce17fccf7a891e9112accef3c` (2026-10-30 about 13:33 UTC, all three jobs, first run with 16c in the tree): **green**. node-api 882 of 882 in 220 suites (0 vulnerabilities); node-db 313 of 313 in 47 suites (migrations `0001` to `0041` applied, adoption test passed); web 852 of 852 in 87 files, build compiled and 14 of 14 static pages, `npm audit` 2 moderate (decision 8); latency (indicative) plain pool 0.29 ms, scoped wrapper 0.8 ms, list routes 5.1 to 5.3 ms. Totals, build, audit and latency lines read, not every test line. Previous run: `70055180f6402b2640202e506cc6e881f3b53fca` (2026-10-30, all three jobs, first run with 16a, 16b and the 16b2 fix in the tree): **green**. node-api 860 of 860 in 214 suites (0 vulnerabilities); node-db 306 of 306 in 46 suites; web 840 of 840 in 85 files, build compiled and 14 of 14 static pages, `npm audit` 2 moderate (decision 8); latency (indicative) plain pool 0.4 ms, scoped wrapper 1.43 ms, list routes 7.6 to 7.7 ms (runner noise). The top-level lines of the `customerEvents` and `staffNotifications` restricted-role suites were read and passed; individual subtests were not. Previous run: `726c0e9` (2026-10-28, all three jobs, first run with step 15c in the tree): **green**. node-api 819 of 819 in 201 suites; node-db 293 of 293 in 44 suites; web 837 of 837 in 84 files. Earlier: `d899ff9` (2026-10-27, all three jobs, first run with step 15b in the tree): **green**. node-api 803 of 803 in 195 suites (0 vulnerabilities); node-db 285 of 285 in 43 suites; web 794 of 794 in 75 files, build compiled and 14 of 14 static pages, `npm audit` 2 moderate (decision 8). Totals and build lines read, not every test line. Previous run: `aee43e2` (2026-10-26, all three jobs): **green**. node-api 741 of 741 in 180 suites (0 vulnerabilities); node-db 238 of 238 in 38 suites; web 654 of 654 in 58 files, build compiled. Previous run: `e06c740` (2026-10-25, all three jobs): **green**. node-api 712 of 712 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web typecheck clean, 640 of 640 in 56 files, build compiled and generated 14 of 14 static pages; latency (indicative) plain pool 0.27 ms, scoped wrapper 0.81 ms, list routes 4.9 to 5.3 ms. The calendar-link test lines were read. Previous run: `2a8cdfc` (2026-10-25, all three jobs): **green**. node-api 708 of 708 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web typecheck clean, 634 of 634 in 55 files, build compiled and generated 14 of 14 static pages; latency (indicative) plain pool 0.29 ms, scoped wrapper 0.83 ms, list routes 4.7 to 4.9 ms. The 13g test lines were read. Previous run: `f16aebe` (2026-10-25, all three jobs): **green**, node-api 708 in 170, node-db 225 in 36, web 633 in 55; it followed a red pull-request merge run (`db812d8`, node-api 707 of 708, web 632 of 633) caused by two tests that still asserted what 13f changed on purpose; fixed by two hand edits. `3b1a79f` (13d, 13e): node-api 701, node-db 225, web 633. Previous run: `81cd5b8` (2026-10-25, all three jobs): **green**. node-api 698 of 698 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web typecheck clean, 625 of 625 in 55 files, build compiled and generated 14 of 14 static pages; latency (indicative) plain pool 0.33 ms, scoped wrapper 1.07 ms, list routes 5.7 to 5.9 ms. Previous run: `e87ab70` (2026-10-25, all three jobs): **green**. node-api 692 of 692 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web typecheck clean, 611 of 611 in 54 files, build compiled and generated 14 of 14 static pages. Individual lines of the 13b tests were not read. Previous run: `2ec81ae` (2026-10-25, all three jobs): **green**. node-api 650 of 650 in 167 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites (including the restricted-role `my-today` suite); web typecheck clean, 587 of 587 in 51 files, build compiled and generated 14 of 14 static pages, `npm audit` moderate only. Latency was about 1.7 times the quiet `5039e6b` run with the plain-pool baseline slower by the same factor (runner noise). Previous run: `5fb41bc` (2026-10-24, all three jobs): **green**. node-api 644 of 644 in 165 suites (0 vulnerabilities); node-db 218 of 218 in 35 suites; web typecheck clean, 563 of 563 in 48 files, build compiled and generated 14 of 14 static pages, `npm audit` moderate only. Latency at that run was about 1.8 times the `ffb3b55` level with the plain-pool baseline also slower (runner noise, as at `4d7fffc`). The table below is the earlier full set at `4d7fffc` (logs seen 2026-10-24). **Green:**
++Latest run: `6ea2dd727660df55ddb358e686fc86561a9c6971` (2026-10-31, all three jobs, first run with 17a in the tree): **green**. node-api 945 of 945 in 237 suites (0 vulnerabilities); node-db 322 of 322 in 49 suites (migrations `0001` to `0042` applied); web 877 of 877 in 90 files, typecheck clean, build compiled and 14 of 14 static pages, `npm audit` 2 moderate (decision 8); latency (indicative) plain pool 0.28 ms, scoped wrapper 0.97 ms, list routes 5.3 to 5.4 ms. The Google Fonts build failure did not recur. Totals, audit, build and latency lines read, not every test line. Previous run: `a8cf53ca3f48aa69b3e001804cb11ab3b6a55a6b` (2026-10-31, all three jobs, first run with 16d in the tree): **green**. node-api 910 of 910 in 225 suites (0 vulnerabilities); node-db 319 of 319 in 48 suites (migrations `0001` to `0042` applied; the migration 0042 subtest passed); web 852 of 852 in 87 files, build compiled and 14 of 14 static pages, `npm audit` 2 moderate (decision 8); latency (indicative, runner noise) plain pool 0.4 ms, scoped wrapper 1.52 ms, list routes 7.6 to 7.8 ms. The first web run of this commit failed only in its build step (`next/font` could not read its Google Fonts download: `TypeError: Cannot read properties of null`, in `src/app/fonts.ts`, which 16d did not touch); a re-run was green, so it is recorded as a transient network fault, not a code fault; if it recurs, stop the build depending on a live font download. Totals, build, audit and latency lines read, not every test line. Previous run: `f439b6653b2893dce17fccf7a891e9112accef3c` (2026-10-30 about 13:33 UTC, all three jobs, first run with 16c in the tree): **green**. node-api 882 of 882 in 220 suites (0 vulnerabilities); node-db 313 of 313 in 47 suites (migrations `0001` to `0041` applied, adoption test passed); web 852 of 852 in 87 files, build compiled and 14 of 14 static pages, `npm audit` 2 moderate (decision 8); latency (indicative) plain pool 0.29 ms, scoped wrapper 0.8 ms, list routes 5.1 to 5.3 ms. Totals, build, audit and latency lines read, not every test line. Previous run: `70055180f6402b2640202e506cc6e881f3b53fca` (2026-10-30, all three jobs, first run with 16a, 16b and the 16b2 fix in the tree): **green**. node-api 860 of 860 in 214 suites (0 vulnerabilities); node-db 306 of 306 in 46 suites; web 840 of 840 in 85 files, build compiled and 14 of 14 static pages, `npm audit` 2 moderate (decision 8); latency (indicative) plain pool 0.4 ms, scoped wrapper 1.43 ms, list routes 7.6 to 7.7 ms (runner noise). The top-level lines of the `customerEvents` and `staffNotifications` restricted-role suites were read and passed; individual subtests were not. Previous run: `726c0e9` (2026-10-28, all three jobs, first run with step 15c in the tree): **green**. node-api 819 of 819 in 201 suites; node-db 293 of 293 in 44 suites; web 837 of 837 in 84 files. Earlier: `d899ff9` (2026-10-27, all three jobs, first run with step 15b in the tree): **green**. node-api 803 of 803 in 195 suites (0 vulnerabilities); node-db 285 of 285 in 43 suites; web 794 of 794 in 75 files, build compiled and 14 of 14 static pages, `npm audit` 2 moderate (decision 8). Totals and build lines read, not every test line. Previous run: `aee43e2` (2026-10-26, all three jobs): **green**. node-api 741 of 741 in 180 suites (0 vulnerabilities); node-db 238 of 238 in 38 suites; web 654 of 654 in 58 files, build compiled. Previous run: `e06c740` (2026-10-25, all three jobs): **green**. node-api 712 of 712 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web typecheck clean, 640 of 640 in 56 files, build compiled and generated 14 of 14 static pages; latency (indicative) plain pool 0.27 ms, scoped wrapper 0.81 ms, list routes 4.9 to 5.3 ms. The calendar-link test lines were read. Previous run: `2a8cdfc` (2026-10-25, all three jobs): **green**. node-api 708 of 708 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web typecheck clean, 634 of 634 in 55 files, build compiled and generated 14 of 14 static pages; latency (indicative) plain pool 0.29 ms, scoped wrapper 0.83 ms, list routes 4.7 to 4.9 ms. The 13g test lines were read. Previous run: `f16aebe` (2026-10-25, all three jobs): **green**, node-api 708 in 170, node-db 225 in 36, web 633 in 55; it followed a red pull-request merge run (`db812d8`, node-api 707 of 708, web 632 of 633) caused by two tests that still asserted what 13f changed on purpose; fixed by two hand edits. `3b1a79f` (13d, 13e): node-api 701, node-db 225, web 633. Previous run: `81cd5b8` (2026-10-25, all three jobs): **green**. node-api 698 of 698 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web typecheck clean, 625 of 625 in 55 files, build compiled and generated 14 of 14 static pages; latency (indicative) plain pool 0.33 ms, scoped wrapper 1.07 ms, list routes 5.7 to 5.9 ms. Previous run: `e87ab70` (2026-10-25, all three jobs): **green**. node-api 692 of 692 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web typecheck clean, 611 of 611 in 54 files, build compiled and generated 14 of 14 static pages. Individual lines of the 13b tests were not read. Previous run: `2ec81ae` (2026-10-25, all three jobs): **green**. node-api 650 of 650 in 167 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites (including the restricted-role `my-today` suite); web typecheck clean, 587 of 587 in 51 files, build compiled and generated 14 of 14 static pages, `npm audit` moderate only. Latency was about 1.7 times the quiet `5039e6b` run with the plain-pool baseline slower by the same factor (runner noise). Previous run: `5fb41bc` (2026-10-24, all three jobs): **green**. node-api 644 of 644 in 165 suites (0 vulnerabilities); node-db 218 of 218 in 35 suites; web typecheck clean, 563 of 563 in 48 files, build compiled and generated 14 of 14 static pages, `npm audit` moderate only. Latency at that run was about 1.8 times the `ffb3b55` level with the plain-pool baseline also slower (runner noise, as at `4d7fffc`). The table below is the earlier full set at `4d7fffc` (logs seen 2026-10-24). **Green:**
+ 
+ | Job | Result |
+ |---|---|
+@@ -142,13 +142,24 @@ CI green at `58c6710` (node-api 583 of 583; node-db 199 of 199; web 510 of 510).
+ - **Ran here:** the backend rule and starter tests with plain `node --test` (41 of 41); the new web helpers with Node type stripping (pass). **Not run here:** the HTTP tests (need express), real Vitest, the web typecheck, lint, the build, any browser. CI is the authority.
+ - **Not done / open:** the preview frame has never been seen in a browser (sandbox flags, the 700 px height and the phone width are unchecked on a device); the preview shows the saved draft, not unsaved edits; the old `publicUrlPath` is still returned by the API; African heritage is the first template after 13c; the other four templates still look like Standard.
+ 
+-## Step-17a (observability and headers): written 2026-10-31, CI not yet seen
++## Step-17a (observability and headers): written 2026-10-31, CI green at `6ea2dd7`
+ 
+ - **Built on:** the `f2a052f` tree. No migration, no route change, `docs/API.md` unchanged.
+ - **What it does:** access log (one JSON line per request in production, route pattern only); message-free error shape in the per-business worker failure log; `Cross-Origin-Resource-Policy` and `Cache-Control: no-store` on `/api` answers unless the route sets its own.
+ - **Found:** request IDs, error stacks and causes, per-account lockout and security headers were already in the code; `SECURITY.md` and the audit said otherwise. Docs corrected.
+ - **Ran:** `node --check` on every changed file; the new and changed unit tests that need no installed packages (`accessLog`, `requestId`, `forEachBusiness`). Not run: the rest of the suite, the database job, the web job. CI is the authority.
+ 
++## Step-17b (platform admin screens): written 2026-10-31, CI not yet seen
++
++- **Base:** the `6ea2dd7` tree (CI green on all three jobs). Decisions A to C taken as the defaults on your "go".
++- **Found:** the old platform failed-jobs list and retry read through the ordinary pool, so with forced row-level security they saw only the admin's own business. The old DB test (owner role, own business) could not show it.
++- **Changed:** migration `0043_platform_admin_read.sql` (five SELECT-only policies behind `app.platform_admin_read`; no table, column or key, so no adoption sums); `tenantRlsContext.js` (`runWithPlatformAdminRead`); new `auth/platformAccess.js` and `auth/platformAdminService.js`; `platformOperationsService.js` (list reads across businesses; retry finds the row that way and writes inside the row's own business context); `adminRoutes.js` (5 routes; `docs/API.md` regenerated: 363 routes); `docs/SECURITY.md`.
++- **Web:** `/platform-admin/businesses`, `/businesses/[id]`, `/users`, `/audit`, `/health`, a shared `PlatformAdminNav`, a `loading.tsx`; the operations page uses the nav (its two quiet buttons are now nav links).
++- **Rules:** allowlist check first in every service; counts only, never customer names; per-business counts run in that business's own context; opening a business and every user lookup is audited (the lookup entry holds no address); health shows whether a setting exists, never its value; keyset paging, 25 per page.
++- **Tests added:** `test/platformAdminService.test.js` (11), two in `test/tenantLookup.test.js`, `test/db/platformAdmin.integration.test.js` (restricted role: 403 and 401 on every route, list sees business B, B's counts only, memberships across businesses, failed job of B listed and retried, read policy cannot write and opens queue tables only, audit entries, health), `web/test/components/PlatformAdminScreens.test.tsx`.
++- **Run here (no database, no express, no zod, no browser):** `node --check` on every changed file; `platformAdminService`, `platformOperations`, `tenantLookup`, `forEachBusiness`, `workerTenantContext` unit tests; `npm run docs:api`. **Not run here:** the DB suite, every web test, the web typecheck.
++- **Open:** CI; no staging or phone check; worker last-run times and a plan column in the list not built; the platform audit viewer shows platform entries only (a business's own audit log is not shown).
++
+ ## Known open items
+ 
+ No request IDs or stacks in error logs; no per-account login lockout; no `helmet`; no business closure; a storefront booking creates an inquiry, not an appointment; order amendments show a preview, invalidate unstarted task slots and require an explicit schedule preview/publish in the planner; customers cannot opt out of messages themselves; the storefront link default points at `avzar.app`, which has no DNS record (use `/sites/<slug>`).
+diff --git a/TODO.md b/TODO.md
+index c6e1e46..ef5bc4e 100644
+--- a/TODO.md
++++ b/TODO.md
+@@ -2,7 +2,7 @@
+ 
+ Written from the code and `Avzar-Master-Audit.md` (rev 19) at base `aee43e2bc2ffde74e031b767a8cfde0a20bcf5f4`, 2026-10-26. `STATUS.md` holds the evidence. "Implemented" means present in code; it does not mean checked on a device, in production, or with live credentials.
+ 
+-**Test counts. Latest run seen: CI at `a8cf53ca3f48aa69b3e001804cb11ab3b6a55a6b` (2026-10-31, all three jobs green, logs seen; node-api and node-db from the first run, web from a re-run because the first web run failed in its build step on a Google Fonts download inside `next/font`, not in our code; totals, build, audit and latency lines read, not every test line; migrations `0001` to `0042` applied; first run with 16d in the tree): node-api 910 of 910 in 225 suites (0 vulnerabilities); node-db 319 of 319 in 48 suites; web 852 of 852 in 87 files, build compiled and 14 of 14 static pages (2 moderate dev-tooling advisories, decision 8). Earlier: CI at `f439b6653b2893dce17fccf7a891e9112accef3c` (2026-10-30 about 13:33 UTC, all three jobs green, logs seen; totals, build, audit and latency lines read, not every test line; migrations `0001` to `0041` applied and the adoption test passed; this is the first run with 16c in the tree): node-api 882 of 882 in 220 suites (0 vulnerabilities); node-db 313 of 313 in 47 suites; web 852 of 852 in 87 files, build compiled and 14 of 14 static pages (2 moderate dev-tooling advisories, decision 8). Earlier: CI at `70055180f6402b2640202e506cc6e881f3b53fca` (2026-10-30 about 09:44 UTC, all three jobs green, logs seen; totals, build, audit and latency lines read, plus the top-level lines of the `customerEvents` and `staffNotifications` restricted-role suites, which passed on their first run; this is the first run with 16a, 16b and the 16b2 adoption-count fix in the tree): node-api 860 of 860 in 214 suites (0 vulnerabilities); node-db 306 of 306 in 46 suites; web 840 of 840 in 85 files, build compiled and 14 of 14 static pages (2 moderate dev-tooling advisories, decision 8). Earlier: CI at `726c0e9` (2026-10-28 about 21:20 UTC, all three jobs green, logs seen; totals, build and audit lines read, not every test line; first run with 15c in the tree, and with the `WorkerCalendarFeeds` test fix, whose test threw plain `Error`s that `messageFor` shows only as the generic network message): node-api 819 of 819 in 201 suites, node-db 293 of 293 in 44 suites, web 837 of 837 in 84 files. Earlier: CI at `d899ff9` (2026-10-27 about 23:28 UTC, all three jobs green, logs seen; totals, build and audit lines read, not every test line; this is the first run with 15b in the tree): node-api 803 of 803 in 195 suites, 0 cancelled, 0 skipped (0 vulnerabilities); node-db 285 of 285 in 43 suites (the all-tests run); web 794 of 794 in 75 files, build compiled and 14 of 14 static pages (2 moderate dev-tooling advisories, decision 8). **Earlier: CI at `7f7f8e9` (2026-10-27, all three jobs green, logs seen; totals, build and audit lines read, not every test line): node-api 773 of 773 in 189 suites (0 vulnerabilities); node-db 277 of 277 in 42 suites; web 774 of 774 in 72 files, build compiled and 14 of 14 static pages (2 moderate dev-tooling advisories, decision 8). Steps 15a1, 15a2 and ui1 to ui5 are in that tree. **Earlier: Apply patch run #81 (2026-10-26, `main`, commit `b2a3c29`, 08d in the tree; summary table read, not the logs): all 14 checks PASS (both audits, typecheck, build, migrations twice, schema drift check): backend 979 of 979 (the 741 API tests plus the 238 database tests, because that workflow sets `DATABASE_URL`), node-db 238 of 238 in 38 suites, web 62 test files passed (the web test total line was not seen). The run's last step still ended with exit code 1 after the checks; the cause is not seen (likely the pull-request step). `ci.yml` on `main` not yet seen for 08d. Last full `ci.yml` set, CI at `aee43e2` (2026-10-26, 08b and 08c in the tree, all three jobs green, logs seen; totals and the `messagingConsent` and `messagingOptOut` test lines read): node-api 741 of 741 in 180 suites (0 vulnerabilities); node-db 238 of 238 in 38 suites; web 654 of 654 in 58 files, build compiled. Three earlier red runs of this work, all test faults: `4b6f933` (the `messagingOptOut` setup used one parameter with two types; PostgreSQL error 42P08 cancelled 8 tests), `38768bc` (the EF adoption column count was two short after migration `0035`), `466790b` (a test inserted a suppression source the table does not allow). **Before that, CI at `e06c740` (2026-10-25, 13a to 13g and step-08a in the tree, all three jobs green, logs seen; totals, build, latency and the calendar-link test lines read): node-api 712 of 712 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web 640 of 640 in 56 files, typecheck clean, build compiled and 14 of 14 static pages. **Before that, CI at `2a8cdfc` (2026-10-25, 13g in the tree, all three jobs green, logs seen; totals, build and 13g test lines read):** node-api 708 of 708 in 170 suites; node-db 225 of 225 in 36 suites; web 634 of 634 in 55 files. **Before that, CI at `f16aebe` (13f in the tree, after two stale tests were edited by hand):** node-api 708 in 170, node-db 225 in 36, web 633 in 55. **Before that, CI at `3b1a79f` (2026-10-25, 13d and 13e in the tree, all three jobs green, logs seen; totals and build lines read): node-api 701 of 701 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web 633 of 633 in 55 files, typecheck clean, build compiled. **Before that, CI at `81cd5b8` (2026-10-25, step-13c, all three jobs green, logs seen):** node-api 698 of 698 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web 625 of 625 in 55 files, typecheck clean, build compiled and generated 14 of 14 static pages. The 13c test lines (preview frame, hide and show guards) were read; the other new lines were not. **Before that, CI at `e87ab70` (2026-10-25, step-13b1 and 13b2):** node-api 692 of 692 in 170 suites; node-db 225 of 225 in 36 suites; web 611 of 611 in 54 files, typecheck clean, build compiled and generated 14 of 14 static pages. **Before that, CI at `cd6d0f7` (2026-10-25, step-13a):** node-api 664 of 664, node-db 225 in 36 suites, web 593 in 52 files. **Before that, CI at `2ec81ae` (2026-10-25, all three jobs green):** node-api 650 of 650 in 167 suites; node-db 225 of 225 in 36 suites; web 587 of 587 in 51 files, typecheck clean, build completed. **Before that, CI at `5fb41bc` (2026-10-24, green):** node-api 644 in 165 suites, node-db 218 in 35 suites, web 563 in 48 files. **Before that, CI at `4d7fffc` (2026-10-24, green):** node-api 606 of 606 in 155 suites; node-db 208 of 208 in 34 suites; web 520 of 520 in 45 files, build completed. Earlier all-green runs: `ffb3b55` (node-api 583, node-db 199 in 33 suites, web 510 in 44 files), `433b7e6` (node-api 580, node-db 187 in 32 suites, web 510), `472c3b9` (node-api 576, node-db 166 in 29 suites, web 510), `8f68e63` (node-api 576, node-db 136 in 24 suites, web 451 in 40 files).
++**Test counts. Latest run seen: CI at `6ea2dd727660df55ddb358e686fc86561a9c6971` (2026-10-31, all three jobs green, logs seen; totals, audit, build and latency lines read; migrations `0001` to `0042` applied; first run with 17a in the tree): node-api 945 of 945 in 237 suites (0 vulnerabilities); node-db 322 of 322 in 49 suites; web 877 of 877 in 90 files, build compiled and 14 of 14 static pages (2 moderate dev-tooling advisories, decision 8). Earlier: CI at `a8cf53ca3f48aa69b3e001804cb11ab3b6a55a6b` (2026-10-31, all three jobs green, logs seen; node-api and node-db from the first run, web from a re-run because the first web run failed in its build step on a Google Fonts download inside `next/font`, not in our code; totals, build, audit and latency lines read, not every test line; migrations `0001` to `0042` applied; first run with 16d in the tree): node-api 910 of 910 in 225 suites (0 vulnerabilities); node-db 319 of 319 in 48 suites; web 852 of 852 in 87 files, build compiled and 14 of 14 static pages (2 moderate dev-tooling advisories, decision 8). Earlier: CI at `f439b6653b2893dce17fccf7a891e9112accef3c` (2026-10-30 about 13:33 UTC, all three jobs green, logs seen; totals, build, audit and latency lines read, not every test line; migrations `0001` to `0041` applied and the adoption test passed; this is the first run with 16c in the tree): node-api 882 of 882 in 220 suites (0 vulnerabilities); node-db 313 of 313 in 47 suites; web 852 of 852 in 87 files, build compiled and 14 of 14 static pages (2 moderate dev-tooling advisories, decision 8). Earlier: CI at `70055180f6402b2640202e506cc6e881f3b53fca` (2026-10-30 about 09:44 UTC, all three jobs green, logs seen; totals, build, audit and latency lines read, plus the top-level lines of the `customerEvents` and `staffNotifications` restricted-role suites, which passed on their first run; this is the first run with 16a, 16b and the 16b2 adoption-count fix in the tree): node-api 860 of 860 in 214 suites (0 vulnerabilities); node-db 306 of 306 in 46 suites; web 840 of 840 in 85 files, build compiled and 14 of 14 static pages (2 moderate dev-tooling advisories, decision 8). Earlier: CI at `726c0e9` (2026-10-28 about 21:20 UTC, all three jobs green, logs seen; totals, build and audit lines read, not every test line; first run with 15c in the tree, and with the `WorkerCalendarFeeds` test fix, whose test threw plain `Error`s that `messageFor` shows only as the generic network message): node-api 819 of 819 in 201 suites, node-db 293 of 293 in 44 suites, web 837 of 837 in 84 files. Earlier: CI at `d899ff9` (2026-10-27 about 23:28 UTC, all three jobs green, logs seen; totals, build and audit lines read, not every test line; this is the first run with 15b in the tree): node-api 803 of 803 in 195 suites, 0 cancelled, 0 skipped (0 vulnerabilities); node-db 285 of 285 in 43 suites (the all-tests run); web 794 of 794 in 75 files, build compiled and 14 of 14 static pages (2 moderate dev-tooling advisories, decision 8). **Earlier: CI at `7f7f8e9` (2026-10-27, all three jobs green, logs seen; totals, build and audit lines read, not every test line): node-api 773 of 773 in 189 suites (0 vulnerabilities); node-db 277 of 277 in 42 suites; web 774 of 774 in 72 files, build compiled and 14 of 14 static pages (2 moderate dev-tooling advisories, decision 8). Steps 15a1, 15a2 and ui1 to ui5 are in that tree. **Earlier: Apply patch run #81 (2026-10-26, `main`, commit `b2a3c29`, 08d in the tree; summary table read, not the logs): all 14 checks PASS (both audits, typecheck, build, migrations twice, schema drift check): backend 979 of 979 (the 741 API tests plus the 238 database tests, because that workflow sets `DATABASE_URL`), node-db 238 of 238 in 38 suites, web 62 test files passed (the web test total line was not seen). The run's last step still ended with exit code 1 after the checks; the cause is not seen (likely the pull-request step). `ci.yml` on `main` not yet seen for 08d. Last full `ci.yml` set, CI at `aee43e2` (2026-10-26, 08b and 08c in the tree, all three jobs green, logs seen; totals and the `messagingConsent` and `messagingOptOut` test lines read): node-api 741 of 741 in 180 suites (0 vulnerabilities); node-db 238 of 238 in 38 suites; web 654 of 654 in 58 files, build compiled. Three earlier red runs of this work, all test faults: `4b6f933` (the `messagingOptOut` setup used one parameter with two types; PostgreSQL error 42P08 cancelled 8 tests), `38768bc` (the EF adoption column count was two short after migration `0035`), `466790b` (a test inserted a suppression source the table does not allow). **Before that, CI at `e06c740` (2026-10-25, 13a to 13g and step-08a in the tree, all three jobs green, logs seen; totals, build, latency and the calendar-link test lines read): node-api 712 of 712 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web 640 of 640 in 56 files, typecheck clean, build compiled and 14 of 14 static pages. **Before that, CI at `2a8cdfc` (2026-10-25, 13g in the tree, all three jobs green, logs seen; totals, build and 13g test lines read):** node-api 708 of 708 in 170 suites; node-db 225 of 225 in 36 suites; web 634 of 634 in 55 files. **Before that, CI at `f16aebe` (13f in the tree, after two stale tests were edited by hand):** node-api 708 in 170, node-db 225 in 36, web 633 in 55. **Before that, CI at `3b1a79f` (2026-10-25, 13d and 13e in the tree, all three jobs green, logs seen; totals and build lines read): node-api 701 of 701 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web 633 of 633 in 55 files, typecheck clean, build compiled. **Before that, CI at `81cd5b8` (2026-10-25, step-13c, all three jobs green, logs seen):** node-api 698 of 698 in 170 suites (0 vulnerabilities); node-db 225 of 225 in 36 suites; web 625 of 625 in 55 files, typecheck clean, build compiled and generated 14 of 14 static pages. The 13c test lines (preview frame, hide and show guards) were read; the other new lines were not. **Before that, CI at `e87ab70` (2026-10-25, step-13b1 and 13b2):** node-api 692 of 692 in 170 suites; node-db 225 of 225 in 36 suites; web 611 of 611 in 54 files, typecheck clean, build compiled and generated 14 of 14 static pages. **Before that, CI at `cd6d0f7` (2026-10-25, step-13a):** node-api 664 of 664, node-db 225 in 36 suites, web 593 in 52 files. **Before that, CI at `2ec81ae` (2026-10-25, all three jobs green):** node-api 650 of 650 in 167 suites; node-db 225 of 225 in 36 suites; web 587 of 587 in 51 files, typecheck clean, build completed. **Before that, CI at `5fb41bc` (2026-10-24, green):** node-api 644 in 165 suites, node-db 218 in 35 suites, web 563 in 48 files. **Before that, CI at `4d7fffc` (2026-10-24, green):** node-api 606 of 606 in 155 suites; node-db 208 of 208 in 34 suites; web 520 of 520 in 45 files, build completed. Earlier all-green runs: `ffb3b55` (node-api 583, node-db 199 in 33 suites, web 510 in 44 files), `433b7e6` (node-api 580, node-db 187 in 32 suites, web 510), `472c3b9` (node-api 576, node-db 166 in 29 suites, web 510), `8f68e63` (node-api 576, node-db 136 in 24 suites, web 451 in 40 files).
+ 
+ ## Order of work (one step at a time; each starts with a design report and waits for a go)
+ 
+@@ -47,9 +47,9 @@ Written from the code and `Avzar-Master-Audit.md` (rev 19) at base `aee43e2bc2ff
+   - [x] **16c Editable customer templates.** Written 2026-10-30 against the `7005518` tree; **CI green at `f439b66` (2026-10-30; first run, including its restricted-role suite `messageTemplates.integration`; individual subtests not read).** Decisions taken as recommended: 16c covers `appointment.reminder` as well as the three 16b kinds, and editing is on every plan. Migration `0041` (`NotificationTemplates`, forced RLS, one row per business, kind and channel; no row means the default in code). New `messaging/templateCatalog.js` (defaults identical to the pre-16c wording, whitelisted placeholders, validation: plain text, 600 characters, no links or markup); `describeCustomerEvent` and the reminder worker use the saved wording and fall back to the default on any failure; the opt-out line is still added by the sender. Four routes under `/api/business/message-templates` (`business.settings`; list, save, reset, preview; save and reset are audited without the text). Settings panel "Customer messages". Tests: unit `templateCatalog` and additions to `customerEvents`, `customerEventWorker`, `customerMessageWorker`; `messageTemplateRoutes` (fake pool); restricted-role `messageTemplates.integration`; web `message-templates` and `MessageTemplatesPanel`; adoption sums (+8 columns, +1 foreign key) and the `efSchema` table list updated. Staff notices are not editable. WhatsApp wording is saved now; sending still needs 16d.
+   - [x] **16d WhatsApp templates and inbound STOP.** Written 2026-10-30 against the `f439b66` tree; **CI green at `a8cf53c` (2026-10-31; first run, including its restricted-role suite `whatsappStop.integration`; individual subtests not read).** Decisions taken as recommended on your "go": 40 WhatsApp always sends four fixed Meta-approved templates (a shop's own wording is for SMS only); 41 one platform-wide set in English; 42 the same STOP words as SMS, no confirmation reply; 43 the opt-out link is the last template variable (no quick-reply button); 44 the WhatsApp tab in settings is read-only. Migration `0042` (source `WhatsAppStop`); `messaging/whatsappTemplates.js`, `messaging/whatsappInbound.js`; Meta webhook `GET`/`POST /api/messaging/whatsapp/webhook` (355 routes); `docs/WHATSAPP_SETUP.md`. **Unverified with live credentials:** template approval, sending, the webhook handshake and signature, Meta error codes. **You must:** create the four templates in Meta and set `META_WHATSAPP_APP_SECRET`, `META_WHATSAPP_VERIFY_TOKEN` (and the webhook) before step 20.
+ - [ ] **17 Platform and security hardening.** Design report approved 2026-10-31 ("go", all defaults): closure is suspend and reactivate by the platform admin only (reversible, no permanent deletion); retention 180 days for sent and cancelled customer messages and 90 days for the email outbox, platform audit logs kept; platform admin sees business details and counts, never customer names; new exports for orders, invoices, payments, appointments and inquiries; no `helmet` package. Found while reading the code: request IDs, error stacks and causes, per-account lockout and hand-written security headers **already existed** (the audit and `SECURITY.md` were out of date). Split into four patches, one "go" each.
+-  - [x] **17a Observability and headers.** Written 2026-10-31 against the `f2a052f` tree; **CI not yet seen.** No migration, no route change. (1) `http/accessLog.js`: one JSON line per finished request in production (request ID, method, route pattern, status, duration, business ID when signed in); the pattern is logged, never the real address or query string; health checks skipped; a test can pass its own logger. (2) `describeErrorShape` (type, code, HTTP status, causes; no message, no stack) now in the worker failure log of `forEachBusiness`; the existing rule that a worker log holds no error message is kept. (3) `/api` answers carry `Cross-Origin-Resource-Policy: same-origin` and `Cache-Control: no-store` unless a route sets its own. (4) `SECURITY.md`, `FEATURE_INVENTORY.md` and `ARCHITECTURE.md` corrected. Tests: `test/unit/accessLog.test.js` (6), three new assertions in `requestId.test.js` and `forEachBusiness.test.js`. Not done: the web proxy and screens showing the request ID of a 500 (not checked); a log with the error message for workers (left out on purpose).
+-  - [ ] **17b Platform admin:** business list and detail, user lookup by email, per-business usage, audit viewer, health screen.
+-  - [ ] **17c Business suspension, retention jobs:** migration `0043`.
++  - [x] **17a Observability and headers.** Written 2026-10-31 against the `f2a052f` tree; **CI green at `6ea2dd7` (2026-10-31; node-api 945 of 945 in 237 suites, node-db 322 of 322 in 49, web 877 of 877 in 90 files; totals, build, audit and latency lines read).** No migration, no route change. (1) `http/accessLog.js`: one JSON line per finished request in production (request ID, method, route pattern, status, duration, business ID when signed in); the pattern is logged, never the real address or query string; health checks skipped; a test can pass its own logger. (2) `describeErrorShape` (type, code, HTTP status, causes; no message, no stack) now in the worker failure log of `forEachBusiness`; the existing rule that a worker log holds no error message is kept. (3) `/api` answers carry `Cross-Origin-Resource-Policy: same-origin` and `Cache-Control: no-store` unless a route sets its own. (4) `SECURITY.md`, `FEATURE_INVENTORY.md` and `ARCHITECTURE.md` corrected. Tests: `test/unit/accessLog.test.js` (6), three new assertions in `requestId.test.js` and `forEachBusiness.test.js`. Not done: the web proxy and screens showing the request ID of a 500 (not checked); a log with the error message for workers (left out on purpose).
++  - [x] **17b Platform admin screens.** Written 2026-10-31 against the `6ea2dd7` tree; **CI not yet seen.** Decisions taken as the defaults on your "go": A add read policies; B audit business views and user lookups; C no plan in the list. **Found while reading:** the existing failed-jobs list and retry ran through the ordinary pool, so under forced row-level security a platform admin saw and could retry only the jobs of the admin's own business (the old DB test used the owner role on the admin's own business, so it never showed this). Migration `0043` adds five SELECT-only `avzar_platform_admin_read` policies (the five queue tables) behind `app.platform_admin_read`; `runWithPlatformAdminRead` sets it. Retry now finds the row that way and writes inside that row's own business context. New `platformAccess.js` (one allowlist helper; `adminService` and `platformOperationsService` use it) and `platformAdminService.js`; 5 routes (363 routes): `GET /api/platform-admin/businesses`, `/businesses/:id`, `/users?email=`, `/audit-logs`, `/health`. Business detail counts run inside that business's own context; a user's memberships come through the existing user-ID lookup policy; customer names never appear. Web: `/platform-admin/businesses`, `/businesses/[id]`, `/users`, `/audit`, `/health` (server pages, plain GET forms, a shared nav), operations page uses the nav. Tests: `platformAdminService` (11), two in `tenantLookup`, restricted-role `platformAdmin.integration`, web `PlatformAdminScreens`. **Not built (on purpose):** worker last-run times (workers do not record runs; a per-process record would reset on every sleep); a plan column in the business list. **Open:** CI; no staging or phone check.
++  - [ ] **17c Business suspension, retention jobs:** migration `0044` (`0043` is taken by 17b).
+   - [ ] **17d Exports, pagination scan, OpenAPI.**
+ - [ ] **18 Reference images, task approval,** mobile inbox, schedule and appointments screens, AI image scope.
+ - [ ] **19 Quality pass:** full isolation matrix, end-to-end flow, mobile lockfile and tests, accessibility, load check.
+diff --git a/backend-node/migrations/0043_platform_admin_read.sql b/backend-node/migrations/0043_platform_admin_read.sql
+new file mode 100644
+index 0000000..089f9c1
+--- /dev/null
++++ b/backend-node/migrations/0043_platform_admin_read.sql
+@@ -0,0 +1,14 @@
++-- Step 17b: platform-administrator read access across businesses.
++-- The platform screens (failed jobs, queue depth) must list rows of every business. With forced row-level security the API role
++-- sees only the current business, so each queue table gets one extra SELECT-only policy that opens while the transaction-local
++-- setting app.platform_admin_read = 'on'. The application sets it only inside the platform-admin services, after the
++-- PLATFORM_ADMIN_EMAILS check. There is no INSERT, UPDATE or DELETE policy: a retry writes inside that row's own business context.
++-- No new table, column or key, so no adoption sums change. Policies other than avzar_business_isolation: 15 before, 20 after.
++DO $$
++DECLARE t text;
++BEGIN
++  FOREACH t IN ARRAY ARRAY['NotificationOutbox','PushDeliveries','WorkerSummaryJobs','AppointmentReminders','EmailOutbox'] LOOP
++    EXECUTE format('DROP POLICY IF EXISTS avzar_platform_admin_read ON %I', t);
++    EXECUTE format($p$CREATE POLICY avzar_platform_admin_read ON %I FOR SELECT USING (current_setting('app.platform_admin_read', true) = 'on')$p$, t);
++  END LOOP;
++END $$;
+diff --git a/backend-node/src/auth/adminRoutes.js b/backend-node/src/auth/adminRoutes.js
+index 291d349..4b77f3b 100644
+--- a/backend-node/src/auth/adminRoutes.js
++++ b/backend-node/src/auth/adminRoutes.js
+@@ -4,6 +4,8 @@ import { AppError } from '../http/errors.js';
+ import { requireBearerAuth } from '../security/bearerAuth.js';
+ import { requirePermission } from '../security/permissions.js';
+ import { confirmOwnershipTransfer, getPublicPlans, getTenantEntitlements, listEmailSuppressions, listPlatformPlans, requestOwnershipTransfer, updatePlatformPlan } from './adminService.js';
++import { getPlatformBusiness, getPlatformHealth, listPlatformAuditLogs, listPlatformBusinesses, lookupPlatformUser } from './platformAdminService.js';
++import { platformEmails } from './platformAccess.js';
+ import { listPlatformBackgroundJobs, listPlatformFeatureFlags, retryPlatformNotification, updatePlatformFeatureFlag } from './platformOperationsService.js';
+ 
+ function parse(schema, body) {
+@@ -28,12 +30,15 @@ const planUpdateSchema = z.object({
+ const emailSuppressionQuerySchema = z.object({ q: z.string().optional(), limit: z.coerce.number().int().optional() });
+ const jobQuerySchema = z.object({ status: z.enum(['Pending','Leased','Sent','Failed','Accepted','Skipped']).optional(), limit: z.coerce.number().int().min(1).max(250).optional() });
+ const featureFlagSchema = z.object({ enabled: z.boolean() });
++const businessListQuerySchema = z.object({ q: z.string().max(100).optional(), limit: z.coerce.number().int().min(1).max(100).optional(), before: z.string().max(300).optional() });
++const userLookupQuerySchema = z.object({ email: z.string().min(3).max(254) });
++const auditQuerySchema = z.object({
++  action: z.string().max(100).optional(), actor: z.string().max(256).optional(),
++  from: z.string().datetime({ offset: true }).optional(), to: z.string().datetime({ offset: true }).optional(),
++  limit: z.coerce.number().int().min(1).max(100).optional(), before: z.string().max(300).optional(),
++});
+ const jobRetrySchema = z.object({ kind: z.enum(['notification','push']) });
+ 
+-function platformEmails(env) {
+-  return String(env.PLATFORM_ADMIN_EMAILS ?? '').split(',').map((value) => value.trim()).filter(Boolean);
+-}
+-
+ export function createAdminRouter({ env, pool }) {
+   const router = Router();
+   const auth = requireBearerAuth(env, pool);
+@@ -72,6 +77,21 @@ export function createAdminRouter({ env, pool }) {
+     return res.status(200).json(await updatePlatformFeatureFlag(pool, req.currentUser.email, platformEmails(env), req.params.key, payload.enabled));
+   });
+ 
++  router.get('/platform-admin/businesses', auth, async (req, res) =>
++    res.status(200).json(await listPlatformBusinesses(pool, req.currentUser.email, platformEmails(env), parse(businessListQuerySchema, req.query))));
++
++  router.get('/platform-admin/businesses/:id', auth, async (req, res) =>
++    res.status(200).json(await getPlatformBusiness(pool, req.currentUser.email, platformEmails(env), req.params.id)));
++
++  router.get('/platform-admin/users', auth, async (req, res) =>
++    res.status(200).json(await lookupPlatformUser(pool, req.currentUser.email, platformEmails(env), parse(userLookupQuerySchema, req.query).email)));
++
++  router.get('/platform-admin/audit-logs', auth, async (req, res) =>
++    res.status(200).json(await listPlatformAuditLogs(pool, req.currentUser.email, platformEmails(env), parse(auditQuerySchema, req.query))));
++
++  router.get('/platform-admin/health', auth, async (req, res) =>
++    res.status(200).json(await getPlatformHealth(pool, env, req.currentUser.email, platformEmails(env))));
++
+   router.get('/platform-admin/background-jobs', auth, async (req, res) => {
+     const query = parse(jobQuerySchema, req.query);
+     return res.status(200).json(await listPlatformBackgroundJobs(pool, req.currentUser.email, platformEmails(env), query));
+diff --git a/backend-node/src/auth/adminService.js b/backend-node/src/auth/adminService.js
+index fcfb9c5..f5c26c0 100644
+--- a/backend-node/src/auth/adminService.js
++++ b/backend-node/src/auth/adminService.js
+@@ -6,6 +6,7 @@ import { verifySecondFactor, withTransaction } from './accountService.js';
+ import { ensureBelowLimit, entitlementValue } from './entitlementService.js';
+ import { OWNER_PERMISSIONS } from './mobileAuthService.js';
+ import { lastPaidBillingPeriod } from './subscriptionBillingService.js';
++import { requirePlatformAdmin } from './platformAccess.js';
+ 
+ export const AVAILABLE_PERMISSIONS = [
+   'staff.view', 'staff.manage', 'roles.manage', 'locations.manage', 'locations.all', 'audit.view', 'business.settings',
+@@ -431,11 +432,6 @@ export async function listEmailSuppressions(pool, userEmail, configuredEmails, {
+   };
+ }
+ 
+-function requirePlatformAdmin(email, configuredEmails) {
+-  const allowed = new Set(configuredEmails.map((value) => value.trim().toLowerCase()).filter(Boolean));
+-  if (!email || !allowed.has(email.trim().toLowerCase())) throw AppError.forbidden('platform_admin_required', 'Platform administrator access is required.');
+-}
+-
+ export async function updatePlatformPlan(pool, userEmail, configuredEmails, code, request) {
+   requirePlatformAdmin(userEmail, configuredEmails);
+   if (!request.name.trim() || request.name.length > 80 || request.currencyCode.length !== 3 || !Number.isSafeInteger(Math.round(request.monthlyPrice * 100)) || request.monthlyPrice < 0 || (request.annualPrice != null && (request.annualPrice < 0 || !Number.isSafeInteger(Math.round(request.annualPrice * 100)))) ) {
+diff --git a/backend-node/src/auth/platformAccess.js b/backend-node/src/auth/platformAccess.js
+new file mode 100644
+index 0000000..5bad080
+--- /dev/null
++++ b/backend-node/src/auth/platformAccess.js
+@@ -0,0 +1,12 @@
++import { AppError } from '../http/errors.js';
++
++/** The configured platform administrators (PLATFORM_ADMIN_EMAILS, comma separated). */
++export function platformEmails(env) {
++  return String(env?.PLATFORM_ADMIN_EMAILS ?? '').split(',').map((value) => value.trim()).filter(Boolean);
++}
++
++/** Throws 403 unless the signed-in email is on the configured allowlist. Every platform-admin service starts with this. */
++export function requirePlatformAdmin(email, configuredEmails) {
++  const allowed = new Set(configuredEmails.map((value) => value.trim().toLowerCase()).filter(Boolean));
++  if (!email || !allowed.has(email.trim().toLowerCase())) throw AppError.forbidden('platform_admin_required', 'Platform administrator access is required.');
++}
+diff --git a/backend-node/src/auth/platformAdminService.js b/backend-node/src/auth/platformAdminService.js
+new file mode 100644
+index 0000000..d444320
+--- /dev/null
++++ b/backend-node/src/auth/platformAdminService.js
+@@ -0,0 +1,172 @@
++// Step 17b: platform administrator screens. Read-only, except for the audit entries these views leave.
++// Who may call: PLATFORM_ADMIN_EMAILS only (requirePlatformAdmin). What is shown: businesses, staff accounts, counts and queue depth.
++// Never shown: customer names or contacts, password hashes, tokens, message bodies.
++// How rows of other businesses are reached under forced row-level security:
++//   - Businesses, AspNetUsers, Plans, PlatformAuditLogs have no BusinessId and need no special access;
++//   - per-business counts run inside that one business's own tenant context;
++//   - a user's memberships come through the existing user-ID lookup policy (0033);
++//   - queue depth uses the read-only platform-admin policies of migration 0043.
++import { randomUUID } from 'node:crypto';
++import { performance } from 'node:perf_hooks';
++import { AppError } from '../http/errors.js';
++import { runWithPlatformAdminRead, runWithTenantRlsContext, setTenantLookup, setTenantRlsContext } from '../db/tenantRlsContext.js';
++import { requirePlatformAdmin } from './platformAccess.js';
++
++const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
++const PAGE = 25;
++
++function takeFrom(limit) { return Math.min(100, Math.max(1, Number(limit) || PAGE)); }
++function likePattern(text) { return `%${String(text).replace(/[\\%_]/g, (c) => `\\${c}`)}%`; }
++
++/** An opaque keyset cursor: the time and ID of the last row on the page. */
++export function encodeCursor(row) { return Buffer.from(JSON.stringify({ t: new Date(row.CreatedAtUtc).toISOString(), id: row.Id }), 'utf8').toString('base64url'); }
++export function decodeCursor(value) {
++  if (value === undefined || value === null || value === '') return null;
++  try {
++    const parsed = JSON.parse(Buffer.from(String(value), 'base64url').toString('utf8'));
++    if (typeof parsed.t === 'string' && !Number.isNaN(Date.parse(parsed.t)) && typeof parsed.id === 'string' && UUID.test(parsed.id)) return { t: parsed.t, id: parsed.id };
++  } catch { /* fall through */ }
++  throw AppError.badRequest('invalid_cursor', 'The page marker is not valid.');
++}
++
++async function writeAudit(pool, actorEmail, action, entityType, entityId, details) {
++  await pool.query(`INSERT INTO "PlatformAuditLogs" ("Id","ActorEmail","Action","EntityType","EntityId","DetailsJson") VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
++    [randomUUID(), actorEmail.trim().toLowerCase(), action, entityType, entityId, JSON.stringify(details ?? {})]);
++}
++
++export async function listPlatformBusinesses(pool, actorEmail, allowlist, { q, limit, before } = {}) {
++  requirePlatformAdmin(actorEmail, allowlist);
++  const take = takeFrom(limit);
++  const cursor = decodeCursor(before);
++  const search = q && String(q).trim() ? likePattern(String(q).trim().slice(0, 100)) : null;
++  const { rows } = await pool.query(`
++    SELECT "Id","Name","ContactEmail","CurrencyCode","TimeZoneId","IsActive","CreatedAtUtc" FROM "Businesses"
++    WHERE ($1::text IS NULL OR "Name" ILIKE $1 OR "ContactEmail" ILIKE $1)
++      AND ($2::timestamptz IS NULL OR ("CreatedAtUtc", "Id") < ($2::timestamptz, $3::uuid))
++    ORDER BY "CreatedAtUtc" DESC, "Id" DESC LIMIT $4`, [search, cursor?.t ?? null, cursor?.id ?? null, take + 1]);
++  const page = rows.slice(0, take);
++  return {
++    items: page.map((r) => ({ id: r.Id, name: r.Name, contactEmail: r.ContactEmail, currencyCode: r.CurrencyCode, timeZoneId: r.TimeZoneId, isActive: r.IsActive, createdAtUtc: r.CreatedAtUtc })),
++    next: rows.length > take ? encodeCursor(page[page.length - 1]) : null,
++  };
++}
++
++export async function getPlatformBusiness(pool, actorEmail, allowlist, businessId) {
++  requirePlatformAdmin(actorEmail, allowlist);
++  if (!UUID.test(String(businessId))) throw AppError.notFound('business_not_found', 'Business was not found.');
++  const business = (await pool.query(`SELECT "Id","Name","ContactEmail","CurrencyCode","TimeZoneId","IsActive","CreatedAtUtc","UpdatedAtUtc" FROM "Businesses" WHERE "Id"=$1`, [businessId])).rows[0];
++  if (!business) throw AppError.notFound('business_not_found', 'Business was not found.');
++  // Counts and the plan are read inside this business's own context: another business's rows can never be added in.
++  const usage = await runWithTenantRlsContext(async () => {
++    setTenantRlsContext(businessId);
++    const counts = (await pool.query(`SELECT
++      (SELECT count(*)::int FROM "Memberships" WHERE "Status" = 0) AS "activeStaff",
++      (SELECT count(*)::int FROM "Locations" WHERE "IsActive") AS "locations",
++      (SELECT count(*)::int FROM "Customers") AS "customers",
++      (SELECT count(*)::int FROM "Orders") AS "orders",
++      (SELECT count(*)::int FROM "Orders" WHERE "CreatedAtUtc" >= now() - interval '30 days') AS "ordersLast30Days",
++      (SELECT count(*)::int FROM "Invoices") AS "invoices",
++      (SELECT COALESCE(sum("SizeBytes"), 0)::bigint FROM "MediaAssets") AS "storageBytes"`)).rows[0];
++    const owner = (await pool.query(`SELECT u."Email", u."FullName" FROM "Memberships" m JOIN "AspNetUsers" u ON u."Id" = m."UserId" WHERE m."IsOwner" LIMIT 1`)).rows[0];
++    const plan = (await pool.query(`SELECT p."Code", p."Name", s."Status", s."CurrentPeriodEndUtc" FROM "Subscriptions" s JOIN "Plans" p ON p."Id" = s."PlanId"
++      ORDER BY s."CreatedAtUtc" DESC LIMIT 1`)).rows[0];
++    return { counts, owner, plan };
++  });
++  await writeAudit(pool, actorEmail, 'platform.business.viewed', 'Business', businessId, {});
++  const c = usage.counts;
++  return {
++    id: business.Id, name: business.Name, contactEmail: business.ContactEmail, currencyCode: business.CurrencyCode, timeZoneId: business.TimeZoneId,
++    isActive: business.IsActive, createdAtUtc: business.CreatedAtUtc, updatedAtUtc: business.UpdatedAtUtc,
++    owner: usage.owner ? { email: usage.owner.Email, fullName: usage.owner.FullName } : null,
++    plan: usage.plan ? { code: usage.plan.Code, name: usage.plan.Name, status: usage.plan.Status, currentPeriodEndUtc: usage.plan.CurrentPeriodEndUtc } : null,
++    usage: { activeStaff: c.activeStaff, locations: c.locations, customers: c.customers, orders: c.orders, ordersLast30Days: c.ordersLast30Days, invoices: c.invoices, storageBytes: Number(c.storageBytes) },
++  };
++}
++
++export async function lookupPlatformUser(pool, actorEmail, allowlist, email) {
++  requirePlatformAdmin(actorEmail, allowlist);
++  const address = String(email ?? '').trim();
++  if (!address || address.length > 254 || !address.includes('@')) throw AppError.badRequest('invalid_email', 'Enter a full email address.');
++  const user = (await pool.query(`SELECT "Id","Email","FullName","EmailConfirmed","TwoFactorEnabled","LockoutEnd","AccessFailedCount","CreatedAtUtc"
++    FROM "AspNetUsers" WHERE "NormalizedEmail" = $1`, [address.toUpperCase()])).rows[0];
++  // The audit entry never holds the searched address, only whether an account was found and which one.
++  await writeAudit(pool, actorEmail, 'platform.user.lookup', 'User', user?.Id ?? null, { found: Boolean(user) });
++  if (!user) throw AppError.notFound('user_not_found', 'No account has that email address.');
++  const memberships = await runWithTenantRlsContext(async () => {
++    setTenantLookup('user_id', user.Id);
++    return (await pool.query(`SELECT m."Id", m."BusinessId", m."IsOwner", m."Status", m."DisplayName", b."Name" AS "BusinessName", b."IsActive" AS "BusinessActive"
++      FROM "Memberships" m JOIN "Businesses" b ON b."Id" = m."BusinessId" WHERE m."UserId" = $1 ORDER BY m."CreatedAtUtc"`, [user.Id])).rows;
++  });
++  const lockedUntil = user.LockoutEnd && new Date(user.LockoutEnd) > new Date() ? user.LockoutEnd : null;
++  return {
++    id: user.Id, email: user.Email, fullName: user.FullName, emailConfirmed: user.EmailConfirmed, twoFactorEnabled: user.TwoFactorEnabled,
++    lockedUntilUtc: lockedUntil, failedSignIns: user.AccessFailedCount, createdAtUtc: user.CreatedAtUtc,
++    memberships: memberships.map((m) => ({ id: m.Id, businessId: m.BusinessId, businessName: m.BusinessName, businessActive: m.BusinessActive,
++      isOwner: m.IsOwner, active: m.Status === 0, displayName: m.DisplayName })),
++  };
++}
++
++export async function listPlatformAuditLogs(pool, actorEmail, allowlist, { action, actor, from, to, limit, before } = {}) {
++  requirePlatformAdmin(actorEmail, allowlist);
++  const take = takeFrom(limit);
++  const cursor = decodeCursor(before);
++  const { rows } = await pool.query(`
++    SELECT "Id","ActorEmail","Action","EntityType","EntityId","DetailsJson","CreatedAtUtc" FROM "PlatformAuditLogs"
++    WHERE ($1::text IS NULL OR "Action" = $1)
++      AND ($2::text IS NULL OR "ActorEmail" = $2)
++      AND ($3::timestamptz IS NULL OR "CreatedAtUtc" >= $3::timestamptz)
++      AND ($4::timestamptz IS NULL OR "CreatedAtUtc" < $4::timestamptz)
++      AND ($5::timestamptz IS NULL OR ("CreatedAtUtc", "Id") < ($5::timestamptz, $6::uuid))
++    ORDER BY "CreatedAtUtc" DESC, "Id" DESC LIMIT $7`,
++  [action || null, actor ? String(actor).trim().toLowerCase() : null, from || null, to || null, cursor?.t ?? null, cursor?.id ?? null, take + 1]);
++  const page = rows.slice(0, take);
++  return {
++    items: page.map((r) => ({ id: r.Id, actorEmail: r.ActorEmail, action: r.Action, entityType: r.EntityType, entityId: r.EntityId, details: r.DetailsJson ?? {}, createdAtUtc: r.CreatedAtUtc })),
++    next: rows.length > take ? encodeCursor(page[page.length - 1]) : null,
++  };
++}
++
++const isSet = (value) => typeof value === 'string' ? value.trim().length > 0 : Boolean(value);
++
++/** Whether a setting is present, never its value. */
++export function configurationFlags(env) {
++  return [
++    { key: 'paystack', label: 'Paystack (billing and online payments)', set: isSet(env.BILLING_PAYSTACK_SECRET_KEY) },
++    { key: 'resend_api', label: 'Resend API key', set: isSet(env.EMAIL_RESEND_API_KEY) },
++    { key: 'resend_webhook', label: 'Resend webhook secret', set: isSet(env.EMAIL_RESEND_WEBHOOK_SECRET) },
++    { key: 'twilio', label: 'Twilio (SMS)', set: isSet(env.TWILIO_ACCOUNT_SID) && isSet(env.TWILIO_AUTH_TOKEN) },
++    { key: 'twilio_inbound', label: 'Twilio inbound address (STOP)', set: isSet(env.TWILIO_INBOUND_WEBHOOK_URL) || isSet(env.PUBLIC_BASE_URL) },
++    { key: 'meta_whatsapp', label: 'Meta WhatsApp (sending)', set: isSet(env.META_WHATSAPP_ACCESS_TOKEN) && isSet(env.META_WHATSAPP_PHONE_NUMBER_ID) },
++    { key: 'meta_webhook', label: 'Meta WhatsApp webhook (app secret and verify token)', set: isSet(env.META_WHATSAPP_APP_SECRET) && isSet(env.META_WHATSAPP_VERIFY_TOKEN) },
++    { key: 's3', label: 'S3 storage', set: env.STORAGE_PROVIDER === 's3' && isSet(env.STORAGE_S3_BUCKET) && isSet(env.STORAGE_S3_ACCESS_KEY) && isSet(env.STORAGE_S3_SECRET_KEY) },
++    { key: 'trusted_proxy', label: 'Trusted proxy addresses', set: isSet(env.TRUSTED_PROXY_CIDRS) },
++  ];
++}
++
++const QUEUES = [
++  ['notification', 'NotificationOutbox'], ['push', 'PushDeliveries'], ['worker-summary', 'WorkerSummaryJobs'],
++  ['appointment-reminder', 'AppointmentReminders'], ['email', 'EmailOutbox'],
++];
++
++export async function getPlatformHealth(pool, env, actorEmail, allowlist) {
++  requirePlatformAdmin(actorEmail, allowlist);
++  const started = performance.now();
++  let database = { ok: false, pingMs: null };
++  try { await pool.query('SELECT 1'); database = { ok: true, pingMs: Math.round((performance.now() - started) * 10) / 10 }; } catch { /* reported as not ok */ }
++  let migrations = null;
++  try {
++    const row = (await pool.query('SELECT count(*)::int AS n, max(name) AS latest FROM avzar_schema_migrations')).rows[0];
++    migrations = { applied: row.n, latest: row.latest };
++  } catch { /* the table may be unreadable for the API role; shown as unknown */ }
++  let queues = null;
++  try {
++    const union = QUEUES.map(([kind, table]) => `SELECT '${kind}'::text AS kind, "Status" AS status, count(*)::int AS n FROM "${table}" GROUP BY "Status"`).join(' UNION ALL ');
++    const rows = (await runWithPlatformAdminRead(() => pool.query(union))).rows;
++    queues = QUEUES.map(([kind]) => ({ kind, statuses: Object.fromEntries(rows.filter((r) => r.kind === kind).map((r) => [r.status, r.n])) }));
++  } catch { /* shown as unknown */ }
++  return {
++    checkedAtUtc: new Date().toISOString(),
++    process: { nodeVersion: process.version, uptimeSeconds: Math.round(process.uptime()), environment: env.NODE_ENV ?? null, emailProvider: env.EMAIL_PROVIDER ?? null, storageProvider: env.STORAGE_PROVIDER ?? null },
++    database, migrations, queues, configuration: configurationFlags(env),
++  };
++}
+diff --git a/backend-node/src/auth/platformOperationsService.js b/backend-node/src/auth/platformOperationsService.js
+index 2f88294..8bee096 100644
+--- a/backend-node/src/auth/platformOperationsService.js
++++ b/backend-node/src/auth/platformOperationsService.js
+@@ -1,11 +1,8 @@
+ import { randomUUID } from 'node:crypto';
+ import { AppError } from '../http/errors.js';
+ import { withTransaction } from './accountService.js';
+-
+-function requirePlatformAdmin(email, configuredEmails) {
+-  const allowed = new Set(configuredEmails.map((value) => value.trim().toLowerCase()).filter(Boolean));
+-  if (!email || !allowed.has(email.trim().toLowerCase())) throw AppError.forbidden('platform_admin_required', 'Platform administrator access is required.');
+-}
++import { requirePlatformAdmin } from './platformAccess.js';
++import { runWithPlatformAdminRead, runWithTenantRlsContext, setTenantRlsContext } from '../db/tenantRlsContext.js';
+ 
+ export async function listPlatformFeatureFlags(pool, userEmail, configuredEmails) {
+   requirePlatformAdmin(userEmail, configuredEmails);
+@@ -31,7 +28,8 @@ export async function updatePlatformFeatureFlag(pool, userEmail, configuredEmail
+ export async function listPlatformBackgroundJobs(pool, userEmail, configuredEmails, { limit = 100, status } = {}) {
+   requirePlatformAdmin(userEmail, configuredEmails);
+   const take = Math.min(250, Math.max(1, Number(limit) || 100));
+-  const { rows } = await pool.query(`
++  // Read across every business (migration 0043 policies, SELECT only).
++  const { rows } = await runWithPlatformAdminRead(() => pool.query(`
+     (SELECT 'notification'::text AS "kind", o."Id"::text AS "id", o."BusinessId"::text AS "businessId",
+       o."EventType" AS "eventType", o."Status" AS "status", o."Attempts" AS "attempts",
+       o."NextAttemptUtc" AS "nextAttemptUtc", o."CreatedAtUtc" AS "createdAtUtc", o."LastError" AS "lastError"
+@@ -53,7 +51,7 @@ export async function listPlatformBackgroundJobs(pool, userEmail, configuredEmai
+     (SELECT 'email'::text, e."Id"::text, COALESCE(e."BusinessId"::text,'platform'), COALESCE(e."TemplateKey",'email'), e."Status", e."Attempts",
+       e."NextAttemptUtc", e."CreatedAtUtc", e."LastError"
+      FROM "EmailOutbox" e WHERE ($1::text IS NULL OR e."Status"=$1))
+-    ORDER BY "createdAtUtc" DESC LIMIT $2`, [status ?? null, take]);
++    ORDER BY "createdAtUtc" DESC LIMIT $2`, [status ?? null, take]));
+   return { items: rows.map((r) => ({ kind: r.kind, id: r.id, businessId: r.businessId, eventType: r.eventType,
+     status: r.status, attempts: Number(r.attempts), nextAttemptUtc: r.nextAttemptUtc, createdAtUtc: r.createdAtUtc,
+     lastError: r.lastError ? String(r.lastError).slice(0, 100) : null })), limit: take };
+@@ -61,23 +59,29 @@ export async function listPlatformBackgroundJobs(pool, userEmail, configuredEmai
+ 
+ export async function retryPlatformNotification(pool, userEmail, configuredEmails, kind, id) {
+   requirePlatformAdmin(userEmail, configuredEmails);
+-  return withTransaction(pool, async (db) => {
+-    const table = kind === 'push' ? 'PushDeliveries' : kind === 'notification' ? 'NotificationOutbox' : null;
+-    if (!table) throw AppError.badRequest('invalid_job_kind', 'Choose notification or push.');
+-    const { rows } = await db.query(`SELECT "Id","BusinessId","Status" FROM "${table}" WHERE "Id"=$1 FOR UPDATE`, [id]);
+-    if (!rows.length) throw AppError.notFound('job_not_found', 'Background job was not found.');
+-    if (rows[0].Status !== 'Failed') throw AppError.conflict('job_not_failed', 'Only failed jobs can be retried.');
+-    if (kind === 'notification') {
+-      await db.query(`UPDATE "NotificationOutbox" SET "Status"='Pending',"Attempts"=0,"NextAttemptUtc"=now(),
+-        "LeaseUntilUtc"=NULL,"LastError"=NULL WHERE "Id"=$1 AND "Status"='Failed'`, [id]);
+-    } else {
+-      await db.query(`UPDATE "PushDeliveries" SET "Status"='Pending',"Attempts"=0,"NextAttemptUtc"=now(),
+-        "LeaseUntilUtc"=NULL,"ErrorCode"=NULL,"ProviderStatus"=NULL,"ProviderTicketId"=NULL,"AcceptedAtUtc"=NULL,"UpdatedAtUtc"=now()
+-        WHERE "Id"=$1 AND "Status"='Failed'`, [id]);
+-    }
+-    await db.query(`INSERT INTO "PlatformAuditLogs" ("Id","ActorEmail","Action","EntityType","EntityId","DetailsJson")
+-      VALUES ($1,$2,'platform.notification.retry','BackgroundJob',$3,$4::jsonb)`,
+-    [randomUUID(), userEmail.trim().toLowerCase(), `${kind}:${id}`, JSON.stringify({ kind, businessId: rows[0].BusinessId })]);
+-    return { id, kind, status: 'Pending' };
++  const table = kind === 'push' ? 'PushDeliveries' : kind === 'notification' ? 'NotificationOutbox' : null;
++  if (!table) throw AppError.badRequest('invalid_job_kind', 'Choose notification or push.');
++  // Step 1: find the row (and so its business) with read-only platform access. Step 2: change it inside that business's own context.
++  const found = await runWithPlatformAdminRead(async () => (await pool.query(`SELECT "Id","BusinessId","Status" FROM "${table}" WHERE "Id"=$1`, [id])).rows[0]);
++  if (!found) throw AppError.notFound('job_not_found', 'Background job was not found.');
++  return runWithTenantRlsContext(async () => {
++    setTenantRlsContext(found.BusinessId);
++    return withTransaction(pool, async (db) => {
++      const { rows } = await db.query(`SELECT "Id","BusinessId","Status" FROM "${table}" WHERE "Id"=$1 FOR UPDATE`, [id]);
++      if (!rows.length) throw AppError.notFound('job_not_found', 'Background job was not found.');
++      if (rows[0].Status !== 'Failed') throw AppError.conflict('job_not_failed', 'Only failed jobs can be retried.');
++      if (kind === 'notification') {
++        await db.query(`UPDATE "NotificationOutbox" SET "Status"='Pending',"Attempts"=0,"NextAttemptUtc"=now(),
++          "LeaseUntilUtc"=NULL,"LastError"=NULL WHERE "Id"=$1 AND "Status"='Failed'`, [id]);
++      } else {
++        await db.query(`UPDATE "PushDeliveries" SET "Status"='Pending',"Attempts"=0,"NextAttemptUtc"=now(),
++          "LeaseUntilUtc"=NULL,"ErrorCode"=NULL,"ProviderStatus"=NULL,"ProviderTicketId"=NULL,"AcceptedAtUtc"=NULL,"UpdatedAtUtc"=now()
++          WHERE "Id"=$1 AND "Status"='Failed'`, [id]);
++      }
++      await db.query(`INSERT INTO "PlatformAuditLogs" ("Id","ActorEmail","Action","EntityType","EntityId","DetailsJson")
++        VALUES ($1,$2,'platform.notification.retry','BackgroundJob',$3,$4::jsonb)`,
++      [randomUUID(), userEmail.trim().toLowerCase(), `${kind}:${id}`, JSON.stringify({ kind, businessId: rows[0].BusinessId })]);
++      return { id, kind, status: 'Pending' };
++    });
+   });
+ }
+diff --git a/backend-node/src/db/tenantRlsContext.js b/backend-node/src/db/tenantRlsContext.js
+index ecd68ed..bcbaee4 100644
+--- a/backend-node/src/db/tenantRlsContext.js
++++ b/backend-node/src/db/tenantRlsContext.js
+@@ -23,7 +23,7 @@ export const LOOKUP_KINDS = Object.freeze({
+ const MAX_LOOKUP_LENGTH = 512;
+ 
+ function newStore() {
+-  return { businessId: null, lookups: new Map(), platformScope: false };
++  return { businessId: null, lookups: new Map(), platformScope: false, platformAdminRead: false };
+ }
+ 
+ export function runWithTenantRlsContext(callback) {
+@@ -52,6 +52,7 @@ export function clearTenantRlsContext() {
+     current.businessId = null;
+     current.lookups.clear();
+     current.platformScope = false;
++    current.platformAdminRead = false;
+   }
+ }
+ 
+@@ -96,12 +97,21 @@ export function runWithTenantPlatformScope(callback) {
+   return tenantContext.run({ ...newStore(), platformScope: true }, callback);
+ }
+ 
++/**
++ * Platform-administrator read access (migration 0043): SELECT only, on the job and outbox tables the platform screens list across
++ * businesses. Used only by the platform-admin services, after the allowlist check. Writes still need that business's own context.
++ */
++export function runWithPlatformAdminRead(callback) {
++  return tenantContext.run({ ...newStore(), platformAdminRead: true }, callback);
++}
++
+ // Settings other than app.business_id that the current request needs on every query: lookup keys and platform scope.
+ function extraSettings() {
+   const store = tenantContext.getStore();
+   if (!store) return [];
+   const extras = [...store.lookups].map(([name, value]) => [`app.lookup_${name}`, value]);
+   if (store.platformScope) extras.push(['app.platform_scope', 'on']);
++  if (store.platformAdminRead) extras.push(['app.platform_admin_read', 'on']);
+   return extras;
+ }
+ 
+diff --git a/backend-node/test/db/platformAdmin.integration.test.js b/backend-node/test/db/platformAdmin.integration.test.js
+new file mode 100644
+index 0000000..1e5fed7
+--- /dev/null
++++ b/backend-node/test/db/platformAdmin.integration.test.js
+@@ -0,0 +1,182 @@
++// Step 17b: platform administrator screens on real PostgreSQL through a NOSUPERUSER, NOBYPASSRLS role.
++// Proves: only an allowlisted account may call any of the platform routes; the admin of business A sees business B in the list and
++// the right counts for B (never A's rows added in); a user's memberships across businesses are found; failed jobs of another
++// business are listed and retried (the retry writes inside that business's own context); migration 0043's policy is SELECT only
++// and switched on only by the platform-admin setting; the audit list and the health report work; views leave audit entries
++// that never hold the searched address. Skipped unless DATABASE_URL is set (CI job "node-db").
++import { after, before, describe, it } from 'node:test';
++import assert from 'node:assert/strict';
++import { randomBytes, randomUUID } from 'node:crypto';
++import { migrate } from '../../src/db/migrate.js';
++import { syncPlans } from '../../src/db/planSeed.js';
++import { runWithPlatformAdminRead } from '../../src/db/tenantRlsContext.js';
++import { createTempDatabase, MIGRATIONS_DIR, quiet } from './helpers.js';
++import { signUp, startApp } from './httpHarness.js';
++import { assertRestrictedRole, createRestrictedAppPool } from './restrictedRole.js';
++
++const url = process.env.DATABASE_URL;
++const BASE = '/api/platform-admin';
++
++describe('platform admin screens on PostgreSQL (restricted role)', { skip: !url }, () => {
++  let db; let role; let api; let admin; let other; let plain; let membershipB;
++  const adminEmail = `root-${randomBytes(4).toString('hex')}@example.test`;
++  const get = (who, path) => api.call('GET', `${BASE}${path}`, { token: who.token });
++  const addCustomer = async (who, name) => {
++    const r = await api.call('POST', '/api/customers', { token: who.token, body: { fullName: name, email: `${randomBytes(3).toString('hex')}@example.test`, phone: '+2348011112222' } });
++    assert.equal(r.status, 201, r.text);
++  };
++  async function seedNotification(businessId, status) {
++    const id = randomUUID();
++    await db.pool.query(`INSERT INTO "NotificationOutbox" ("Id","BusinessId","RecipientMembershipId","Category","EventType","Title","Body","DeduplicationKey","InAppEnabled","Status","Attempts","NextAttemptUtc","LastError","CreatedAtUtc")
++      VALUES ($1,$2,$3,'tasks','task.assigned','Task assigned','You have a task.',$4,TRUE,$5,5, now() + interval '1 day','provider said no', now())`,
++    [id, businessId, membershipB, `dedupe-${id}`, status]);
++    return id;
++  }
++  const rowOf = async (id) => (await db.pool.query('SELECT "Status","Attempts","BusinessId" FROM "NotificationOutbox" WHERE "Id" = $1', [id])).rows[0];
++
++  before(async () => {
++    db = await createTempDatabase(url, 'avzar_platform_admin');
++    await migrate(db.pool, MIGRATIONS_DIR, quiet);
++    await syncPlans(db.pool);
++    role = await createRestrictedAppPool(db);
++    await assertRestrictedRole(role.pool);
++    api = await startApp(role.pool, { PLATFORM_ADMIN_EMAILS: adminEmail });
++    admin = await signUp(api, 'rootshop', { email: adminEmail });
++    other = await signUp(api, 'othershop');
++    plain = other; // a signed-in owner who is not on the allowlist
++    membershipB = (await db.pool.query(`SELECT "Id" FROM "Memberships" WHERE "BusinessId" = $1 AND "IsOwner" = TRUE`, [other.businessId])).rows[0].Id;
++    await addCustomer(admin, 'A customer one');
++    await addCustomer(other, 'B customer one');
++    await addCustomer(other, 'B customer two');
++  });
++  after(async () => { await api?.close(); await role?.close(); await db?.drop(); });
++
++  it('the application role really is restricted, and the 0043 policy is SELECT only on the five queue tables', async () => {
++    const { rows } = await db.pool.query(`SELECT tablename, cmd FROM pg_policies WHERE policyname = 'avzar_platform_admin_read' ORDER BY tablename`);
++    assert.deepEqual(rows.map((r) => r.tablename), ['AppointmentReminders', 'EmailOutbox', 'NotificationOutbox', 'PushDeliveries', 'WorkerSummaryJobs']);
++    assert.ok(rows.every((r) => r.cmd === 'SELECT'));
++    const others = (await db.pool.query(`SELECT count(*)::int AS n FROM pg_policies WHERE policyname <> 'avzar_business_isolation'`)).rows[0].n;
++    assert.ok(others >= 20, `the earlier lookup policies plus the five platform-admin read policies (found ${others})`);
++  });
++
++  it('refuses a signed-in non-admin and an anonymous caller on every platform route', async () => {
++    for (const path of ['/businesses', `/businesses/${other.businessId}`, '/users?email=a@b.test', '/audit-logs', '/health', '/background-jobs']) {
++      const r = await get(plain, path);
++      assert.equal(r.status, 403, `${path}: ${r.text}`);
++      assert.equal(r.body.code, 'platform_admin_required');
++      assert.equal((await api.call('GET', `${BASE}${path}`)).status, 401, `${path} anonymous`);
++    }
++  });
++
++  it('the admin of business A sees business B in the list; search and paging work', async () => {
++    const all = await get(admin, '/businesses?limit=100');
++    assert.equal(all.status, 200, all.text);
++    const ids = all.body.items.map((b) => b.id);
++    assert.ok(ids.includes(admin.businessId) && ids.includes(other.businessId));
++    assert.equal(all.body.next, null);
++    const found = await get(admin, '/businesses?q=otherShop');
++    assert.deepEqual(found.body.items.map((b) => b.id), [other.businessId]);
++    const first = await get(admin, '/businesses?limit=1');
++    assert.equal(first.body.items.length, 1);
++    assert.ok(first.body.next);
++    const second = await get(admin, `/businesses?limit=1&before=${encodeURIComponent(first.body.next)}`);
++    assert.equal(second.body.items.length, 1);
++    assert.notEqual(second.body.items[0].id, first.body.items[0].id);
++    assert.equal((await get(admin, '/businesses?before=garbage')).status, 400);
++  });
++
++  it('business B detail shows B counts only, owner and plan, and no customer names', async () => {
++    const r = await get(admin, `/businesses/${other.businessId}`);
++    assert.equal(r.status, 200, r.text);
++    assert.equal(r.body.usage.customers, 2, "A's customer is not counted in B");
++    assert.equal(r.body.usage.activeStaff, 1);
++    assert.equal(r.body.owner.email, other.email);
++    assert.equal(r.body.plan.code, 'free');
++    assert.doesNotMatch(r.text, /customer one|customer two/i);
++    const mine = await get(admin, `/businesses/${admin.businessId}`);
++    assert.equal(mine.body.usage.customers, 1);
++    assert.equal((await get(admin, `/businesses/${randomUUID()}`)).status, 404);
++    assert.equal((await get(admin, '/businesses/not-an-id')).status, 404);
++  });
++
++  it('a user lookup finds memberships in more than one business', async () => {
++    const adminUserId = (await db.pool.query('SELECT "Id" FROM "AspNetUsers" WHERE "Email" = $1', [adminEmail])).rows[0].Id;
++    await db.pool.query(`INSERT INTO "Memberships" ("Id","BusinessId","CreatedAtUtc","DisplayName","IsOwner","Status","UserId") VALUES ($1,$2,now(),'Guest in B',FALSE,0,$3)`, [randomUUID(), other.businessId, adminUserId]);
++    const r = await get(admin, `/users?email=${encodeURIComponent(adminEmail.toUpperCase())}`);
++    assert.equal(r.status, 200, r.text);
++    assert.deepEqual(r.body.memberships.map((m) => m.businessId).sort(), [admin.businessId, other.businessId].sort());
++    assert.equal(r.body.memberships.find((m) => m.businessId === admin.businessId).isOwner, true);
++    assert.doesNotMatch(r.text, /PasswordHash|SecurityStamp|\$argon|phone/i);
++    assert.equal((await get(admin, '/users?email=nobody-here@example.test')).status, 404);
++    assert.equal((await get(admin, '/users?email=not-an-email')).status, 400);
++  });
++
++  it('the failed-jobs list shows another business\'s failed job (the gap 17b closes)', async () => {
++    const id = await seedNotification(other.businessId, 'Failed');
++    const r = await get(admin, '/background-jobs?limit=250&status=Failed');
++    assert.equal(r.status, 200, r.text);
++    const job = r.body.items.find((j) => j.id === id);
++    assert.ok(job, 'a failed job of business B is listed for the platform admin');
++    assert.equal(job.businessId, other.businessId);
++  });
++
++  it('retrying B\'s failed job works, writes in B\'s context, and is audited once; a sent job is refused', async () => {
++    const id = await seedNotification(other.businessId, 'Failed');
++    const r = await api.call('POST', `${BASE}/background-jobs/${id}/retry`, { token: admin.token, body: { kind: 'notification' } });
++    assert.equal(r.status, 200, r.text);
++    assert.deepEqual(await rowOf(id), { Status: 'Pending', Attempts: 0, BusinessId: other.businessId });
++    const audit = (await db.pool.query(`SELECT "ActorEmail","DetailsJson" FROM "PlatformAuditLogs" WHERE "EntityId" = $1`, [`notification:${id}`])).rows;
++    assert.equal(audit.length, 1);
++    assert.equal(audit[0].DetailsJson.businessId, other.businessId);
++    const sent = await seedNotification(other.businessId, 'Sent');
++    const refused = await api.call('POST', `${BASE}/background-jobs/${sent}/retry`, { token: admin.token, body: { kind: 'notification' } });
++    assert.equal(refused.status, 409, refused.text);
++    const unknown = await api.call('POST', `${BASE}/background-jobs/${randomUUID()}/retry`, { token: admin.token, body: { kind: 'notification' } });
++    assert.equal(unknown.status, 404, unknown.text);
++    const denied = await api.call('POST', `${BASE}/background-jobs/${id}/retry`, { token: plain.token, body: { kind: 'notification' } });
++    assert.equal(denied.status, 403, denied.text);
++  });
++
++  it('the platform-admin setting reads across businesses but cannot write; without it nothing is visible', async () => {
++    const id = await seedNotification(other.businessId, 'Failed');
++    assert.equal((await role.pool.query('SELECT count(*)::int AS n FROM "NotificationOutbox"')).rows[0].n, 0, 'no context reads nothing');
++    await runWithPlatformAdminRead(async () => {
++      const seen = (await role.pool.query('SELECT "Id" FROM "NotificationOutbox" WHERE "Id" = $1', [id])).rows;
++      assert.equal(seen.length, 1, 'visible under the platform-admin read setting');
++      let changed = 0;
++      try { changed = (await role.pool.query(`UPDATE "NotificationOutbox" SET "Status" = 'Sent' WHERE "Id" = $1`, [id])).rowCount; } catch { changed = 0; }
++      assert.equal(changed, 0, 'the read policy gives no write access');
++    });
++    assert.equal((await rowOf(id)).Status, 'Failed');
++    const customers = await runWithPlatformAdminRead(async () => (await role.pool.query('SELECT count(*)::int AS n FROM "Customers"')).rows[0].n);
++    assert.equal(customers, 0, 'the setting opens the queue tables only, not customers');
++  });
++
++  it('views are audited without the searched address, and the audit list filters and pages', async () => {
++    const all = await get(admin, '/audit-logs?limit=100');
++    assert.equal(all.status, 200, all.text);
++    const viewed = all.body.items.filter((e) => e.action === 'platform.business.viewed');
++    assert.ok(viewed.length >= 2);
++    const lookups = all.body.items.filter((e) => e.action === 'platform.user.lookup');
++    assert.ok(lookups.length >= 2);
++    // The actor column holds the admin's own address; what the lookup searched for must not be anywhere else in the entry.
++    assert.doesNotMatch(JSON.stringify(lookups.map((e) => [e.details, e.entityId, e.entityType])), /example\.test|nobody-here/i);
++    const filtered = await get(admin, '/audit-logs?action=platform.business.viewed&limit=1');
++    assert.equal(filtered.body.items.length, 1);
++    assert.ok(filtered.body.next);
++    assert.ok(filtered.body.items.every((e) => e.action === 'platform.business.viewed'));
++    assert.equal((await get(admin, '/audit-logs?from=yesterday')).status, 400);
++  });
++
++  it('the health report shows database, migrations, queue depth across businesses and which settings are present', async () => {
++    const r = await get(admin, '/health');
++    assert.equal(r.status, 200, r.text);
++    assert.equal(r.body.database.ok, true);
++    assert.ok(r.body.migrations.applied >= 43);
++    assert.match(r.body.migrations.latest, /^00\d\d_/);
++    const notification = r.body.queues.find((q) => q.kind === 'notification');
++    assert.ok(notification.statuses.Failed >= 1 || notification.statuses.Pending >= 1, 'queue rows of other businesses are counted');
++    assert.ok(Array.isArray(r.body.configuration) && r.body.configuration.every((c) => typeof c.set === 'boolean'));
++    assert.doesNotMatch(r.text, /JWT_SIGNING_KEY|integration-signing-key/);
++  });
++});
+diff --git a/backend-node/test/platformAdminService.test.js b/backend-node/test/platformAdminService.test.js
+new file mode 100644
+index 0000000..6c814f6
+--- /dev/null
++++ b/backend-node/test/platformAdminService.test.js
+@@ -0,0 +1,149 @@
++// Step 17b: platform administrator services with a pool that records what is asked. No database needed.
++// Isolation under a restricted role is proved in test/db/platformAdmin.integration.test.js.
++import { describe, it } from 'node:test';
++import assert from 'node:assert/strict';
++import { configurationFlags, decodeCursor, encodeCursor, getPlatformBusiness, getPlatformHealth, listPlatformAuditLogs, listPlatformBusinesses, lookupPlatformUser } from '../src/auth/platformAdminService.js';
++
++const admin = 'ops@example.test';
++const allow = [admin];
++const A = '00000000-0000-4000-8000-0000000000a1';
++const U = '00000000-0000-4000-8000-0000000000c1';
++
++function recordingPool(answer = () => ({ rows: [] })) {
++  const calls = [];
++  return { calls, query: async (sql, values = []) => { calls.push({ sql: String(sql), values }); return answer(String(sql), values); } };
++}
++const refused = (fn) => assert.rejects(fn, (error) => error.code === 'platform_admin_required' && error.status === 403);
++
++describe('platform admin services', () => {
++  it('every service refuses a person who is not on the allowlist, before touching the database', async () => {
++    const pool = recordingPool();
++    await refused(() => listPlatformBusinesses(pool, 'tenant@example.test', allow, {}));
++    await refused(() => getPlatformBusiness(pool, 'tenant@example.test', allow, A));
++    await refused(() => lookupPlatformUser(pool, 'tenant@example.test', allow, 'a@b.test'));
++    await refused(() => listPlatformAuditLogs(pool, 'tenant@example.test', allow, {}));
++    await refused(() => getPlatformHealth(pool, {}, 'tenant@example.test', allow));
++    await refused(() => listPlatformBusinesses(pool, undefined, allow, {}));
++    assert.equal(pool.calls.length, 0);
++  });
++
++  it('cursors round-trip and a malformed one is a 400', () => {
++    const row = { CreatedAtUtc: '2026-10-31T10:00:00.000Z', Id: A };
++    assert.deepEqual(decodeCursor(encodeCursor(row)), { t: '2026-10-31T10:00:00.000Z', id: A });
++    assert.equal(decodeCursor(undefined), null);
++    assert.throws(() => decodeCursor('not-a-cursor'), (e) => e.code === 'invalid_cursor' && e.status === 400);
++    assert.throws(() => decodeCursor(Buffer.from(JSON.stringify({ t: 'x', id: 'y' })).toString('base64url')), (e) => e.code === 'invalid_cursor');
++  });
++
++  it('the business list reads Businesses only, escapes search wildcards, and returns a next cursor only when there is more', async () => {
++    const rows = [3, 2, 1].map((n) => ({ Id: `00000000-0000-4000-8000-00000000000${n}`, Name: `Shop ${n}`, ContactEmail: null, CurrencyCode: 'NGN', TimeZoneId: 'UTC', IsActive: true, CreatedAtUtc: new Date(2026, 9, n) }));
++    const pool = recordingPool(() => ({ rows }));
++    const page = await listPlatformBusinesses(pool, admin, allow, { q: '50%_off', limit: 2 });
++    assert.equal(page.items.length, 2);
++    assert.ok(page.next);
++    assert.equal(pool.calls[0].values[0], '%50\\%\\_off%');
++    assert.equal(pool.calls[0].values[3], 3, 'one extra row is asked for to know whether there is a next page');
++    assert.match(pool.calls[0].sql, /FROM "Businesses"/);
++    assert.doesNotMatch(pool.calls[0].sql, /Customers|Orders/);
++    const last = await listPlatformBusinesses(recordingPool(() => ({ rows: rows.slice(0, 1) })), admin, allow, { limit: 2 });
++    assert.equal(last.next, null);
++  });
++
++  it('a business detail for an unknown or malformed ID is 404 and writes no audit entry', async () => {
++    const pool = recordingPool();
++    await assert.rejects(() => getPlatformBusiness(pool, admin, allow, 'nope'), (e) => e.code === 'business_not_found');
++    await assert.rejects(() => getPlatformBusiness(pool, admin, allow, A), (e) => e.code === 'business_not_found');
++    assert.equal(pool.calls.some((c) => c.sql.includes('PlatformAuditLogs')), false);
++  });
++
++  it('a business detail holds counts and the owner only, and leaves one audit entry', async () => {
++    const pool = recordingPool((sql) => {
++      if (sql.includes('FROM "Businesses"')) return { rows: [{ Id: A, Name: 'Taratara', ContactEmail: 'hi@t.test', CurrencyCode: 'NGN', TimeZoneId: 'UTC', IsActive: true, CreatedAtUtc: new Date(), UpdatedAtUtc: null }] };
++      if (sql.includes('"activeStaff"')) return { rows: [{ activeStaff: 3, locations: 1, customers: 40, orders: 12, ordersLast30Days: 5, invoices: 9, storageBytes: '2048' }] };
++      if (sql.includes('"IsOwner"')) return { rows: [{ Email: 'owner@t.test', FullName: 'Ada' }] };
++      if (sql.includes('FROM "Subscriptions"')) return { rows: [{ Code: 'starter', Name: 'Starter', Status: 'Active', CurrentPeriodEndUtc: null }] };
++      return { rows: [] };
++    });
++    const detail = await getPlatformBusiness(pool, admin, allow, A);
++    assert.equal(detail.usage.customers, 40);
++    assert.equal(detail.usage.storageBytes, 2048);
++    assert.equal(detail.owner.email, 'owner@t.test');
++    assert.equal(detail.plan.code, 'starter');
++    const sqlAll = pool.calls.map((c) => c.sql).join('\n');
++    assert.doesNotMatch(sqlAll, /"FullName" FROM "Customers"|"Customers" WHERE|Phone|PasswordHash/);
++    const audits = pool.calls.filter((c) => c.sql.includes('INSERT INTO "PlatformAuditLogs"'));
++    assert.equal(audits.length, 1);
++    assert.equal(audits[0].values[2], 'platform.business.viewed');
++    assert.equal(audits[0].values[4], A);
++  });
++
++  it('a user lookup rejects a bad address, audits without the address, and never selects secrets', async () => {
++    const pool = recordingPool((sql) => {
++      if (sql.includes('FROM "AspNetUsers"')) return { rows: [{ Id: U, Email: 'ada@t.test', FullName: 'Ada', EmailConfirmed: true, TwoFactorEnabled: true, LockoutEnd: null, AccessFailedCount: 0, CreatedAtUtc: new Date() }] };
++      if (sql.includes('FROM "Memberships"')) return { rows: [{ Id: 'm1', BusinessId: A, IsOwner: true, Status: 0, DisplayName: 'Ada', BusinessName: 'Taratara', BusinessActive: true }] };
++      return { rows: [] };
++    });
++    await assert.rejects(() => lookupPlatformUser(pool, admin, allow, 'no-at-sign'), (e) => e.code === 'invalid_email');
++    const found = await lookupPlatformUser(pool, admin, allow, ' ADA@t.test ');
++    assert.equal(found.memberships[0].businessName, 'Taratara');
++    assert.equal(found.memberships[0].active, true);
++    assert.equal(found.lockedUntilUtc, null);
++    assert.equal(pool.calls[0].values[0], 'ADA@T.TEST');
++    const audit = pool.calls.find((c) => c.sql.includes('INSERT INTO "PlatformAuditLogs"'));
++    assert.equal(audit.values[2], 'platform.user.lookup');
++    assert.doesNotMatch(JSON.stringify(audit.values), /ada@t\.test/i);
++    assert.doesNotMatch(pool.calls.map((c) => c.sql).join('\n'), /PasswordHash|SecurityStamp|PhoneNumber/);
++  });
++
++  it('an unknown account is 404 and the lookup is still audited as not found', async () => {
++    const pool = recordingPool();
++    await assert.rejects(() => lookupPlatformUser(pool, admin, allow, 'ghost@t.test'), (e) => e.code === 'user_not_found');
++    const audit = pool.calls.find((c) => c.sql.includes('INSERT INTO "PlatformAuditLogs"'));
++    assert.deepEqual(JSON.parse(audit.values[5]), { found: false });
++  });
++
++  it('a locked account shows the lock end; an expired lock does not', async () => {
++    const make = (end) => recordingPool((sql) => sql.includes('FROM "AspNetUsers"')
++      ? { rows: [{ Id: U, Email: 'a@t.test', FullName: 'A', EmailConfirmed: true, TwoFactorEnabled: false, LockoutEnd: end, AccessFailedCount: 5, CreatedAtUtc: new Date() }] } : { rows: [] });
++    const future = new Date(Date.now() + 600_000);
++    assert.deepEqual((await lookupPlatformUser(make(future), admin, allow, 'a@t.test')).lockedUntilUtc, future);
++    assert.equal((await lookupPlatformUser(make(new Date(Date.now() - 1000)), admin, allow, 'a@t.test')).lockedUntilUtc, null);
++  });
++
++  it('the audit list filters in SQL and pages by cursor', async () => {
++    const rows = [1, 2, 3].map((n) => ({ Id: `00000000-0000-4000-8000-00000000000${n}`, ActorEmail: admin, Action: 'platform.business.viewed', EntityType: 'Business', EntityId: A, DetailsJson: null, CreatedAtUtc: new Date(2026, 9, n) }));
++    const pool = recordingPool(() => ({ rows }));
++    const page = await listPlatformAuditLogs(pool, admin, allow, { action: 'platform.business.viewed', actor: ' OPS@example.test ', limit: 2 });
++    assert.equal(page.items.length, 2);
++    assert.deepEqual(page.items[0].details, {});
++    assert.ok(page.next);
++    assert.equal(pool.calls[0].values[0], 'platform.business.viewed');
++    assert.equal(pool.calls[0].values[1], 'ops@example.test');
++  });
++
++  it('the health report shows whether a setting is present, never its value', async () => {
++    const env = { NODE_ENV: 'production', EMAIL_PROVIDER: 'resend', STORAGE_PROVIDER: 's3', STORAGE_S3_BUCKET: 'b', STORAGE_S3_ACCESS_KEY: 'AKIA-secret', STORAGE_S3_SECRET_KEY: 'super-secret',
++      BILLING_PAYSTACK_SECRET_KEY: 'sk_live_secret', META_WHATSAPP_APP_SECRET: 'x', META_WHATSAPP_VERIFY_TOKEN: '' };
++    const flags = Object.fromEntries(configurationFlags(env).map((f) => [f.key, f.set]));
++    assert.equal(flags.paystack, true);
++    assert.equal(flags.s3, true);
++    assert.equal(flags.meta_webhook, false, 'a half-set pair is not set');
++    assert.equal(flags.resend_webhook, false);
++    const pool = recordingPool((sql) => sql.includes('avzar_schema_migrations') ? { rows: [{ n: 43, latest: '0043_platform_admin_read.sql' }] }
++      : sql.includes('GROUP BY') ? { rows: [{ kind: 'notification', status: 'Failed', n: 2 }, { kind: 'email', status: 'Sent', n: 7 }] } : { rows: [{ '?column?': 1 }] });
++    const report = await getPlatformHealth(pool, env, admin, allow);
++    assert.equal(report.database.ok, true);
++    assert.equal(report.migrations.applied, 43);
++    assert.deepEqual(report.queues.find((q) => q.kind === 'notification').statuses, { Failed: 2 });
++    assert.deepEqual(report.queues.find((q) => q.kind === 'push').statuses, {});
++    assert.doesNotMatch(JSON.stringify(report), /AKIA|super-secret|sk_live/);
++  });
++
++  it('a failing database check is reported, not thrown', async () => {
++    const pool = { query: async () => { throw new Error('down'); } };
++    const report = await getPlatformHealth(pool, {}, admin, allow);
++    assert.equal(report.database.ok, false);
++    assert.equal(report.migrations, null);
++    assert.equal(report.queues, null);
++  });
++});
+diff --git a/backend-node/test/tenantLookup.test.js b/backend-node/test/tenantLookup.test.js
+index c255d7e..a1f10aa 100644
+--- a/backend-node/test/tenantLookup.test.js
++++ b/backend-node/test/tenantLookup.test.js
+@@ -5,7 +5,7 @@ import path from 'node:path';
+ import { fileURLToPath } from 'node:url';
+ import {
+   adoptTenant, currentTenantRlsBusinessId, installTenantRlsContext, LOOKUP_KINDS, runWithTenantPlatformScope,
+-  runWithTenantRlsContext, setTenantLookup,
++  runWithPlatformAdminRead, runWithTenantRlsContext, setTenantLookup,
+ } from '../src/db/tenantRlsContext.js';
+ import { bindTenantByLookup, TENANT_LOOKUPS } from '../src/db/tenantLookup.js';
+ 
+@@ -165,3 +165,20 @@ test('bindTenantByLookup on a checked-out client binds the rest of that transact
+   assert.ok(key >= 0 && select > key && business > select, 'key set, then lookup read, then business set');
+   assert.ok(pool.calls.some((c) => c.values?.[0] === 'app.lookup_portal_token_hash' && c.values?.[1] === ''), 'a miss clears the key');
+ });
++
++test('platform-admin read is its own setting, per request, and is not platform scope', async () => {
++  const pool = installTenantRlsContext(fakePool());
++  await runWithPlatformAdminRead(async () => { await pool.query('SELECT 1'); });
++  const set = pool.calls.find(isLookupSet);
++  assert.deepEqual(set.values, [['app.platform_admin_read'], ['on']]);
++  await runWithTenantRlsContext(async () => { await pool.query('SELECT 2'); });
++  assert.equal(pool.calls.filter(isLookupSet).length, 1, 'the next request does not inherit it');
++});
++
++test('migration 0043 opens SELECT only, on exactly the five queue tables, behind the platform-admin setting', () => {
++  const sql = readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../migrations/0043_platform_admin_read.sql'), 'utf8');
++  for (const table of ['NotificationOutbox', 'PushDeliveries', 'WorkerSummaryJobs', 'AppointmentReminders', 'EmailOutbox']) assert.ok(sql.includes(`'${table}'`), table);
++  assert.ok(sql.includes('FOR SELECT'));
++  assert.ok(sql.includes("current_setting('app.platform_admin_read', true) = 'on'"));
++  assert.doesNotMatch(sql, /FOR (ALL|INSERT|UPDATE|DELETE)/);
++});
+diff --git a/docs/API.md b/docs/API.md
+index 80429a6..51f1ec2 100644
+--- a/docs/API.md
++++ b/docs/API.md
+@@ -2,7 +2,7 @@
+ 
+ <!-- Generated by backend-node/scripts/generate-api-doc.js. Do not edit by hand: run `npm run docs:api` and commit the result. A test fails when this file is out of date. -->
+ 
+-358 routes in 27 route files. This is a route list read from the source, **not an OpenAPI description**: it has no request or response schemas (OpenAPI is planned for step-17).
++363 routes in 27 route files. This is a route list read from the source, **not an OpenAPI description**: it has no request or response schemas (OpenAPI is planned for step-17).
+ 
+ ## What the table does and does not say
+ 
+@@ -42,13 +42,18 @@
+ | POST | `/api/business/ownership-transfer` | signed in |  |
+ | POST | `/api/business/ownership-transfer/confirm` | signed in |  |
+ | GET | `/api/plans` | public |  |
++| GET | `/api/platform-admin/audit-logs` | signed in + platform admin (checked in service) |  |
+ | GET | `/api/platform-admin/background-jobs` | signed in + platform admin (checked in service) |  |
+ | POST | `/api/platform-admin/background-jobs/:id/retry` | signed in + platform admin (checked in service) |  |
++| GET | `/api/platform-admin/businesses` | signed in + platform admin (checked in service) |  |
++| GET | `/api/platform-admin/businesses/:id` | signed in + platform admin (checked in service) |  |
+ | GET | `/api/platform-admin/email-suppressions` | signed in + platform admin (checked in service) |  |
+ | GET | `/api/platform-admin/feature-flags` | signed in + platform admin (checked in service) |  |
+ | PUT | `/api/platform-admin/feature-flags/:key` | signed in + platform admin (checked in service) |  |
++| GET | `/api/platform-admin/health` | signed in + platform admin (checked in service) |  |
+ | GET | `/api/platform-admin/plans` | signed in + platform admin (checked in service) |  |
+ | PUT | `/api/platform-admin/plans/:code` | signed in + platform admin (checked in service) |  |
++| GET | `/api/platform-admin/users` | signed in + platform admin (checked in service) |  |
+ 
+ ## auth/billingRoutes.js
+ 
+diff --git a/docs/SECURITY.md b/docs/SECURITY.md
+index 44a4d61..25232f0 100644
+--- a/docs/SECURITY.md
++++ b/docs/SECURITY.md
+@@ -22,7 +22,7 @@ What the code enforces today and what it does not. Checked on 2026-10-23 (audit
+ ## Permissions
+ 
+ - Owners pass every permission check. Other members need the permission named on the route (`requirePermission`). `API.md` lists the permission for each route. The permission names in use: `audit.view`, `business.settings`, `customers.manage`, `customers.merge`, `customers.view`, `designs.manage`, `designs.view`, `documents.manage`, `documents.view`, `expenses.manage`, `expenses.view`, `fittings.manage`, `inquiries.manage`, `inquiries.view`, `inventory.manage`, `inventory.view`, `invoices.manage`, `invoices.view`, `locations.manage`, `measurements.record`, `measurements.templates`, `media.manage`, `media.view`, `orders.confirm`, `orders.manage`, `orders.view`, `payments.record`, `payments.verify`, `payments.view`, `pricing.manage`, `pricing.view`, `reports.view`, `roles.manage`, `staff.manage`, `staff.view`, `storefront.edit`, `storefront.publish`, `storefront.view`, `tasks.assign`, `tasks.manage`, `tasks.override`, `tasks.view`, `tasks.work`, `workers.manage`, `workflows.manage`.
+-- Platform-admin routes (`/api/platform-admin/*`) need a signed-in user whose e-mail is in `PLATFORM_ADMIN_EMAILS`; the check is in the service.
++- Platform-admin routes (`/api/platform-admin/*`) need a signed-in user whose e-mail is in `PLATFORM_ADMIN_EMAILS`; the check is in the service (one shared helper, `platformAccess.js`). Platform screens (step 17b): business list and detail (counts only, never customer names or contacts), user lookup by e-mail, platform audit log, health report. Opening a business and every user lookup is written to `PlatformAuditLogs`; the lookup entry holds no address.
+ - Plan limits are enforced in services (`entitlementService.js`), not in route middleware.
+ 
+ ## Tenant isolation (row-level security)
+@@ -30,7 +30,7 @@ What the code enforces today and what it does not. Checked on 2026-10-23 (audit
+ - Migration `0032` enables **and forces** row-level security on every public table that has a `BusinessId` column (92 policies named `avzar_business_isolation`). A query sees only rows whose `BusinessId` equals the transaction-local `app.business_id`; with no tenant set it sees nothing and writes are refused.
+ - The application must connect as a role that is **not** a superuser and does not have `BYPASSRLS`, or none of this applies (forcing makes the table owner subject to the policies too). Staging uses `avzar_user` (checked 2026-10-22).
+ - Migration `0038` adds `InvoiceInstallmentPlans` and `InvoiceInstallments` with the standard forced isolation policy and no lookup policy: the portal reaches a schedule through the invoice it already reached by its token.
+-- Migration `0037` adds one more key-matched lookup (`InvoicePaymentAttempts` by provider reference, for the invoice payment webhook) together with its own isolation policy. Migration `0033` adds 13 key-matched lookup policies (`SELECT` only) for paths with no signed-in user: storefront by slug, id, retired slug or hostname; portal, calendar-feed and invitation tokens (by hash); ready-to-wear and subscription payment references; e-mail provider message id; memberships by user; sessions by token hash; media by id. It also adds one platform-scope policy so tenantless e-mail rows (password reset, verification) can be read by the dispatcher. That is 14 policies besides `avzar_business_isolation`; this count comes from reading the migration and is not yet confirmed on staging.
++- Migration `0037` adds one more key-matched lookup (`InvoicePaymentAttempts` by provider reference, for the invoice payment webhook) together with its own isolation policy. Migration `0033` adds 13 key-matched lookup policies (`SELECT` only) for paths with no signed-in user: storefront by slug, id, retired slug or hostname; portal, calendar-feed and invitation tokens (by hash); ready-to-wear and subscription payment references; e-mail provider message id; memberships by user; sessions by token hash; media by id. It also adds one platform-scope policy so tenantless e-mail rows (password reset, verification) can be read by the dispatcher. That is 14 policies besides `avzar_business_isolation`; this count comes from reading the migration and is not yet confirmed on staging. Migration `0043` adds five more, all `SELECT` only and named `avzar_platform_admin_read`, on `NotificationOutbox`, `PushDeliveries`, `WorkerSummaryJobs`, `AppointmentReminders` and `EmailOutbox`; they open only while `app.platform_admin_read = 'on'`, which the platform-admin services set after the allowlist check. A retry reads the row that way, then writes inside that row's own business context. Expect 20 policies besides `avzar_business_isolation` after `0043`.
+ - The lookup key comes from a frozen list in the code, never from request data; a malformed UUID key means "not found".
+ - **"Is this value taken anywhere" checks need the same lookup:** the storefront address check (`auth/storefrontSlugCheck.js`) uses two lookup keys to see another business's row with that exact address, `SELECT` only, and the unique index maps to a 409. This was a real bug found by a restricted-role test (audit finding 16). Any new check of this kind needs a restricted-role test.
+ - **Workers:** each cycle runs once per business (`forEachBusiness`).
+diff --git a/web/src/app/(app)/platform-admin/audit/page.tsx b/web/src/app/(app)/platform-admin/audit/page.tsx
+new file mode 100644
+index 0000000..adc31b6
+--- /dev/null
++++ b/web/src/app/(app)/platform-admin/audit/page.tsx
+@@ -0,0 +1,38 @@
++import { PageHead } from '@/components/app/PageHead';
++import { PlatformAdminNav } from '@/components/app/PlatformAdminNav';
++import { PlatformAuditList } from '@/components/app/PlatformAuditList';
++import { LoadError, NoAccess } from '@/components/app/Notices';
++import { getSession, serverGet } from '@/lib/session';
++import type { PlatformAuditPage } from '@/lib/platformAdmin';
++
++export const metadata = { title: 'Audit log · Platform · Avzar' };
++export const dynamic = 'force-dynamic';
++
++const DAY = /^\d{4}-\d{2}-\d{2}$/;
++function startOfDay(value: string): string | null { return DAY.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00Z`)) ? `${value}T00:00:00Z` : null; }
++/** The "to" day is inclusive, and the route's upper bound is exclusive, so it is the start of the next day. */
++function endOfDay(value: string): string | null {
++  const start = startOfDay(value);
++  return start ? new Date(Date.parse(start) + 86_400_000).toISOString() : null;
++}
++
++export default async function PlatformAuditPage({ searchParams }: { searchParams: Promise<{ action?: string; actor?: string; from?: string; to?: string; before?: string }> }) {
++  const me = (await getSession())!;
++  const sp = await searchParams;
++  const filters = { action: (sp.action ?? '').trim(), actor: (sp.actor ?? '').trim(), from: sp.from && startOfDay(sp.from) ? sp.from : '', to: sp.to && startOfDay(sp.to) ? sp.to : '' };
++  const query = new URLSearchParams({ limit: '25' });
++  if (filters.action) query.set('action', filters.action);
++  if (filters.actor) query.set('actor', filters.actor);
++  if (filters.from) query.set('from', startOfDay(filters.from)!);
++  if (filters.to) query.set('to', endOfDay(filters.to)!);
++  if (sp.before) query.set('before', sp.before);
++  const res = await serverGet<PlatformAuditPage>(`/api/platform-admin/audit-logs?${query.toString()}`);
++  if (!res.ok) return res.status === 401 || res.status === 403 ? <NoAccess /> : <LoadError status={res.status} />;
++  return (
++    <div className="ap-stack">
++      <PageHead title="Platform audit log" intro="What platform administrators changed or looked up. Entries are kept." zone={me.timeZoneId} />
++      <PlatformAdminNav current="/platform-admin/audit" />
++      <PlatformAuditList page={res.data} filters={filters} />
++    </div>
++  );
++}
+diff --git a/web/src/app/(app)/platform-admin/businesses/[id]/page.tsx b/web/src/app/(app)/platform-admin/businesses/[id]/page.tsx
+new file mode 100644
+index 0000000..43b5d07
+--- /dev/null
++++ b/web/src/app/(app)/platform-admin/businesses/[id]/page.tsx
+@@ -0,0 +1,26 @@
++import { PageHead } from '@/components/app/PageHead';
++import { PlatformAdminNav } from '@/components/app/PlatformAdminNav';
++import { PlatformBusinessDetailView } from '@/components/app/PlatformBusinessDetailView';
++import { LoadError, NoAccess } from '@/components/app/Notices';
++import { getSession, serverGet } from '@/lib/session';
++import type { PlatformBusinessDetail } from '@/lib/platformAdmin';
++
++export const metadata = { title: 'Business · Platform · Avzar' };
++export const dynamic = 'force-dynamic';
++
++export default async function PlatformBusinessPage({ params }: { params: Promise<{ id: string }> }) {
++  const me = (await getSession())!;
++  const { id } = await params;
++  const res = await serverGet<PlatformBusinessDetail>(`/api/platform-admin/businesses/${encodeURIComponent(id)}`);
++  if (!res.ok) {
++    if (res.status === 404) return <div className="ap-stack"><PlatformAdminNav current="/platform-admin/businesses" /><div className="ap-panel" role="alert"><p style={{ margin: 0 }}>That business was not found.</p></div></div>;
++    return res.status === 401 || res.status === 403 ? <NoAccess /> : <LoadError status={res.status} />;
++  }
++  return (
++    <div className="ap-stack">
++      <PageHead title={res.data.name} intro="Opening this page is recorded in the platform audit log." zone={me.timeZoneId} back={<a href="/platform-admin/businesses">All businesses</a>} />
++      <PlatformAdminNav current="/platform-admin/businesses" />
++      <PlatformBusinessDetailView business={res.data} />
++    </div>
++  );
++}
+diff --git a/web/src/app/(app)/platform-admin/businesses/page.tsx b/web/src/app/(app)/platform-admin/businesses/page.tsx
+new file mode 100644
+index 0000000..6d26b75
+--- /dev/null
++++ b/web/src/app/(app)/platform-admin/businesses/page.tsx
+@@ -0,0 +1,24 @@
++import { PageHead } from '@/components/app/PageHead';
++import { PlatformAdminNav } from '@/components/app/PlatformAdminNav';
++import { PlatformBusinessList } from '@/components/app/PlatformBusinessList';
++import { LoadError, NoAccess } from '@/components/app/Notices';
++import { getSession, serverGet } from '@/lib/session';
++import type { PlatformBusinessPage } from '@/lib/platformAdmin';
++
++export const metadata = { title: 'Businesses · Platform · Avzar' };
++export const dynamic = 'force-dynamic';
++
++export default async function PlatformBusinessesPage({ searchParams }: { searchParams: Promise<{ q?: string; before?: string }> }) {
++  const me = (await getSession())!;
++  const { q = '', before = '' } = await searchParams;
++  const query = new URLSearchParams({ limit: '25', ...(q.trim() ? { q: q.trim().slice(0, 100) } : {}), ...(before ? { before } : {}) });
++  const res = await serverGet<PlatformBusinessPage>(`/api/platform-admin/businesses?${query.toString()}`);
++  if (!res.ok) return res.status === 401 || res.status === 403 ? <NoAccess /> : <LoadError status={res.status} />;
++  return (
++    <div className="ap-stack">
++      <PageHead title="Businesses" intro="Every business on the platform. Counts only, never customer details." zone={me.timeZoneId} />
++      <PlatformAdminNav current="/platform-admin/businesses" />
++      <PlatformBusinessList page={res.data} q={q.trim()} />
++    </div>
++  );
++}
+diff --git a/web/src/app/(app)/platform-admin/health/page.tsx b/web/src/app/(app)/platform-admin/health/page.tsx
+new file mode 100644
+index 0000000..7911a04
+--- /dev/null
++++ b/web/src/app/(app)/platform-admin/health/page.tsx
+@@ -0,0 +1,22 @@
++import { PageHead } from '@/components/app/PageHead';
++import { PlatformAdminNav } from '@/components/app/PlatformAdminNav';
++import { PlatformHealthReport } from '@/components/app/PlatformHealthReport';
++import { LoadError, NoAccess } from '@/components/app/Notices';
++import { getSession, serverGet } from '@/lib/session';
++import type { PlatformHealth } from '@/lib/platformAdmin';
++
++export const metadata = { title: 'Health · Platform · Avzar' };
++export const dynamic = 'force-dynamic';
++
++export default async function PlatformHealthPage() {
++  const me = (await getSession())!;
++  const res = await serverGet<PlatformHealth>('/api/platform-admin/health');
++  if (!res.ok) return res.status === 401 || res.status === 403 ? <NoAccess /> : <LoadError status={res.status} />;
++  return (
++    <div className="ap-stack">
++      <PageHead title="Platform health" intro="Reload the page to check again." zone={me.timeZoneId} />
++      <PlatformAdminNav current="/platform-admin/health" />
++      <PlatformHealthReport report={res.data} />
++    </div>
++  );
++}
+diff --git a/web/src/app/(app)/platform-admin/loading.tsx b/web/src/app/(app)/platform-admin/loading.tsx
+new file mode 100644
+index 0000000..34d8d58
+--- /dev/null
++++ b/web/src/app/(app)/platform-admin/loading.tsx
+@@ -0,0 +1,3 @@
++export default function Loading() {
++  return <div className="ap-panel" role="status" aria-live="polite"><p style={{ margin: 0 }}>Loading…</p></div>;
++}
+diff --git a/web/src/app/(app)/platform-admin/operations/page.tsx b/web/src/app/(app)/platform-admin/operations/page.tsx
+index 6950849..b0a78b0 100644
+--- a/web/src/app/(app)/platform-admin/operations/page.tsx
++++ b/web/src/app/(app)/platform-admin/operations/page.tsx
+@@ -1,4 +1,5 @@
+ import { PageHead } from '@/components/app/PageHead';
++import { PlatformAdminNav } from '@/components/app/PlatformAdminNav';
+ import { PlatformOperations } from '@/components/app/PlatformOperations';
+ import { LoadError, NoAccess } from '@/components/app/Notices';
+ import { getSession, serverGet } from '@/lib/session';
+@@ -21,5 +22,5 @@ export default async function PlatformOperationsPage() {
+     return <LoadError status={failed.status} />;
+   }
+   if (!flags.ok || !jobs.ok) return <LoadError status={502} />;
+-  return <div className="ap-stack"><PageHead title="Platform operations" intro="Global feature controls and notification-delivery operations. Access is restricted to configured platform administrators." zone={me.timeZoneId}><a className="ap-btn ap-btn-quiet" href="/platform-admin/plans">Platform plans</a><a className="ap-btn ap-btn-quiet" href="/platform-admin/email-suppressions">Email suppressions</a></PageHead><PlatformOperations initialFlags={flags.data.items} initialJobs={jobs.data.items} /></div>;
++  return <div className="ap-stack"><PageHead title="Platform operations" intro="Global feature controls and notification-delivery operations. Access is restricted to configured platform administrators." zone={me.timeZoneId}></PageHead><PlatformAdminNav current="/platform-admin/operations" /><PlatformOperations initialFlags={flags.data.items} initialJobs={jobs.data.items} /></div>;
+ }
+diff --git a/web/src/app/(app)/platform-admin/users/page.tsx b/web/src/app/(app)/platform-admin/users/page.tsx
+new file mode 100644
+index 0000000..0dfa9a1
+--- /dev/null
++++ b/web/src/app/(app)/platform-admin/users/page.tsx
+@@ -0,0 +1,30 @@
++import { PageHead } from '@/components/app/PageHead';
++import { PlatformAdminNav } from '@/components/app/PlatformAdminNav';
++import { PlatformUserLookup } from '@/components/app/PlatformUserLookup';
++import { LoadError, NoAccess } from '@/components/app/Notices';
++import { getSession, serverGet } from '@/lib/session';
++import type { PlatformUser } from '@/lib/platformAdmin';
++
++export const metadata = { title: 'Find a user · Platform · Avzar' };
++export const dynamic = 'force-dynamic';
++
++export default async function PlatformUsersPage({ searchParams }: { searchParams: Promise<{ email?: string }> }) {
++  const me = (await getSession())!;
++  const email = ((await searchParams).email ?? '').trim();
++  let user: PlatformUser | null = null;
++  let message: string | null = null;
++  if (email) {
++    const res = await serverGet<PlatformUser>(`/api/platform-admin/users?email=${encodeURIComponent(email)}`);
++    if (res.ok) user = res.data;
++    else if (res.status === 404) message = 'No account has that email address.';
++    else if (res.status === 400) message = 'Enter a full email address.';
++    else return res.status === 401 || res.status === 403 ? <NoAccess /> : <LoadError status={res.status} />;
++  }
++  return (
++    <div className="ap-stack">
++      <PageHead title="Find a user" intro="Look up a staff account by email address to see which businesses it belongs to." zone={me.timeZoneId} />
++      <PlatformAdminNav current="/platform-admin/users" />
++      <PlatformUserLookup email={email} user={user} message={message} />
++    </div>
++  );
++}
+diff --git a/web/src/components/app/PlatformAdminNav.tsx b/web/src/components/app/PlatformAdminNav.tsx
+new file mode 100644
+index 0000000..5065062
+--- /dev/null
++++ b/web/src/components/app/PlatformAdminNav.tsx
+@@ -0,0 +1,17 @@
++const LINKS = [
++  { href: '/platform-admin/businesses', label: 'Businesses' },
++  { href: '/platform-admin/users', label: 'Find a user' },
++  { href: '/platform-admin/audit', label: 'Audit log' },
++  { href: '/platform-admin/health', label: 'Health' },
++  { href: '/platform-admin/operations', label: 'Operations' },
++  { href: '/platform-admin/plans', label: 'Plans' },
++  { href: '/platform-admin/email-suppressions', label: 'Email suppressions' },
++];
++
++export function PlatformAdminNav({ current }: { current: string }) {
++  return (
++    <nav className="ap-row" aria-label="Platform administration">
++      {LINKS.map((l) => <a key={l.href} className="ap-btn ap-btn-quiet" href={l.href} aria-current={l.href === current ? 'page' : undefined}>{l.label}</a>)}
++    </nav>
++  );
++}
+diff --git a/web/src/components/app/PlatformAuditList.tsx b/web/src/components/app/PlatformAuditList.tsx
+new file mode 100644
+index 0000000..47973b1
+--- /dev/null
++++ b/web/src/components/app/PlatformAuditList.tsx
+@@ -0,0 +1,34 @@
++import { type PlatformAuditPage, when } from '@/lib/platformAdmin';
++
++export type AuditFilters = { action: string; actor: string; from: string; to: string };
++
++export function PlatformAuditList({ page, filters }: { page: PlatformAuditPage; filters: AuditFilters }) {
++  const params = (before?: string) => new URLSearchParams({ ...Object.fromEntries(Object.entries(filters).filter(([, v]) => v)), ...(before ? { before } : {}) }).toString();
++  const filtered = Object.values(filters).some(Boolean);
++  return (
++    <section className="ap-panel ap-stack">
++      <form method="get" action="/platform-admin/audit" className="ap-row" role="search">
++        <label className="ap-filter">Action <input className="ap-input" name="action" defaultValue={filters.action} maxLength={100} placeholder="platform.business.viewed" /></label>
++        <label className="ap-filter">Actor <input className="ap-input" name="actor" defaultValue={filters.actor} maxLength={256} /></label>
++        <label className="ap-filter">From (UTC) <input className="ap-input" type="date" name="from" defaultValue={filters.from} /></label>
++        <label className="ap-filter">To (UTC) <input className="ap-input" type="date" name="to" defaultValue={filters.to} /></label>
++        <button type="submit" className="ap-btn">Filter</button>
++        {filtered ? <a className="ap-btn ap-btn-quiet" href="/platform-admin/audit">Clear</a> : null}
++      </form>
++      {page.items.length === 0 ? <p>{filtered ? 'No entries match these filters.' : 'The audit log is empty.'}</p> : (
++        <div className="ap-scroll">
++          <table className="ap-table">
++            <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Subject</th></tr></thead>
++            <tbody>{page.items.map((e) => (
++              <tr key={e.id}>
++                <td>{when(e.createdAtUtc)}</td><td>{e.actorEmail}</td><td>{e.action}</td>
++                <td>{e.entityType}{e.entityId ? ` ${e.entityId}` : ''}</td>
++              </tr>
++            ))}</tbody>
++          </table>
++        </div>
++      )}
++      {page.next ? <a className="ap-btn ap-btn-quiet" href={`/platform-admin/audit?${params(page.next)}`}>Older entries</a> : null}
++    </section>
++  );
++}
+diff --git a/web/src/components/app/PlatformBusinessDetailView.tsx b/web/src/components/app/PlatformBusinessDetailView.tsx
+new file mode 100644
+index 0000000..5661ec6
+--- /dev/null
++++ b/web/src/components/app/PlatformBusinessDetailView.tsx
+@@ -0,0 +1,28 @@
++import { type PlatformBusinessDetail, bytes, when } from '@/lib/platformAdmin';
++
++export function PlatformBusinessDetailView({ business: b }: { business: PlatformBusinessDetail }) {
++  const rows: [string, string | number][] = [
++    ['Active staff', b.usage.activeStaff], ['Locations', b.usage.locations], ['Customers', b.usage.customers],
++    ['Orders', b.usage.orders], ['Orders in the last 30 days', b.usage.ordersLast30Days], ['Invoices', b.usage.invoices], ['Stored media', bytes(b.usage.storageBytes)],
++  ];
++  return (
++    <div className="ap-stack">
++      <section className="ap-panel ap-stack">
++        <h2 className="ap-h2">Business</h2>
++        <dl className="ap-stack" style={{ margin: 0 }}>
++          <div><dt>Status</dt><dd>{b.isActive ? 'Active' : 'Inactive'}</dd></div>
++          <div><dt>Contact email</dt><dd>{b.contactEmail ?? '—'}</dd></div>
++          <div><dt>Owner</dt><dd>{b.owner ? `${b.owner.fullName} (${b.owner.email})` : '—'}</dd></div>
++          <div><dt>Currency and time zone</dt><dd>{b.currencyCode}, {b.timeZoneId}</dd></div>
++          <div><dt>Plan</dt><dd>{b.plan ? `${b.plan.name} (${b.plan.status}${b.plan.currentPeriodEndUtc ? `, period ends ${when(b.plan.currentPeriodEndUtc)}` : ''})` : 'No subscription'}</dd></div>
++          <div><dt>Created</dt><dd>{when(b.createdAtUtc)}</dd></div>
++        </dl>
++      </section>
++      <section className="ap-panel ap-stack">
++        <h2 className="ap-h2">Usage</h2>
++        <p className="ap-foot">Counts only. Customer names and contact details are never shown to platform administrators.</p>
++        <div className="ap-scroll"><table className="ap-table"><tbody>{rows.map(([label, value]) => <tr key={label}><th scope="row">{label}</th><td>{value}</td></tr>)}</tbody></table></div>
++      </section>
++    </div>
++  );
++}
+diff --git a/web/src/components/app/PlatformBusinessList.tsx b/web/src/components/app/PlatformBusinessList.tsx
+new file mode 100644
+index 0000000..f92f617
+--- /dev/null
++++ b/web/src/components/app/PlatformBusinessList.tsx
+@@ -0,0 +1,32 @@
++import { type PlatformBusinessPage, when } from '@/lib/platformAdmin';
++
++export function PlatformBusinessList({ page, q }: { page: PlatformBusinessPage; q: string }) {
++  const olderHref = page.next ? `/platform-admin/businesses?${new URLSearchParams({ ...(q ? { q } : {}), before: page.next }).toString()}` : null;
++  return (
++    <section className="ap-panel ap-stack">
++      <form method="get" action="/platform-admin/businesses" className="ap-row" role="search">
++        <label className="ap-filter">Name or contact email <input className="ap-input" name="q" defaultValue={q} maxLength={100} /></label>
++        <button type="submit" className="ap-btn">Search</button>
++        {q ? <a className="ap-btn ap-btn-quiet" href="/platform-admin/businesses">Clear</a> : null}
++      </form>
++      {page.items.length === 0 ? <p>{q ? 'No business matches that search.' : 'There are no businesses yet.'}</p> : (
++        <div className="ap-scroll">
++          <table className="ap-table">
++            <thead><tr><th>Business</th><th>Contact</th><th>Status</th><th>Created</th></tr></thead>
++            <tbody>
++              {page.items.map((b) => (
++                <tr key={b.id}>
++                  <td><a href={`/platform-admin/businesses/${b.id}`}>{b.name}</a></td>
++                  <td>{b.contactEmail ?? '—'}</td>
++                  <td>{b.isActive ? 'Active' : 'Inactive'}</td>
++                  <td>{when(b.createdAtUtc)}</td>
++                </tr>
++              ))}
++            </tbody>
++          </table>
++        </div>
++      )}
++      {olderHref ? <a className="ap-btn ap-btn-quiet" href={olderHref}>Older businesses</a> : null}
++    </section>
++  );
++}
+diff --git a/web/src/components/app/PlatformHealthReport.tsx b/web/src/components/app/PlatformHealthReport.tsx
+new file mode 100644
+index 0000000..92c028e
+--- /dev/null
++++ b/web/src/components/app/PlatformHealthReport.tsx
+@@ -0,0 +1,38 @@
++import { type PlatformHealth, uptime, when } from '@/lib/platformAdmin';
++
++export function PlatformHealthReport({ report: r }: { report: PlatformHealth }) {
++  return (
++    <div className="ap-stack">
++      <section className="ap-panel ap-stack">
++        <h2 className="ap-h2">This server</h2>
++        <p className="ap-foot">Checked {when(r.checkedAtUtc)}. Uptime restarts when the service sleeps or is redeployed.</p>
++        <dl className="ap-stack" style={{ margin: 0 }}>
++          <div><dt>Database</dt><dd>{r.database.ok ? `Reachable (${r.database.pingMs} ms)` : 'Not reachable'}</dd></div>
++          <div><dt>Migrations</dt><dd>{r.migrations ? `${r.migrations.applied} applied, latest ${r.migrations.latest ?? '—'}` : 'Not readable by the API role'}</dd></div>
++          <div><dt>Environment</dt><dd>{r.process.environment ?? '—'}, Node {r.process.nodeVersion}, up {uptime(r.process.uptimeSeconds)}</dd></div>
++          <div><dt>Email and storage</dt><dd>Email: {r.process.emailProvider ?? '—'}. Storage: {r.process.storageProvider ?? '—'}.</dd></div>
++        </dl>
++      </section>
++      <section className="ap-panel ap-stack">
++        <h2 className="ap-h2">Queues, all businesses</h2>
++        {r.queues === null ? <p>Queue depth could not be read.</p> : (
++          <div className="ap-scroll"><table className="ap-table">
++            <thead><tr><th>Queue</th><th>Counts by status</th></tr></thead>
++            <tbody>{r.queues.map((q) => {
++              const parts = Object.entries(q.statuses);
++              return <tr key={q.kind}><td>{q.kind}</td><td>{parts.length ? parts.map(([s, n]) => `${s} ${n}`).join(', ') : 'Empty'}</td></tr>;
++            })}</tbody>
++          </table></div>
++        )}
++        <a className="ap-btn ap-btn-quiet" href="/platform-admin/operations">Failed jobs and retries</a>
++      </section>
++      <section className="ap-panel ap-stack">
++        <h2 className="ap-h2">Settings present</h2>
++        <p className="ap-foot">Shows only whether a setting exists, never its value. A shown “Not set” may be intended.</p>
++        <div className="ap-scroll"><table className="ap-table"><tbody>
++          {r.configuration.map((c) => <tr key={c.key}><th scope="row">{c.label}</th><td>{c.set ? 'Set' : 'Not set'}</td></tr>)}
++        </tbody></table></div>
++      </section>
++    </div>
++  );
++}
+diff --git a/web/src/components/app/PlatformUserLookup.tsx b/web/src/components/app/PlatformUserLookup.tsx
+new file mode 100644
+index 0000000..d8bb1de
+--- /dev/null
++++ b/web/src/components/app/PlatformUserLookup.tsx
+@@ -0,0 +1,40 @@
++import { type PlatformUser, when } from '@/lib/platformAdmin';
++
++export function PlatformUserLookup({ email, user, message }: { email: string; user: PlatformUser | null; message: string | null }) {
++  return (
++    <div className="ap-stack">
++      <section className="ap-panel ap-stack">
++        <form method="get" action="/platform-admin/users" className="ap-row" role="search">
++          <label className="ap-filter">Email address <input className="ap-input" type="email" name="email" defaultValue={email} maxLength={254} required /></label>
++          <button type="submit" className="ap-btn">Find</button>
++        </form>
++        <p className="ap-foot">Each lookup is recorded in the audit log, without the address searched for.</p>
++      </section>
++      {message ? <div className="ap-panel" role="status"><p style={{ margin: 0 }}>{message}</p></div> : null}
++      {user ? (
++        <section className="ap-panel ap-stack" aria-label="Account">
++          <h2 className="ap-h2">{user.fullName}</h2>
++          <dl className="ap-stack" style={{ margin: 0 }}>
++            <div><dt>Email</dt><dd>{user.email} ({user.emailConfirmed ? 'confirmed' : 'not confirmed'})</dd></div>
++            <div><dt>Two-step sign-in</dt><dd>{user.twoFactorEnabled ? 'On' : 'Off'}</dd></div>
++            <div><dt>Sign-in lock</dt><dd>{user.lockedUntilUtc ? `Locked until ${when(user.lockedUntilUtc)}` : 'Not locked'} ({user.failedSignIns} failed {user.failedSignIns === 1 ? 'attempt' : 'attempts'} on record)</dd></div>
++            <div><dt>Account created</dt><dd>{when(user.createdAtUtc)}</dd></div>
++          </dl>
++          <h3 className="ap-h3">Businesses</h3>
++          {user.memberships.length === 0 ? <p>This account belongs to no business.</p> : (
++            <div className="ap-scroll"><table className="ap-table">
++              <thead><tr><th>Business</th><th>Role</th><th>Membership</th></tr></thead>
++              <tbody>{user.memberships.map((m) => (
++                <tr key={m.id}>
++                  <td><a href={`/platform-admin/businesses/${m.businessId}`}>{m.businessName}</a>{m.businessActive ? '' : ' (inactive)'}</td>
++                  <td>{m.isOwner ? 'Owner' : 'Staff'}</td>
++                  <td>{m.active ? 'Active' : 'Deactivated'}</td>
++                </tr>
++              ))}</tbody>
++            </table></div>
++          )}
++        </section>
++      ) : null}
++    </div>
++  );
++}
+diff --git a/web/src/lib/platformAdmin.ts b/web/src/lib/platformAdmin.ts
+new file mode 100644
+index 0000000..7b00c87
+--- /dev/null
++++ b/web/src/lib/platformAdmin.ts
+@@ -0,0 +1,43 @@
++// Step 17b: shapes returned by the platform-admin routes, and small display helpers (fixed UTC so a page reads the same for everyone).
++export type PlatformBusiness = { id: string; name: string; contactEmail: string | null; currencyCode: string; timeZoneId: string; isActive: boolean; createdAtUtc: string };
++export type PlatformBusinessPage = { items: PlatformBusiness[]; next: string | null };
++export type PlatformBusinessDetail = PlatformBusiness & {
++  updatedAtUtc: string | null;
++  owner: { email: string; fullName: string } | null;
++  plan: { code: string; name: string; status: string; currentPeriodEndUtc: string | null } | null;
++  usage: { activeStaff: number; locations: number; customers: number; orders: number; ordersLast30Days: number; invoices: number; storageBytes: number };
++};
++export type PlatformUser = {
++  id: string; email: string; fullName: string; emailConfirmed: boolean; twoFactorEnabled: boolean; lockedUntilUtc: string | null; failedSignIns: number; createdAtUtc: string;
++  memberships: { id: string; businessId: string; businessName: string; businessActive: boolean; isOwner: boolean; active: boolean; displayName: string }[];
++};
++export type PlatformAuditEntry = { id: string; actorEmail: string; action: string; entityType: string; entityId: string | null; details: Record<string, unknown>; createdAtUtc: string };
++export type PlatformAuditPage = { items: PlatformAuditEntry[]; next: string | null };
++export type PlatformHealth = {
++  checkedAtUtc: string;
++  process: { nodeVersion: string; uptimeSeconds: number; environment: string | null; emailProvider: string | null; storageProvider: string | null };
++  database: { ok: boolean; pingMs: number | null };
++  migrations: { applied: number; latest: string | null } | null;
++  queues: { kind: string; statuses: Record<string, number> }[] | null;
++  configuration: { key: string; label: string; set: boolean }[];
++};
++
++export function when(iso: string | null | undefined): string {
++  if (!iso) return '—';
++  const d = new Date(iso);
++  return Number.isNaN(d.getTime()) ? '—' : `${d.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
++}
++
++export function bytes(n: number): string {
++  if (!Number.isFinite(n) || n < 0) return '—';
++  if (n < 1024) return `${n} B`;
++  const units = ['KB', 'MB', 'GB', 'TB'];
++  let value = n / 1024; let i = 0;
++  while (value >= 1024 && i < units.length - 1) { value /= 1024; i += 1; }
++  return `${value.toFixed(value < 10 ? 1 : 0)} ${units[i]}`;
++}
++
++export function uptime(seconds: number): string {
++  const d = Math.floor(seconds / 86400); const h = Math.floor((seconds % 86400) / 3600); const m = Math.floor((seconds % 3600) / 60);
++  return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`;
++}
+diff --git a/web/test/components/PlatformAdminScreens.test.tsx b/web/test/components/PlatformAdminScreens.test.tsx
+new file mode 100644
+index 0000000..cf60da6
+--- /dev/null
++++ b/web/test/components/PlatformAdminScreens.test.tsx
+@@ -0,0 +1,152 @@
++// @vitest-environment jsdom
++import { render, screen, within } from '@testing-library/react';
++import { describe, expect, it } from 'vitest';
++import '../support/dom';
++import { PlatformAdminNav } from '@/components/app/PlatformAdminNav';
++import { PlatformAuditList } from '@/components/app/PlatformAuditList';
++import { PlatformBusinessDetailView } from '@/components/app/PlatformBusinessDetailView';
++import { PlatformBusinessList } from '@/components/app/PlatformBusinessList';
++import { PlatformHealthReport } from '@/components/app/PlatformHealthReport';
++import { PlatformUserLookup } from '@/components/app/PlatformUserLookup';
++import { bytes, uptime, when } from '@/lib/platformAdmin';
++import type { PlatformBusiness, PlatformBusinessDetail, PlatformHealth, PlatformUser } from '@/lib/platformAdmin';
++
++const biz = (n: number, over: Partial<PlatformBusiness> = {}): PlatformBusiness => ({
++  id: `b${n}`, name: `Shop ${n}`, contactEmail: n === 1 ? 'one@example.test' : null, currencyCode: 'NGN', timeZoneId: 'UTC', isActive: true, createdAtUtc: '2026-10-20T08:30:00Z', ...over,
++});
++
++describe('display helpers', () => {
++  it('formats times in fixed UTC, sizes and uptime', () => {
++    expect(when('2026-10-31T09:05:00Z')).toBe('2026-10-31 09:05 UTC');
++    expect(when(null)).toBe('—');
++    expect(when('garbage')).toBe('—');
++    expect(bytes(512)).toBe('512 B');
++    expect(bytes(1536)).toBe('1.5 KB');
++    expect(bytes(5 * 1024 * 1024 * 1024)).toBe('5.0 GB');
++    expect(uptime(59)).toBe('0m');
++    expect(uptime(3 * 3600 + 120)).toBe('3h 2m');
++    expect(uptime(2 * 86400 + 3600)).toBe('2d 1h');
++  });
++});
++
++describe('PlatformAdminNav', () => {
++  it('links every platform page and marks the current one', () => {
++    render(<PlatformAdminNav current="/platform-admin/health" />);
++    expect(screen.getByRole('link', { name: 'Health' }).getAttribute('aria-current')).toBe('page');
++    expect(screen.getByRole('link', { name: 'Businesses' }).getAttribute('aria-current')).toBeNull();
++    for (const name of ['Businesses', 'Find a user', 'Audit log', 'Health', 'Operations', 'Plans', 'Email suppressions']) expect(screen.getByRole('link', { name })).toBeTruthy();
++  });
++});
++
++describe('PlatformBusinessList', () => {
++  it('lists businesses with a link to each detail page and an older-page link that keeps the search', () => {
++    render(<PlatformBusinessList page={{ items: [biz(1), biz(2, { isActive: false })], next: 'CUR' }} q="shop" />);
++    expect(screen.getByRole('link', { name: 'Shop 1' }).getAttribute('href')).toBe('/platform-admin/businesses/b1');
++    expect(screen.getByText('one@example.test')).toBeTruthy();
++    expect(screen.getByText('Inactive')).toBeTruthy();
++    const older = screen.getByRole('link', { name: 'Older businesses' }).getAttribute('href')!;
++    expect(older).toContain('q=shop');
++    expect(older).toContain('before=CUR');
++    expect((screen.getByLabelText(/Name or contact email/) as HTMLInputElement).defaultValue).toBe('shop');
++  });
++
++  it('says so when there are no businesses, and when a search finds none', () => {
++    const { rerender } = render(<PlatformBusinessList page={{ items: [], next: null }} q="" />);
++    expect(screen.getByText('There are no businesses yet.')).toBeTruthy();
++    rerender(<PlatformBusinessList page={{ items: [], next: null }} q="zzz" />);
++    expect(screen.getByText('No business matches that search.')).toBeTruthy();
++    expect(screen.getByRole('link', { name: 'Clear' })).toBeTruthy();
++    expect(screen.queryByRole('link', { name: 'Older businesses' })).toBeNull();
++  });
++});
++
++describe('PlatformBusinessDetailView', () => {
++  const detail: PlatformBusinessDetail = {
++    ...biz(1), updatedAtUtc: null, owner: { email: 'owner@example.test', fullName: 'Ada Owner' },
++    plan: { code: 'starter', name: 'Starter', status: 'Active', currentPeriodEndUtc: '2026-11-30T00:00:00Z' },
++    usage: { activeStaff: 3, locations: 2, customers: 40, orders: 12, ordersLast30Days: 5, invoices: 9, storageBytes: 2048 },
++  };
++  it('shows owner, plan and counts, and says customer details are never shown', () => {
++    render(<PlatformBusinessDetailView business={detail} />);
++    expect(screen.getByText('Ada Owner (owner@example.test)')).toBeTruthy();
++    expect(screen.getByText(/Starter \(Active, period ends 2026-11-30 00:00 UTC\)/)).toBeTruthy();
++    const customers = screen.getByRole('row', { name: /Customers/ });
++    expect(within(customers).getByText('40')).toBeTruthy();
++    expect(screen.getByText('2.0 KB')).toBeTruthy();
++    expect(screen.getByText(/never shown to platform administrators/)).toBeTruthy();
++  });
++  it('copes with no owner and no subscription', () => {
++    render(<PlatformBusinessDetailView business={{ ...detail, owner: null, plan: null }} />);
++    expect(screen.getByText('No subscription')).toBeTruthy();
++  });
++});
++
++describe('PlatformUserLookup', () => {
++  const user: PlatformUser = {
++    id: 'u1', email: 'ada@example.test', fullName: 'Ada', emailConfirmed: true, twoFactorEnabled: true, lockedUntilUtc: '2026-10-31T12:00:00Z', failedSignIns: 1, createdAtUtc: '2026-09-01T00:00:00Z',
++    memberships: [
++      { id: 'm1', businessId: 'b1', businessName: 'Shop 1', businessActive: true, isOwner: true, active: true, displayName: 'Ada' },
++      { id: 'm2', businessId: 'b2', businessName: 'Shop 2', businessActive: false, isOwner: false, active: false, displayName: 'Ada' },
++    ],
++  };
++  it('shows the account and every business it belongs to', () => {
++    render(<PlatformUserLookup email="ada@example.test" user={user} message={null} />);
++    expect(screen.getByText(/ada@example.test \(confirmed\)/)).toBeTruthy();
++    expect(screen.getByText(/Locked until 2026-10-31 12:00 UTC \(1 failed attempt on record\)/)).toBeTruthy();
++    expect(screen.getByRole('link', { name: 'Shop 1' }).getAttribute('href')).toBe('/platform-admin/businesses/b1');
++    expect(screen.getByText('Owner')).toBeTruthy();
++    expect(screen.getByText('Deactivated')).toBeTruthy();
++    expect(screen.getByRole('row', { name: /Shop 2/ }).textContent).toContain('(inactive)');
++  });
++  it('shows a not-found message and an empty form value, and notes the lookup is audited', () => {
++    render(<PlatformUserLookup email="ghost@example.test" user={null} message="No account has that email address." />);
++    expect(screen.getByRole('status').textContent).toBe('No account has that email address.');
++    expect(screen.getByText(/without the address searched for/)).toBeTruthy();
++    expect(screen.queryByLabelText('Account')).toBeNull();
++  });
++});
++
++describe('PlatformAuditList', () => {
++  const entry = { id: 'e1', actorEmail: 'ops@example.test', action: 'platform.business.viewed', entityType: 'Business', entityId: 'b1', details: {}, createdAtUtc: '2026-10-31T10:00:00Z' };
++  const none = { action: '', actor: '', from: '', to: '' };
++  it('lists entries and keeps the filters in the older-entries link', () => {
++    render(<PlatformAuditList page={{ items: [entry], next: 'CUR' }} filters={{ ...none, action: 'platform.business.viewed', from: '2026-10-01' }} />);
++    expect(screen.getByText('platform.business.viewed', { selector: 'td' })).toBeTruthy();
++    expect(screen.getByText('Business b1')).toBeTruthy();
++    const href = screen.getByRole('link', { name: 'Older entries' }).getAttribute('href')!;
++    expect(href).toContain('action=platform.business.viewed');
++    expect(href).toContain('from=2026-10-01');
++    expect(href).toContain('before=CUR');
++  });
++  it('distinguishes an empty log from a filter with no matches', () => {
++    const { rerender } = render(<PlatformAuditList page={{ items: [], next: null }} filters={none} />);
++    expect(screen.getByText('The audit log is empty.')).toBeTruthy();
++    rerender(<PlatformAuditList page={{ items: [], next: null }} filters={{ ...none, actor: 'x' }} />);
++    expect(screen.getByText('No entries match these filters.')).toBeTruthy();
++  });
++});
++
++describe('PlatformHealthReport', () => {
++  const report: PlatformHealth = {
++    checkedAtUtc: '2026-10-31T10:00:00Z',
++    process: { nodeVersion: 'v22.1.0', uptimeSeconds: 7200, environment: 'production', emailProvider: 'resend', storageProvider: 's3' },
++    database: { ok: true, pingMs: 1.4 }, migrations: { applied: 43, latest: '0043_platform_admin_read.sql' },
++    queues: [{ kind: 'notification', statuses: { Failed: 2, Sent: 9 } }, { kind: 'push', statuses: {} }],
++    configuration: [{ key: 'paystack', label: 'Paystack (billing and online payments)', set: true }, { key: 'meta_webhook', label: 'Meta WhatsApp webhook', set: false }],
++  };
++  it('shows the database, migrations, queues and which settings are present', () => {
++    render(<PlatformHealthReport report={report} />);
++    expect(screen.getByText('Reachable (1.4 ms)')).toBeTruthy();
++    expect(screen.getByText('43 applied, latest 0043_platform_admin_read.sql')).toBeTruthy();
++    expect(screen.getByText('Failed 2, Sent 9')).toBeTruthy();
++    expect(screen.getByText('Empty')).toBeTruthy();
++    expect(within(screen.getByRole('row', { name: /Paystack/ })).getByText('Set')).toBeTruthy();
++    expect(within(screen.getByRole('row', { name: /Meta WhatsApp webhook/ })).getByText('Not set')).toBeTruthy();
++  });
++  it('reports an unreachable database and unreadable parts without crashing', () => {
++    render(<PlatformHealthReport report={{ ...report, database: { ok: false, pingMs: null }, migrations: null, queues: null }} />);
++    expect(screen.getByText('Not reachable')).toBeTruthy();
++    expect(screen.getByText('Not readable by the API role')).toBeTruthy();
++    expect(screen.getByText('Queue depth could not be read.')).toBeTruthy();
++  });
++});

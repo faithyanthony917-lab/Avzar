@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/toast', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
@@ -16,7 +16,7 @@ function setNavigator(share: unknown, writeText: unknown) {
 
 describe('ShareAvzarButton', () => {
   beforeEach(() => { vi.mocked(toast.success).mockClear(); vi.mocked(toast.error).mockClear(); });
-  afterEach(() => setNavigator(undefined, undefined));
+  afterEach(() => { cleanup(); setNavigator(undefined, undefined); });
 
   it('opens the share sheet with the site address when the device has one', async () => {
     const share = vi.fn().mockResolvedValue(undefined);

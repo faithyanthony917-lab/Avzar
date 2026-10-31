@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { ComingSoon } from '@/components/app/ComingSoon';
 import { CustomerCsvTools } from '@/components/app/CustomerCsvTools';
+import { MeasurementTemplatesTab } from '@/components/app/MeasurementTemplatesTab';
 import { LoadError, NoAccess } from '@/components/app/Notices';
 import type { CustomerSummary, Paged } from '@/lib/customer-types';
 import { PAGE_SIZE, STATUS_FILTERS, apiQueryString, listHref, parseListQuery, totalPages } from '@/lib/customers';
@@ -18,7 +18,10 @@ const SORT_LABELS: Record<string, string> = { name: 'Name A–Z', 'name-desc': '
 export default async function CustomersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const me = (await getSession())!;
   if (!can(me, 'customers.view')) return <NoAccess />;
-  const q = parseListQuery(await searchParams);
+  const raw = await searchParams;
+  const tabRaw = Array.isArray(raw.tab) ? raw.tab[0] : raw.tab;
+  if (tabRaw === 'templates') return <MeasurementTemplatesTab zone={me.timeZoneId} canManage={can(me, 'measurements.templates')} />;
+  const q = parseListQuery(raw);
   const res = await serverGet<Paged<CustomerSummary>>(`/api/customers?${apiQueryString(q)}`);
   if (!res.ok) return <LoadError status={res.status} />;
   const { items, totalCount } = res.data;
@@ -47,7 +50,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
       <div className="ap-toolbar ap-cust-toolbar">
         <div className="ap-cust-tabs" role="group" aria-label="Customers">
           <Link href="/customers" aria-current="page">Clients<span>{totalCount}</span></Link>
-          <ComingSoon className="ap-cust-tab-soon" message="Coming soon. My Templates is not available yet.">My Templates</ComingSoon>
+          <Link href="/customers?tab=templates">My Templates</Link>
         </div>
         <div className="ap-actions">
           {filtered && <Link href="/customers" className="ap-btn ap-btn-quiet ap-btn-sm" style={{ textDecoration: 'none' }}>Clear</Link>}

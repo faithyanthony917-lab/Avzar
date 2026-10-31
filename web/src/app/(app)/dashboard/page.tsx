@@ -7,8 +7,8 @@ import {
   compactMoney, dueThisWeek, firstName, gettingStarted, greetingFor, homeStats, localHour, longDate,
   monthRanges, newSince, quickActions, sumBalances, todayInZone, trendPercent,
 } from '@/lib/home-view';
-import { ComingSoon } from '@/components/app/ComingSoon';
 import { NavGlyph } from '@/components/app/NavGlyph';
+import { ShareAvzarButton } from '@/components/app/ShareAvzarButton';
 import { ProductionOverviewError, ProductionOverviewSections } from '@/components/app/ProductionOverviewSections';
 import type { ProductionOverview } from '@/lib/production-view';
 export const metadata = { title: 'Home · Avzar' };
@@ -159,7 +159,7 @@ export default async function DashboardPage() {
         </div>
         <div className="ap-actions">
           {can(user, 'staff.manage') && can(user, 'staff.view') && <Link href="/staff" className="ap-btn ap-btn-sm" style={{ textDecoration: 'none' }}>Invite staff</Link>}
-          <ComingSoon className="ap-btn ap-btn-quiet ap-btn-sm" message="Coming soon. Sharing Avzar is not available yet.">Share Avzar</ComingSoon>
+          <ShareAvzarButton className="ap-btn ap-btn-quiet ap-btn-sm" />
         </div>
       </section>
 

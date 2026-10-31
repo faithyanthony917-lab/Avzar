@@ -1,0 +1,36 @@
+{
+  "name": "avzar-pwa-node",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --watch src/server.js",
+    "start": "node --env-file-if-exists=.env src/server.js",
+    "migrate": "node --env-file-if-exists=.env src/db/migrate-cli.js",
+    "seed-plans": "node --env-file-if-exists=.env src/db/seed-plans-cli.js",
+    "check-schema": "node --env-file-if-exists=.env scripts/check-schema.js",
+    "check": "find src test scripts -name '*.js' -print0 | xargs -0 -n1 node --check",
+    "test": "node --test \"test/**/*.test.js\"",
+    "docs:api": "node scripts/generate-api-doc.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1152.0",
+    "argon2": "0.44.0",
+    "busboy": "^1.6.0",
+    "csv-parse": "^7.0.3",
+    "express": "^5.1.0",
+    "express-rate-limit": "8.7.1",
+    "nodemailer": "^10.1.6",
+    "pdfkit": "^0.17.2",
+    "pg": "8.16.3",
+    "sharp": "^0.35.5",
+    "yauzl": "^3.4.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "supertest": "^7.1.4"
+  }
+}

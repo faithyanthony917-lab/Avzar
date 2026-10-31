@@ -1,0 +1,4167 @@
+{
+ "DataProtectionKeys": {
+  "columns": {
+   "Id": {
+    "type": "integer",
+    "nullable": false,
+    "identity": true
+   },
+   "FriendlyName": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "Xml": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "AspNetRoles": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "ConcurrencyStamp": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(256)",
+    "nullable": true,
+    "identity": false
+   },
+   "NormalizedName": {
+    "type": "character varying(256)",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "AspNetRoleClaims": {
+  "columns": {
+   "Id": {
+    "type": "integer",
+    "nullable": false,
+    "identity": true
+   },
+   "ClaimType": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "ClaimValue": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "RoleId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "AspNetUserClaims": {
+  "columns": {
+   "Id": {
+    "type": "integer",
+    "nullable": false,
+    "identity": true
+   },
+   "ClaimType": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "ClaimValue": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "UserId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "AspNetUserLogins": {
+  "columns": {
+   "LoginProvider": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "ProviderKey": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "ProviderDisplayName": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "UserId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "LoginProvider",
+   "ProviderKey"
+  ]
+ },
+ "AspNetUserRoles": {
+  "columns": {
+   "UserId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "RoleId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "UserId",
+   "RoleId"
+  ]
+ },
+ "AspNetUserTokens": {
+  "columns": {
+   "UserId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "LoginProvider": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "Name": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "Value": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "UserId",
+   "LoginProvider",
+   "Name"
+  ]
+ },
+ "Memberships": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "DeactivatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "DisplayName": {
+    "type": "character varying(120)",
+    "nullable": false,
+    "identity": false
+   },
+   "IsOwner": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "Status": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "UserId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "BusinessRoles": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "IsSystem": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(60)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "RolePermissions": {
+  "columns": {
+   "RoleId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Permission": {
+    "type": "character varying(80)",
+    "nullable": true,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "RoleId",
+   "Permission"
+  ]
+ },
+ "MembershipLocations": {
+  "columns": {
+   "MembershipId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "LocationId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "MembershipId",
+   "LocationId"
+  ]
+ },
+ "MembershipRoles": {
+  "columns": {
+   "MembershipId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "RoleId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "MembershipId",
+   "RoleId"
+  ]
+ },
+ "Invitations": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "AcceptedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Email": {
+    "type": "character varying(256)",
+    "nullable": false,
+    "identity": false
+   },
+   "ExpiresAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "FullName": {
+    "type": "character varying(120)",
+    "nullable": false,
+    "identity": false
+   },
+   "InvitedByUserId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "RevokedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "TokenHash": {
+    "type": "character varying(64)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "UserSessions": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "AbsoluteExpiresAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CurrentTokenHash": {
+    "type": "character varying(64)",
+    "nullable": false,
+    "identity": false
+   },
+   "DeviceName": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "IdleExpiresAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "LastUsedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "PreviousTokenHash": {
+    "type": "character varying(64)",
+    "nullable": true,
+    "identity": false
+   },
+   "RevokedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "RevokedReason": {
+    "type": "character varying(80)",
+    "nullable": true,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "UserId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "AuditLogs": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Action": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "ActorUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "DetailsJson": {
+    "type": "jsonb",
+    "nullable": true,
+    "identity": false
+   },
+   "EntityId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "EntityType": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "Plans": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "AnnualPrice": {
+    "type": "numeric(18,2)",
+    "nullable": true,
+    "identity": false
+   },
+   "Code": {
+    "type": "character varying(40)",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CurrencyCode": {
+    "type": "character varying(3)",
+    "nullable": false,
+    "identity": false
+   },
+   "Description": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "IsActive": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "MonthlyPrice": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "SortOrder": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "PlanEntitlements": {
+  "columns": {
+   "PlanId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Key": {
+    "type": "character varying(80)",
+    "nullable": true,
+    "identity": false
+   },
+   "Value": {
+    "type": "character varying(60)",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "PlanId",
+   "Key"
+  ]
+ },
+ "EntitlementOverrides": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "ExpiresAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "Key": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "Reason": {
+    "type": "character varying(500)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "Value": {
+    "type": "character varying(60)",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "Subscriptions": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CurrentPeriodEndUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "CurrentPeriodStartUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "PlanId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "UsageCounters": {
+  "columns": {
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Key": {
+    "type": "character varying(80)",
+    "nullable": true,
+    "identity": false
+   },
+   "PeriodStartUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Count": {
+    "type": "bigint",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "BusinessId",
+   "Key",
+   "PeriodStartUtc"
+  ]
+ },
+ "Customers": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "AddressLine": {
+    "type": "character varying(300)",
+    "nullable": true,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "City": {
+    "type": "character varying(100)",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Email": {
+    "type": "character varying(256)",
+    "nullable": true,
+    "identity": false
+   },
+   "FullName": {
+    "type": "character varying(120)",
+    "nullable": false,
+    "identity": false
+   },
+   "GarmentPreferences": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "MergedIntoCustomerId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "NormalizedEmail": {
+    "type": "character varying(256)",
+    "nullable": true,
+    "identity": false
+   },
+   "NormalizedPhone": {
+    "type": "character varying(40)",
+    "nullable": true,
+    "identity": false
+   },
+   "Notes": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "Phone": {
+    "type": "character varying(40)",
+    "nullable": true,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "CustomerCommunications": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Body": {
+    "type": "character varying(4000)",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Channel": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CustomerId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Direction": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "RecordedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "Subject": {
+    "type": "character varying(200)",
+    "nullable": true,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "Fittings": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "CustomerId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "DurationMinutes": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "LocationId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Notes": {
+    "type": "character varying(2000)",
+    "nullable": true,
+    "identity": false
+   },
+   "OrderId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "ScheduledAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "Designs": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BasePrice": {
+    "type": "numeric(18,2)",
+    "nullable": true,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CategoryId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "CurrencyCode": {
+    "type": "character varying(3)",
+    "nullable": true,
+    "identity": false
+   },
+   "Description": {
+    "type": "character varying(4000)",
+    "nullable": true,
+    "identity": false
+   },
+   "GarmentType": {
+    "type": "character varying(60)",
+    "nullable": true,
+    "identity": false
+   },
+   "IsFeatured": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "Kind": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(120)",
+    "nullable": false,
+    "identity": false
+   },
+   "ParentDesignId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "ProductionDays": {
+    "type": "integer",
+    "nullable": true,
+    "identity": false
+   },
+   "Slug": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "Visibility": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "DesignCategories": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "SortOrder": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "DesignCollections": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Description": {
+    "type": "character varying(2000)",
+    "nullable": true,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(120)",
+    "nullable": false,
+    "identity": false
+   },
+   "Slug": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "SortOrder": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "Visibility": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "DesignCollectionItems": {
+  "columns": {
+   "CollectionId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "DesignId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "SortOrder": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "CollectionId",
+   "DesignId"
+  ]
+ },
+ "DesignImages": {
+  "columns": {
+   "DesignId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "MediaAssetId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "AltText": {
+    "type": "character varying(200)",
+    "nullable": true,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "SortOrder": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "DesignId",
+   "MediaAssetId"
+  ]
+ },
+ "Documents": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "ContentType": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CustomerId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "Description": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "FileName": {
+    "type": "character varying(200)",
+    "nullable": false,
+    "identity": false
+   },
+   "Kind": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "OrderId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "ScanStatus": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "Sha256": {
+    "type": "character varying(64)",
+    "nullable": false,
+    "identity": false
+   },
+   "SizeBytes": {
+    "type": "bigint",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "UploadedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "EmailOutbox": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Attempts": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "BodyPurgedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "DeliveryDetail": {
+    "type": "character varying(300)",
+    "nullable": true,
+    "identity": false
+   },
+   "DeduplicationKey": {
+    "type": "character varying(200)",
+    "nullable": true,
+    "identity": false
+   },
+   "DeliveryStatus": {
+    "type": "character varying(20)",
+    "nullable": true,
+    "identity": false
+   },
+   "DeliveryUpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "HtmlBody": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "LastError": {
+    "type": "character varying(400)",
+    "nullable": true,
+    "identity": false
+   },
+   "LeaseUntilUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "NextAttemptUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "ProviderMessageId": {
+    "type": "character varying(200)",
+    "nullable": true,
+    "identity": false
+   },
+   "SentAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(10)",
+    "nullable": false,
+    "identity": false
+   },
+   "Subject": {
+    "type": "character varying(200)",
+    "nullable": false,
+    "identity": false
+   },
+   "TemplateKey": {
+    "type": "character varying(60)",
+    "nullable": true,
+    "identity": false
+   },
+   "TextBody": {
+    "type": "text",
+    "nullable": false,
+    "identity": false
+   },
+   "ToAddress": {
+    "type": "character varying(254)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "EmailSuppressions": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Address": {
+    "type": "character varying(254)",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Reason": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "CreditNotes": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Amount": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "InvoiceId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Number": {
+    "type": "character varying(30)",
+    "nullable": false,
+    "identity": false
+   },
+   "Reason": {
+    "type": "character varying(500)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "DocumentCounters": {
+  "columns": {
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Kind": {
+    "type": "character varying(30)",
+    "nullable": true,
+    "identity": false
+   },
+   "Year": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "LastValue": {
+    "type": "bigint",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "BusinessId",
+   "Kind",
+   "Year"
+  ]
+ },
+ "Expenses": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Amount": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CategoryId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "CurrencyCode": {
+    "type": "character varying(3)",
+    "nullable": false,
+    "identity": false
+   },
+   "Description": {
+    "type": "character varying(300)",
+    "nullable": false,
+    "identity": false
+   },
+   "ExpenseDate": {
+    "type": "date",
+    "nullable": false,
+    "identity": false
+   },
+   "LocationId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "Reference": {
+    "type": "character varying(100)",
+    "nullable": true,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "Vendor": {
+    "type": "character varying(120)",
+    "nullable": true,
+    "identity": false
+   },
+   "VoidReason": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "VoidedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "ExpenseCategories": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "IsActive": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "SortOrder": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "Invoices": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "CurrencyCode": {
+    "type": "character varying(3)",
+    "nullable": false,
+    "identity": false
+   },
+   "CustomerId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "DueDate": {
+    "type": "date",
+    "nullable": true,
+    "identity": false
+   },
+   "IdempotencyKey": {
+    "type": "character varying(100)",
+    "nullable": true,
+    "identity": false
+   },
+   "IssueDate": {
+    "type": "date",
+    "nullable": true,
+    "identity": false
+   },
+   "IssuedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "Kind": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "Notes": {
+    "type": "character varying(2000)",
+    "nullable": true,
+    "identity": false
+   },
+   "Number": {
+    "type": "character varying(30)",
+    "nullable": true,
+    "identity": false
+   },
+   "OrderId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "Subtotal": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "TaxTotal": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "Terms": {
+    "type": "character varying(2000)",
+    "nullable": true,
+    "identity": false
+   },
+   "Total": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "VoidReason": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "VoidedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "InvoiceLines": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Description": {
+    "type": "character varying(200)",
+    "nullable": false,
+    "identity": false
+   },
+   "Discount": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "InvoiceId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "LineNumber": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "LineTotal": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "NetAmount": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "Quantity": {
+    "type": "numeric(12,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "TaxAmount": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "TaxPercent": {
+    "type": "numeric(5,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "UnitPrice": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "Payments": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Amount": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CurrencyCode": {
+    "type": "character varying(3)",
+    "nullable": false,
+    "identity": false
+   },
+   "CustomerId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "IdempotencyKey": {
+    "type": "character varying(100)",
+    "nullable": true,
+    "identity": false
+   },
+   "InvoiceId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Method": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "Notes": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "ReceivedOn": {
+    "type": "date",
+    "nullable": false,
+    "identity": false
+   },
+   "RecordedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "Reference": {
+    "type": "character varying(100)",
+    "nullable": true,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "StatusReason": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "VerifiedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "VerifiedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "Receipts": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Amount": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "BalanceAfter": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "InvoiceId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "IssuedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Number": {
+    "type": "character varying(30)",
+    "nullable": false,
+    "identity": false
+   },
+   "PaymentId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "VoidedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "MeasurementSets": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CurrentRevision": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "CustomerId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Label": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "TemplateId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "MeasurementRevisions": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Notes": {
+    "type": "character varying(2000)",
+    "nullable": true,
+    "identity": false
+   },
+   "RecordedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "RevisionNumber": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "SetId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "ValuesJson": {
+    "type": "jsonb",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "MeasurementTemplates": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Description": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "IsActive": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "MeasurementTemplateFields": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "IsRequired": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "Key": {
+    "type": "character varying(40)",
+    "nullable": false,
+    "identity": false
+   },
+   "Label": {
+    "type": "character varying(60)",
+    "nullable": false,
+    "identity": false
+   },
+   "MaxValue": {
+    "type": "numeric(10,2)",
+    "nullable": true,
+    "identity": false
+   },
+   "MinValue": {
+    "type": "numeric(10,2)",
+    "nullable": true,
+    "identity": false
+   },
+   "SortOrder": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "TemplateId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Unit": {
+    "type": "character varying(8)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "MediaAssets": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "ContentType": {
+    "type": "character varying(60)",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Height": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "OriginalFileName": {
+    "type": "character varying(200)",
+    "nullable": false,
+    "identity": false
+   },
+   "Purpose": {
+    "type": "character varying(30)",
+    "nullable": false,
+    "identity": false
+   },
+   "Sha256": {
+    "type": "character varying(64)",
+    "nullable": false,
+    "identity": false
+   },
+   "SizeBytes": {
+    "type": "bigint",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "UploadedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "Width": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "Orders": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CancellationReason": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "CancelledAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "ConfirmedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "CurrencyCode": {
+    "type": "character varying(3)",
+    "nullable": false,
+    "identity": false
+   },
+   "CustomerId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "DeliveredAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "DeliveryAddress": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "DeliveryInstructions": {
+    "type": "character varying(1000)",
+    "nullable": true,
+    "identity": false
+   },
+   "DeliveryMethod": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "Discount": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "IdempotencyKey": {
+    "type": "character varying(100)",
+    "nullable": true,
+    "identity": false
+   },
+   "LocationId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Notes": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "OrderNumber": {
+    "type": "character varying(30)",
+    "nullable": false,
+    "identity": false
+   },
+   "Priority": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "PromisedDate": {
+    "type": "date",
+    "nullable": false,
+    "identity": false
+   },
+   "QuotedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "ReadyAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "Subtotal": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "Total": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "OrderCounters": {
+  "columns": {
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Year": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "LastValue": {
+    "type": "bigint",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "BusinessId",
+   "Year"
+  ]
+ },
+ "OrderGarments": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "AlterationNotes": {
+    "type": "character varying(2000)",
+    "nullable": true,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Category": {
+    "type": "character varying(80)",
+    "nullable": true,
+    "identity": false
+   },
+   "Colour": {
+    "type": "character varying(60)",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "DesignId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "DesignNameSnapshot": {
+    "type": "character varying(120)",
+    "nullable": true,
+    "identity": false
+   },
+   "DesignPriceSnapshot": {
+    "type": "numeric(18,2)",
+    "nullable": true,
+    "identity": false
+   },
+   "Fabric": {
+    "type": "character varying(120)",
+    "nullable": true,
+    "identity": false
+   },
+   "LineNumber": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "LineTotal": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "MeasurementRevision": {
+    "type": "integer",
+    "nullable": true,
+    "identity": false
+   },
+   "MeasurementSetId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "MeasurementSnapshotJson": {
+    "type": "jsonb",
+    "nullable": true,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(120)",
+    "nullable": false,
+    "identity": false
+   },
+   "OrderId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "PriceOverrideReason": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "PricingSnapshotJson": {
+    "type": "jsonb",
+    "nullable": true,
+    "identity": false
+   },
+   "Quantity": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "StyleInstructions": {
+    "type": "character varying(4000)",
+    "nullable": true,
+    "identity": false
+   },
+   "UnitPrice": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "PricingProfiles": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "DefaultHourlyRate": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "Method": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "OverheadPercent": {
+    "type": "numeric(7,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "RoundingStep": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "TargetPercent": {
+    "type": "numeric(7,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "TaxPercent": {
+    "type": "numeric(7,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "Stages": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "DefaultMinutes": {
+    "type": "integer",
+    "nullable": true,
+    "identity": false
+   },
+   "Instructions": {
+    "type": "character varying(2000)",
+    "nullable": true,
+    "identity": false
+   },
+   "IsConditional": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "Key": {
+    "type": "character varying(40)",
+    "nullable": false,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "RequiredSkill": {
+    "type": "character varying(60)",
+    "nullable": true,
+    "identity": false
+   },
+   "SortOrder": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "WorkflowId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "ProductionTasks": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "ActualStartUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "AssignedMembershipId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "BlockedReason": {
+    "type": "character varying(2000)",
+    "nullable": true,
+    "identity": false
+   },
+   "BlockedType": {
+    "type": "character varying(20)",
+    "nullable": true,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CancelReason": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "CompletedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "CompletionNotes": {
+    "type": "character varying(2000)",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "DeadlineUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "EstimatedMinutes": {
+    "type": "integer",
+    "nullable": true,
+    "identity": false
+   },
+   "Instructions": {
+    "type": "character varying(4000)",
+    "nullable": true,
+    "identity": false
+   },
+   "IsConditional": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "OrderGarmentId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "OrderId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "PlannedEndUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "PlannedStartUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "Priority": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "Quantity": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "RequiredMaterialsJson": {
+    "type": "jsonb",
+    "nullable": false,
+    "identity": false
+   },
+   "RequiredSkill": {
+    "type": "character varying(60)",
+    "nullable": true,
+    "identity": false
+   },
+   "StageId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "StageName": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "StageOrder": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "StatusBeforeBlock": {
+    "type": "character varying(20)",
+    "nullable": true,
+    "identity": false
+   },
+   "Title": {
+    "type": "character varying(160)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "UpdatedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "Workflows": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Description": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "IsActive": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "IsDefault": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "StageDependencies": {
+  "columns": {
+   "StageId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "DependsOnStageId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "StageId",
+   "DependsOnStageId"
+  ]
+ },
+ "TaskDependencies": {
+  "columns": {
+   "TaskId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "DependsOnTaskId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "TaskId",
+   "DependsOnTaskId"
+  ]
+ },
+ "TaskEvents": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "ActorUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "DataJson": {
+    "type": "jsonb",
+    "nullable": true,
+    "identity": false
+   },
+   "FromStatus": {
+    "type": "character varying(20)",
+    "nullable": true,
+    "identity": false
+   },
+   "Note": {
+    "type": "character varying(2000)",
+    "nullable": true,
+    "identity": false
+   },
+   "TaskId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "ToStatus": {
+    "type": "character varying(20)",
+    "nullable": true,
+    "identity": false
+   },
+   "Type": {
+    "type": "character varying(40)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "WorkerSkills": {
+  "columns": {
+   "MembershipId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Skill": {
+    "type": "character varying(60)",
+    "nullable": true,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "MembershipId",
+   "Skill"
+  ]
+ },
+ "Materials": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "LocationId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "Sku": {
+    "type": "character varying(64)",
+    "nullable": false,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(160)",
+    "nullable": false,
+    "identity": false
+   },
+   "Unit": {
+    "type": "character varying(24)",
+    "nullable": false,
+    "identity": false
+   },
+   "OnHand": {
+    "type": "numeric(18,3)",
+    "nullable": false,
+    "identity": false
+   },
+   "Reserved": {
+    "type": "numeric(18,3)",
+    "nullable": false,
+    "identity": false
+   },
+   "ReorderLevel": {
+    "type": "numeric(18,3)",
+    "nullable": false,
+    "identity": false
+   },
+   "Notes": {
+    "type": "character varying(1000)",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "StockMovements": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "MaterialId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Kind": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "Quantity": {
+    "type": "numeric(18,3)",
+    "nullable": false,
+    "identity": false
+   },
+   "OnHandAfter": {
+    "type": "numeric(18,3)",
+    "nullable": false,
+    "identity": false
+   },
+   "ReservedAfter": {
+    "type": "numeric(18,3)",
+    "nullable": false,
+    "identity": false
+   },
+   "OrderId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "TaskId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "ActorUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "Note": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "CustomerPortalGrants": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CustomerId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "TokenHash": {
+    "type": "character varying(64)",
+    "nullable": false,
+    "identity": false
+   },
+   "ExpiresAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "RevokedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "LastUsedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "UseCount": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "OwnershipTransferChallenges": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "RequestingUserId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "NewOwnerMembershipId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "TokenHash": {
+    "type": "character varying(64)",
+    "nullable": false,
+    "identity": false
+   },
+   "ExpiresAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "ConsumedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "CancelledAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "SubscriptionPayments": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "PlanId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BillingPeriod": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "Amount": {
+    "type": "numeric(18,2)",
+    "nullable": false,
+    "identity": false
+   },
+   "CurrencyCode": {
+    "type": "character varying(3)",
+    "nullable": false,
+    "identity": false
+   },
+   "Provider": {
+    "type": "character varying(30)",
+    "nullable": false,
+    "identity": false
+   },
+   "ProviderReference": {
+    "type": "character varying(120)",
+    "nullable": false,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "PaidAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "WorkerAvailability": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CapacityMinutes": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "DayOfWeek": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "IsAvailable": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "OpensAt": {
+    "type": "time without time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "ClosesAt": {
+    "type": "time without time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "MembershipId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "WorkerLeaves": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "MembershipId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "StartsAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "EndsAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Reason": {
+    "type": "character varying(300)",
+    "nullable": false,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "ReviewedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "ReviewedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "ReviewNote": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "Inquiries": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Budget": {
+    "type": "character varying(60)",
+    "nullable": true,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "ConvertedOrderId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "DesignId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "DesignNameSnapshot": {
+    "type": "character varying(120)",
+    "nullable": true,
+    "identity": false
+   },
+   "Email": {
+    "type": "character varying(120)",
+    "nullable": true,
+    "identity": false
+   },
+   "EventDate": {
+    "type": "date",
+    "nullable": true,
+    "identity": false
+   },
+   "GarmentType": {
+    "type": "character varying(60)",
+    "nullable": true,
+    "identity": false
+   },
+   "HandledAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "HandledByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "InternalNote": {
+    "type": "character varying(1000)",
+    "nullable": true,
+    "identity": false
+   },
+   "IpHash": {
+    "type": "character varying(64)",
+    "nullable": true,
+    "identity": false
+   },
+   "Kind": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "Message": {
+    "type": "character varying(2000)",
+    "nullable": false,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(100)",
+    "nullable": false,
+    "identity": false
+   },
+   "Phone": {
+    "type": "character varying(40)",
+    "nullable": true,
+    "identity": false
+   },
+   "PreferredDate": {
+    "type": "date",
+    "nullable": true,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "StorefrontId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "SectionPresets": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(60)",
+    "nullable": false,
+    "identity": false
+   },
+   "PropsJson": {
+    "type": "jsonb",
+    "nullable": false,
+    "identity": false
+   },
+   "SectionType": {
+    "type": "character varying(30)",
+    "nullable": false,
+    "identity": false
+   },
+   "StyleJson": {
+    "type": "jsonb",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "Variant": {
+    "type": "character varying(30)",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "Storefronts": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Address": {
+    "type": "character varying(300)",
+    "nullable": true,
+    "identity": false
+   },
+   "AllowSearchIndexing": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "ContactEmail": {
+    "type": "character varying(120)",
+    "nullable": true,
+    "identity": false
+   },
+   "ContactPhone": {
+    "type": "character varying(40)",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "DraftJson": {
+    "type": "text",
+    "nullable": false,
+    "identity": false
+   },
+   "DraftRevision": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "OpeningHours": {
+    "type": "character varying(300)",
+    "nullable": true,
+    "identity": false
+   },
+   "PublishedVersionId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "Slug": {
+    "type": "character varying(40)",
+    "nullable": false,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "TemplateKey": {
+    "type": "character varying(40)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "WorkflowBooking": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "WorkflowContact": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "WorkflowCustomOrder": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "WorkflowInquiry": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "StorefrontDomains": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Hostname": {
+    "type": "character varying(253)",
+    "nullable": false,
+    "identity": false
+   },
+   "LastCheckedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "LastError": {
+    "type": "character varying(300)",
+    "nullable": true,
+    "identity": false
+   },
+   "Status": {
+    "type": "character varying(20)",
+    "nullable": false,
+    "identity": false
+   },
+   "StorefrontId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "VerificationToken": {
+    "type": "character varying(64)",
+    "nullable": false,
+    "identity": false
+   },
+   "VerifiedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "StorefrontVersions": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "DocumentJson": {
+    "type": "jsonb",
+    "nullable": false,
+    "identity": false
+   },
+   "Note": {
+    "type": "character varying(200)",
+    "nullable": true,
+    "identity": false
+   },
+   "PublishedByUserId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "RolledBackFromVersion": {
+    "type": "integer",
+    "nullable": true,
+    "identity": false
+   },
+   "SchemaVersion": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "StorefrontId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "TemplateKey": {
+    "type": "character varying(40)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "VersionNumber": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "StorefrontVersionMedia": {
+  "columns": {
+   "VersionId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "MediaAssetId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   }
+  },
+  "pk": [
+   "VersionId",
+   "MediaAssetId"
+  ]
+ },
+ "Businesses": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BrandColor": {
+    "type": "character varying(7)",
+    "nullable": true,
+    "identity": false
+   },
+   "ContactEmail": {
+    "type": "character varying(254)",
+    "nullable": true,
+    "identity": false
+   },
+   "ContactPhone": {
+    "type": "character varying(40)",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "CurrencyCode": {
+    "type": "character varying(3)",
+    "nullable": false,
+    "identity": false
+   },
+   "IsActive": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "LogoMediaId": {
+    "type": "uuid",
+    "nullable": true,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(120)",
+    "nullable": false,
+    "identity": false
+   },
+   "PdfFooterNote": {
+    "type": "character varying(300)",
+    "nullable": true,
+    "identity": false
+   },
+   "TaxNumber": {
+    "type": "character varying(60)",
+    "nullable": true,
+    "identity": false
+   },
+   "TimeZoneId": {
+    "type": "character varying(64)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "BusinessHolidays": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Date": {
+    "type": "date",
+    "nullable": false,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(80)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "BusinessHours": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "ClosesAt": {
+    "type": "time without time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "DayOfWeek": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "IsOpen": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "OpensAt": {
+    "type": "time without time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "Locations": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "Address": {
+    "type": "character varying(500)",
+    "nullable": true,
+    "identity": false
+   },
+   "BusinessId": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "IsActive": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "Name": {
+    "type": "character varying(120)",
+    "nullable": false,
+    "identity": false
+   },
+   "UpdatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ },
+ "AspNetUsers": {
+  "columns": {
+   "Id": {
+    "type": "uuid",
+    "nullable": false,
+    "identity": false
+   },
+   "AccessFailedCount": {
+    "type": "integer",
+    "nullable": false,
+    "identity": false
+   },
+   "ConcurrencyStamp": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "CreatedAtUtc": {
+    "type": "timestamp with time zone",
+    "nullable": false,
+    "identity": false
+   },
+   "Email": {
+    "type": "character varying(256)",
+    "nullable": true,
+    "identity": false
+   },
+   "EmailConfirmed": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "FullName": {
+    "type": "character varying(120)",
+    "nullable": false,
+    "identity": false
+   },
+   "LastTotpStep": {
+    "type": "bigint",
+    "nullable": true,
+    "identity": false
+   },
+   "LockoutEnabled": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "LockoutEnd": {
+    "type": "timestamp with time zone",
+    "nullable": true,
+    "identity": false
+   },
+   "NormalizedEmail": {
+    "type": "character varying(256)",
+    "nullable": true,
+    "identity": false
+   },
+   "NormalizedUserName": {
+    "type": "character varying(256)",
+    "nullable": true,
+    "identity": false
+   },
+   "PasswordHash": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "PhoneNumber": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "PhoneNumberConfirmed": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "SecurityStamp": {
+    "type": "text",
+    "nullable": true,
+    "identity": false
+   },
+   "TwoFactorEnabled": {
+    "type": "boolean",
+    "nullable": false,
+    "identity": false
+   },
+   "UserName": {
+    "type": "character varying(256)",
+    "nullable": true,
+    "identity": false
+   }
+  },
+  "pk": [
+   "Id"
+  ]
+ }
+}

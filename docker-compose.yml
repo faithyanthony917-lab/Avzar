@@ -1,0 +1,53 @@
+# Local development only. Copy .env.example to .env first.
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: avzar_node_dev
+      POSTGRES_USER: ${POSTGRES_USER:-avzar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_locally}
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-avzar} -d avzar_node_dev"]
+      interval: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: backend-node/Dockerfile
+    # Development: apply SQL migrations, then start with file watching. NODE_ENV below overrides the image default.
+    command: sh -c "npm run migrate && npm run dev"
+    depends_on:
+      postgres: { condition: service_healthy }
+    environment:
+      NODE_ENV: development
+      PORT: 8081
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://${POSTGRES_USER:-avzar}:${POSTGRES_PASSWORD:-change_me_locally}@postgres:5432/avzar_node_dev
+      DATABASE_POOL_MAX: 10
+      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY:-}
+      JWT_ISSUER: ${JWT_ISSUER:-avzar-api}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-avzar-mobile}
+      ACCESS_TOKEN_MINUTES: ${ACCESS_TOKEN_MINUTES:-10}
+      REFRESH_IDLE_DAYS: ${REFRESH_IDLE_DAYS:-30}
+      REFRESH_ABSOLUTE_DAYS: ${REFRESH_ABSOLUTE_DAYS:-90}
+      REQUIRE_VERIFIED_EMAIL: ${REQUIRE_VERIFIED_EMAIL:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports: ["8081:8081"]
+
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:8081}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${TURNSTILE_SITE_KEY:-}
+    depends_on: [api]
+    environment:
+      API_URL: http://api:8081
+      BASE_DOMAIN: ${BASE_DOMAIN:-localhost}
+    ports: ["3000:3000"]
+
+volumes:
+  pgdata:

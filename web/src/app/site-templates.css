@@ -1,0 +1,177 @@
+/*
+ * Storefront template looks, eight templates in all with Standard as the baseline. Each template changes layout, rhythm, scale, shape and scrolling behaviour, never colour:
+ * every colour still comes from the site's validated theme through the CSS variables set in globals.css, so the
+ * contrast checks the builder shows stay true for every template. Standard has no block here on purpose: it is the
+ * baseline in globals.css. Every selector is scoped by data-template, so nothing here touches the app screens.
+ */
+
+/* ---------- Bespoke: a workshop notebook. Left-aligned, narrower column, numbered sections, ruled menu. ---------- */
+.site[data-template="bespoke"] .wrap{max-width:62rem}
+.site[data-template="bespoke"] .hdr{border-bottom:0}
+.site[data-template="bespoke"] .hdr-in{flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:.5rem;padding-top:1.75rem;padding-bottom:0}
+.site[data-template="bespoke"] .brand{font-size:1.9rem}
+.site[data-template="bespoke"] .hdr nav{width:100%;margin-top:.75rem;border-top:1px solid var(--c-border,#e5e5e5);border-bottom:1px solid var(--c-border,#e5e5e5)}
+.site[data-template="bespoke"] .hdr nav ul{gap:1.75rem}
+.site[data-template="bespoke"] .hdr nav a{display:inline-block;padding:.85rem 0;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase}
+.site[data-template="bespoke"] h1{font-size:clamp(2rem,4.5vw,3rem)}
+.site[data-template="bespoke"] main{counter-reset:bespoke-section}
+.site[data-template="bespoke"] .sec{border-top:1px solid var(--c-border,#e5e5e5)}
+.site[data-template="bespoke"] .sec-hero{border-top:0}
+.site[data-template="bespoke"] .sec:not(.sec-hero){counter-increment:bespoke-section}
+.site[data-template="bespoke"] .sec:not(.sec-hero) h2.sec-h::before{content:counter(bespoke-section,decimal-leading-zero);content:counter(bespoke-section,decimal-leading-zero) / "";display:block;margin-bottom:.5rem;font-family:var(--font-body,system-ui,sans-serif);font-size:.75rem;font-weight:600;letter-spacing:.2em;opacity:.65}
+.site[data-template="bespoke"] .hero-img{aspect-ratio:4/5;max-height:36rem}
+.site[data-template="bespoke"] .v-split-right .hero-grid{grid-template-columns:1.1fr .9fr}
+.site[data-template="bespoke"] .sec-richText .prose{font-size:1.1rem}
+.site[data-template="bespoke"] .card{background:transparent;border:0;border-radius:0}
+.site[data-template="bespoke"] .card-img{aspect-ratio:3/4;border-radius:0}
+.site[data-template="bespoke"] .card-name,.site[data-template="bespoke"] .card-meta,.site[data-template="bespoke"] .card-price{padding-left:0;padding-right:0}
+.site[data-template="bespoke"] .v-editorial .cards{grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:2.5rem 1.5rem}
+.site[data-template="bespoke"] .ftr{margin-top:0}
+.site[data-template="bespoke"] .ftr .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:1rem 2rem}
+.site[data-template="bespoke"] .ftr .social{margin:0}
+
+/* ---------- Luxury: image first. Centred menu, full-height opening, generous space, staggered gallery, smooth scroll. ---------- */
+.site[data-template="luxury"] .hdr{position:sticky;top:0;z-index:40}
+.site[data-template="luxury"] .hdr-in{flex-direction:column;justify-content:center;gap:.4rem;padding-top:1.4rem;padding-bottom:1rem;text-align:center}
+.site[data-template="luxury"] .brand{font-size:1.5rem;font-weight:500;letter-spacing:.28em;text-transform:uppercase}
+.site[data-template="luxury"] .hdr nav ul{justify-content:center;gap:2.25rem}
+.site[data-template="luxury"] .hdr nav a{font-size:.75rem;letter-spacing:.18em;text-transform:uppercase}
+.site[data-template="luxury"] h1{font-size:clamp(2.4rem,7vw,5rem);font-weight:400;letter-spacing:.03em}
+.site[data-template="luxury"] h2{font-weight:400;letter-spacing:.02em}
+.site[data-template="luxury"] .sec{padding:calc(var(--space,4rem) * 1.6) 0}
+.site[data-template="luxury"] .sec.sp-compact{padding:2.5rem 0}
+.site[data-template="luxury"] .sec-hero.v-fullbleed{display:flex;align-items:center;min-height:min(90vh,56rem);padding:6rem 0}
+.site[data-template="luxury"] .v-fullbleed .hero-copy{max-width:44rem}
+.site[data-template="luxury"] .al-center h2.sec-h::after{content:"";display:block;width:3rem;height:1px;margin:1.1rem auto 0;background:var(--c-accent,currentColor)}
+.site[data-template="luxury"] .card{background:transparent;border:0;border-radius:0;overflow:visible}
+.site[data-template="luxury"] .card-link{overflow:hidden}
+.site[data-template="luxury"] .card-img{aspect-ratio:3/4;border-radius:0}
+.site[data-template="luxury"] .card-name{padding-top:1rem;font-size:.9rem;letter-spacing:.12em;text-transform:uppercase}
+.site[data-template="luxury"] .card-name,.site[data-template="luxury"] .card-meta,.site[data-template="luxury"] .card-price{padding-left:0;padding-right:0}
+.site[data-template="luxury"] .v-editorial .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:4rem 3rem}
+.site[data-template="luxury"] .v-editorial .card:nth-child(even){margin-top:3.5rem}
+.site[data-template="luxury"] .v-spotlight .cards{grid-template-columns:2fr 1fr 1fr;gap:2rem;align-items:end}
+.site[data-template="luxury"] .v-spotlight .card:first-child .card-img{aspect-ratio:4/5}
+.site[data-template="luxury"] .sec-designerProfile{border-top:1px solid var(--c-border,#e5e5e5);border-bottom:1px solid var(--c-border,#e5e5e5)}
+.site[data-template="luxury"] .al-center .form{margin-left:auto;margin-right:auto}
+.site[data-template="luxury"] .form input,.site[data-template="luxury"] .form textarea{border-width:0 0 1px;border-radius:0;background:transparent}
+.site[data-template="luxury"] .btn{padding:1rem 2.2rem;font-size:.8rem;letter-spacing:.16em;text-transform:uppercase}
+.site[data-template="luxury"] .ftr{margin-top:0;padding:4rem 0;text-align:center}
+.site[data-template="luxury"] .ftr .social{justify-content:center}
+html:has(.site[data-template="luxury"]){scroll-padding-top:6rem}
+
+@media (prefers-reduced-motion:no-preference){
+  html:has(.site[data-template="luxury"]){scroll-behavior:smooth}
+  .site[data-template="luxury"] .card-img{transition:transform .6s ease}
+  .site[data-template="luxury"] .card-link:hover .card-img{transform:scale(1.03)}
+  .site[data-template="streetwear"] .card{transition:transform .15s ease,box-shadow .15s ease}
+  .site[data-template="streetwear"] .card:hover{transform:translate(-4px,-4px);box-shadow:6px 6px 0 currentColor}
+}
+
+@media (max-width:48rem){
+  .site[data-template="bespoke"] .hdr nav ul{gap:1.25rem}
+  .site[data-template="bespoke"] .v-split-right .hero-grid{grid-template-columns:1fr!important}
+  .site[data-template="luxury"] .hdr{position:static}
+  html:has(.site[data-template="luxury"]){scroll-padding-top:1rem}
+  .site[data-template="luxury"] .hdr nav ul{gap:1.25rem}
+  .site[data-template="luxury"] .sec-hero.v-fullbleed{min-height:70vh;padding:4rem 0}
+  .site[data-template="luxury"] .v-editorial .cards{grid-template-columns:1fr;gap:2.5rem}
+  .site[data-template="luxury"] .v-editorial .card:nth-child(even){margin-top:0}
+  .site[data-template="luxury"] .v-spotlight .cards{grid-template-columns:1fr}
+  .site[data-template="luxury"] .ftr{padding:2.5rem 0}
+}
+
+/* ---------- Ready-to-wear: a shop. Compact bar, shop-floor banner, dense product grid, ruled section headings. ---------- */
+.site[data-template="ready-to-wear"] .wrap{max-width:76rem}
+.site[data-template="ready-to-wear"] .hdr{border-bottom-width:2px}
+.site[data-template="ready-to-wear"] .hdr-in{padding-top:.7rem;padding-bottom:.7rem}
+.site[data-template="ready-to-wear"] .brand{font-size:1.2rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.site[data-template="ready-to-wear"] .hdr nav a{font-size:.8rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.site[data-template="ready-to-wear"] .sec{padding:2.5rem 0}
+.site[data-template="ready-to-wear"] .sec-hero.v-fullbleed{padding:4.5rem 0}
+.site[data-template="ready-to-wear"] h1{font-size:clamp(2rem,6vw,3.5rem);text-transform:uppercase;letter-spacing:.02em}
+.site[data-template="ready-to-wear"] h2.sec-h{padding-bottom:.5rem;margin-bottom:1.25rem;border-bottom:2px solid currentColor;font-size:1.1rem;text-transform:uppercase;letter-spacing:.08em}
+.site[data-template="ready-to-wear"] .v-dense-grid .cards{grid-template-columns:repeat(auto-fill,minmax(9rem,1fr));gap:1.25rem .75rem}
+.site[data-template="ready-to-wear"] .card{background:transparent;border:0;border-radius:0;overflow:visible}
+.site[data-template="ready-to-wear"] .card-img{aspect-ratio:3/4;border-radius:0}
+.site[data-template="ready-to-wear"] .card-name,.site[data-template="ready-to-wear"] .card-meta,.site[data-template="ready-to-wear"] .card-price{padding-left:0;padding-right:0;font-size:.85rem}
+.site[data-template="ready-to-wear"] .btn{border-radius:2px;text-transform:uppercase;letter-spacing:.08em;font-size:.85rem}
+
+/* ---------- African heritage: woven pattern rules under headings, framed cards, a scrolling row of pieces. ---------- */
+.site[data-template="african-heritage"] .hdr{border-bottom:4px solid var(--c-accent,currentColor)}
+.site[data-template="african-heritage"] .brand{font-size:1.7rem;font-weight:800}
+.site[data-template="african-heritage"] h2.sec-h::after{content:"";display:block;width:6rem;height:.55rem;margin-top:.7rem;background:repeating-linear-gradient(135deg,var(--c-accent,currentColor) 0 .3rem,transparent .3rem .6rem)}
+.site[data-template="african-heritage"] .al-center h2.sec-h::after{margin-left:auto;margin-right:auto}
+.site[data-template="african-heritage"] .sec-designerProfile{border-top:.45rem solid var(--c-accent,currentColor);border-bottom:.45rem solid var(--c-accent,currentColor)}
+.site[data-template="african-heritage"] .sec-designerProfile .split{max-width:40rem;margin:0 auto}
+.site[data-template="african-heritage"] .card{border:3px solid var(--c-border,#e5e5e5);border-radius:0}
+.site[data-template="african-heritage"] .v-row .cards{display:flex;gap:1.25rem;overflow-x:auto;padding-bottom:1rem;scroll-snap-type:x mandatory}
+.site[data-template="african-heritage"] .v-row .card{flex:0 0 min(16rem,72vw);scroll-snap-align:start}
+.site[data-template="african-heritage"] .v-editorial .cards{grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))}
+.site[data-template="african-heritage"] .v-editorial .card:nth-child(3n+2) .card-img{aspect-ratio:1/1}
+.site[data-template="african-heritage"] .ftr{border-top:4px solid var(--c-accent,currentColor)}
+
+/* ---------- Bridal: soft and consultation first. Centred, airy, arched images, rounded buttons. ---------- */
+.site[data-template="bridal"] .wrap{max-width:64rem}
+.site[data-template="bridal"] .hdr-in{flex-direction:column;justify-content:center;gap:.4rem;text-align:center;padding-top:1.5rem}
+.site[data-template="bridal"] .brand{font-size:1.7rem;font-style:italic;font-weight:400;letter-spacing:.06em}
+.site[data-template="bridal"] .hdr nav ul{justify-content:center;gap:1.75rem}
+.site[data-template="bridal"] .hdr nav a{font-size:.8rem;letter-spacing:.16em;text-transform:uppercase}
+.site[data-template="bridal"] .sec{padding:calc(var(--space,4rem) * 1.4) 0}
+.site[data-template="bridal"] h1{font-size:clamp(2.2rem,6vw,3.6rem);font-weight:400;line-height:1.15}
+.site[data-template="bridal"] h2{font-weight:400;font-style:italic}
+.site[data-template="bridal"] .sec-richText .prose{max-width:38rem;margin:0 auto;font-size:1.1rem;line-height:1.8}
+.site[data-template="bridal"] .al-center h2.sec-h::after{content:"";display:block;width:2.5rem;height:1px;margin:1rem auto 0;background:var(--c-accent,currentColor)}
+.site[data-template="bridal"] .card{background:transparent;border:0;border-radius:0;overflow:visible}
+.site[data-template="bridal"] .card-img{aspect-ratio:3/4;border-radius:50% 50% 0 0 / 28% 28% 0 0}
+.site[data-template="bridal"] .card-name{padding-top:.9rem;text-align:center;padding-left:0;padding-right:0}
+.site[data-template="bridal"] .card-meta,.site[data-template="bridal"] .card-price{text-align:center;padding-left:0;padding-right:0}
+.site[data-template="bridal"] .v-spotlight .cards{grid-template-columns:1fr 1.6fr 1fr;align-items:center;gap:1.5rem}
+.site[data-template="bridal"] .v-editorial .cards{grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:3rem 2rem}
+.site[data-template="bridal"] .btn{border-radius:999px;padding:.9rem 2rem;letter-spacing:.1em}
+.site[data-template="bridal"] .ftr{text-align:center}
+.site[data-template="bridal"] .ftr .social{justify-content:center}
+
+/* ---------- Streetwear: loud and product first. Heavy type, hard borders, hard shadows on hover, scrolling drop row. ---------- */
+.site[data-template="streetwear"] .hdr{position:sticky;top:0;z-index:40;border-bottom:3px solid currentColor}
+.site[data-template="streetwear"] .brand{font-size:1.5rem;font-weight:900;letter-spacing:-.02em;text-transform:uppercase}
+.site[data-template="streetwear"] .hdr nav a{font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.site[data-template="streetwear"] h1{font-size:clamp(2.6rem,11vw,6.5rem);font-weight:900;line-height:.95;letter-spacing:-.03em;text-transform:uppercase}
+.site[data-template="streetwear"] h2{font-weight:900;text-transform:uppercase;letter-spacing:-.01em}
+.site[data-template="streetwear"] .sec{padding:2.75rem 0;border-bottom:3px solid currentColor}
+.site[data-template="streetwear"] .sec-hero.v-minimal{padding:4rem 0}
+.site[data-template="streetwear"] .v-dense-grid .cards{grid-template-columns:repeat(auto-fill,minmax(8.5rem,1fr));gap:.75rem}
+.site[data-template="streetwear"] .card{background:transparent;border:2px solid currentColor;border-radius:0}
+.site[data-template="streetwear"] .card-img{aspect-ratio:1/1;border-radius:0}
+.site[data-template="streetwear"] .card-name{text-transform:uppercase;font-weight:800;font-size:.85rem}
+.site[data-template="streetwear"] .v-row .cards{display:flex;gap:.75rem;overflow-x:auto;padding-bottom:1rem;scroll-snap-type:x mandatory}
+.site[data-template="streetwear"] .v-row .card{flex:0 0 min(14rem,64vw);scroll-snap-align:start}
+.site[data-template="streetwear"] .btn{border-radius:0;border:2px solid currentColor;text-transform:uppercase;font-weight:800;letter-spacing:.06em}
+.site[data-template="streetwear"] .form input,.site[data-template="streetwear"] .form textarea{border-width:2px;border-radius:0}
+.site[data-template="streetwear"] .ftr{margin-top:0;border-top:3px solid currentColor}
+
+/* ---------- Atelier studio: the maker's workbench. Small caps headings in a left column, prose and price lists beside them. ---------- */
+.site[data-template="atelier-studio"] .wrap{max-width:70rem}
+.site[data-template="atelier-studio"] .brand{font-size:1.15rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase}
+.site[data-template="atelier-studio"] .hdr nav a{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}
+.site[data-template="atelier-studio"] h1{font-size:clamp(2rem,5vw,3.4rem);font-weight:500;line-height:1.1}
+.site[data-template="atelier-studio"] .sec{border-top:1px solid var(--c-border,#e5e5e5)}
+.site[data-template="atelier-studio"] .sec-hero{border-top:0}
+.site[data-template="atelier-studio"] h2.sec-h{font-size:.85rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase}
+.site[data-template="atelier-studio"] .sec-designList .wrap,.site[data-template="atelier-studio"] .sec-richText .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2.4fr);gap:1.5rem 3rem;align-items:start}
+.site[data-template="atelier-studio"] .sec-designList .wrap>.cards,.site[data-template="atelier-studio"] .sec-richText .wrap>.prose{grid-column:2}
+.site[data-template="atelier-studio"] .sec-designList .wrap>h2,.site[data-template="atelier-studio"] .sec-richText .wrap>h2{grid-column:1;grid-row:1}
+.site[data-template="atelier-studio"] .v-list .cards{gap:0}
+.site[data-template="atelier-studio"] .v-list .card{background:transparent;border:0;border-bottom:1px solid var(--c-border,#e5e5e5);border-radius:0}
+.site[data-template="atelier-studio"] .v-list .card-link{padding:.9rem 0;justify-content:space-between;gap:1rem}
+.site[data-template="atelier-studio"] .v-list .card-img{width:5rem;border-radius:0}
+.site[data-template="atelier-studio"] .v-large.sec-designerProfile .side-img{aspect-ratio:3/4;object-fit:cover;border-radius:0}
+.site[data-template="atelier-studio"] .btn{border-radius:2px;padding:.8rem 1.6rem;letter-spacing:.1em;text-transform:uppercase;font-size:.8rem}
+
+@media (max-width:48rem){
+  .site[data-template="streetwear"] .hdr{position:static}
+  .site[data-template="bridal"] .v-spotlight .cards{grid-template-columns:1fr}
+  .site[data-template="bridal"] .hdr nav ul{gap:1.1rem}
+  .site[data-template="atelier-studio"] .sec-designList .wrap,.site[data-template="atelier-studio"] .sec-richText .wrap{grid-template-columns:1fr}
+  .site[data-template="atelier-studio"] .sec-designList .wrap>.cards,.site[data-template="atelier-studio"] .sec-richText .wrap>.prose,.site[data-template="atelier-studio"] .sec-designList .wrap>h2,.site[data-template="atelier-studio"] .sec-richText .wrap>h2{grid-column:1;grid-row:auto}
+}

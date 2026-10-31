@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.patch"
+      - "**.md"
+  pull_request:
+  workflow_dispatch:
+
+# A new push or PR update cancels the older run of this workflow on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PLAYWRIGHT_BASE_URL: ${{ vars.PLAYWRIGHT_BASE_URL }}
+      PLAYWRIGHT_EMAIL: ${{ secrets.PLAYWRIGHT_EMAIL }}
+      PLAYWRIGHT_PASSWORD: ${{ secrets.PLAYWRIGHT_PASSWORD }}
+      PLAYWRIGHT_ALLOW_MUTATIONS: ${{ vars.PLAYWRIGHT_ALLOW_MUTATIONS }}
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - run: npm ci
+      # Fails the job on any high or critical vulnerability in runtime dependencies (clean since run #152).
+      - name: npm audit
+        run: npm audit --audit-level=high
+      - name: TypeScript typecheck
+        run: npm run typecheck
+      - name: Web unit tests (verbose test names and totals)
+        run: npm test -- --reporter=verbose
+      - name: Install Playwright Chromium for staging lifecycle tests
+        if: ${{ env.PLAYWRIGHT_BASE_URL != '' && env.PLAYWRIGHT_EMAIL != '' && env.PLAYWRIGHT_PASSWORD != '' && env.PLAYWRIGHT_ALLOW_MUTATIONS == 'true' }}
+        run: npx playwright install --with-deps chromium
+      - name: Playwright storefront edit, publish and rollback
+        if: ${{ env.PLAYWRIGHT_BASE_URL != '' && env.PLAYWRIGHT_EMAIL != '' && env.PLAYWRIGHT_PASSWORD != '' && env.PLAYWRIGHT_ALLOW_MUTATIONS == 'true' }}
+        run: npm run test:e2e
+      - name: Build web and retain route table
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee ../web-build.log
+          echo "--- Next.js generated route table ---"
+          grep -E '^[[:space:]]*[├└]─|Route \(app\)|○|ƒ|●' ../web-build.log || true
+
+  node-api:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend-node
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Install Node API dependencies from lockfile
+        run: npm ci --no-audit --no-fund
+      - name: Audit Node API dependencies
+        run: npm audit --audit-level=high
+      - name: Check JavaScript syntax
+        run: npm run check
+      - name: Run Node API tests
+        run: npm test
+
+  # Applies the Node SQL migrations to a clean PostgreSQL (twice, to prove idempotency) and runs the database integration tests.
+  node-db:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: postgres://postgres:ci_only_password@localhost:5432/avzar_node_ci
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: ci_only_password
+          POSTGRES_DB: avzar_node_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: backend-node
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      # The database service is PostgreSQL 17, but the runner image ships older client tools (16 at the time of writing).
+      # A dump from a 17 server cannot be taken or restored by older tools, so install 17 and put it first on PATH.
+      # The backup and restore test fails loudly if the tools are older than the server.
+      - name: Install PostgreSQL 17 client tools
+        working-directory: .
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          if [ -x /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh ]; then
+            sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          else
+            sudo install -d /usr/share/postgresql-common/pgdg
+            sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+            echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          fi
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+      - name: Show PostgreSQL client versions
+        run: |
+          pg_dump --version
+          pg_restore --version
+          psql --version
+      - run: npm ci --no-audit --no-fund
+      - name: Apply migrations to clean PostgreSQL
+        run: npm run migrate
+      - name: Migrations are idempotent
+        run: npm run migrate
+      - name: Plan seed is idempotent and add-only
+        run: npm run seed-plans
+      - name: Read-only schema drift check
+        run: npm run check-schema
+      - name: Schema built only from the Node migrations (arrays, foreign keys)
+        run: node --test test/db/schema.integration.test.js
+      - name: Plan seed against PostgreSQL
+        run: node --test test/db/planSeed.integration.test.js
+      - name: EF database adoption
+        run: node --test test/db/adoption.integration.test.js
+      - name: End-to-end flows (register, designs, storefront, plan limits, order tasks, invoice to receipt)
+        run: node --test test/db/flows.integration.test.js
+      - name: Database integration tests (all, including backup and restore)
+        run: node --test "test/db/**/*.test.js"
+      - name: Row-level security latency (indicative)
+        continue-on-error: true
+        run: node test/db/rlsLatency.bench.js

@@ -1,0 +1,41 @@
+
+name: Mobile CI
+
+on:
+  push:
+    paths:
+      - 'mobile/avzar-expo/**'
+      - '.github/workflows/mobile-ci.yml'
+  pull_request:
+    paths:
+      - 'mobile/avzar-expo/**'
+      - '.github/workflows/mobile-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  expo-mobile:
+    name: Expo mobile checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile/avzar-expo
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Install JavaScript dependencies
+        run: npm install --no-audit --no-fund
+      - name: Install Expo Router peer packages and align versions to the SDK
+        run: |
+          npx expo install expo-constants expo-linking react-native-safe-area-context react-native-screens expo-font
+          npx expo install --fix
+      - name: Check Expo package compatibility
+        run: npx expo-doctor
+      - name: TypeScript check
+        run: npx tsc --noEmit
+      - name: Bundle Android JavaScript
+        run: npx expo export --platform android

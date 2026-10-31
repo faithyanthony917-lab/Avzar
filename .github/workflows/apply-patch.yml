@@ -1,0 +1,288 @@
+name: Apply patch
+
+# Manual workflow. Applies one .patch file from the repo root on a new branch, runs every check from the brief
+# (dependency audits, backend check + tests, migrations twice + plan seed + schema drift check + all DB integration tests
+# on PostgreSQL 17 including backup and restore, web typecheck + tests + build), pushes the branch, and opens a pull request
+# when everything passes. Keep this list in step with .github/workflows/ci.yml.
+# Pushes made with GITHUB_TOKEN do not trigger ci.yml, which is why the checks run here.
+
+on:
+  workflow_dispatch:
+    inputs:
+      patch:
+        description: "Patch file name in the repo root, or none to only run the checks on the base branch"
+        required: true
+        default: step-01-business-switching.patch
+        type: string
+      base_branch:
+        description: "Branch to apply on top of: main, or the previous step's branch if it is not merged yet"
+        required: true
+        default: main
+        type: string
+      open_pr:
+        description: "Open a pull request when all checks pass"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: apply-patch-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      DATABASE_URL: postgres://postgres:ci_only_password@localhost:5432/avzar_node_ci
+      PATCH_INPUT: ${{ inputs.patch }}
+      BASE_BRANCH: ${{ inputs.base_branch }}
+      GH_TOKEN: ${{ github.token }}
+      CI: "true"
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_PASSWORD: ci_only_password
+          POSTGRES_DB: avzar_node_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Validate inputs and stage the patch
+        id: stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$PATCH_INPUT" = "none" ]; then
+            if ! [[ "$BASE_BRANCH" =~ ^[A-Za-z0-9._/-]+$ ]]; then echo "::error::invalid base branch name"; exit 1; fi
+            git ls-remote --exit-code --heads origin "$BASE_BRANCH" >/dev/null || { echo "::error::base branch $BASE_BRANCH does not exist"; exit 1; }
+            echo "name=checks-on-${BASE_BRANCH//\//-}" >> "$GITHUB_OUTPUT"
+            echo "mode=check" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! [[ "$PATCH_INPUT" =~ ^[A-Za-z0-9._-]+\.patch$ ]] || [[ "$PATCH_INPUT" == *..* ]]; then
+            echo "::error::patch must be a file name in the repo root like step-01-name.patch (letters, digits, . _ - only)"; exit 1
+          fi
+          [ -f "$PATCH_INPUT" ] || { echo "::error::$PATCH_INPUT not found on ${GITHUB_REF_NAME}. Commit it there first."; exit 1; }
+          if ! [[ "$BASE_BRANCH" =~ ^[A-Za-z0-9._/-]+$ ]]; then echo "::error::invalid base branch name"; exit 1; fi
+          git ls-remote --exit-code --heads origin "$BASE_BRANCH" >/dev/null || { echo "::error::base branch $BASE_BRANCH does not exist"; exit 1; }
+          cp "$PATCH_INPUT" "$RUNNER_TEMP/step.patch"
+          NAME="$(basename "$PATCH_INPUT" .patch)"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Apply the patch on a new branch
+        id: apply
+        shell: bash
+        env:
+          NAME: ${{ steps.stage.outputs.name }}
+          MODE: ${{ steps.stage.outputs.mode }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+actions@users.noreply.github.com"
+          git checkout -q -B "$NAME" "origin/$BASE_BRANCH"
+          if [ "${MODE:-}" = "check" ]; then echo "Checks only, nothing to apply: running on $BASE_BRANCH"; exit 0; fi
+          if ! git apply --check "$RUNNER_TEMP/step.patch"; then
+            echo "::error::The patch does not apply on $BASE_BRANCH. If an earlier step is not merged yet, set base_branch to that step's branch."
+            exit 1
+          fi
+          git apply --index "$RUNNER_TEMP/step.patch"
+          git rm -q --ignore-unmatch -- "$PATCH_INPUT"
+          git commit -q -m "$NAME"
+          git log --oneline -2
+          echo "applied=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend-node/package-lock.json
+            web/package-lock.json
+
+      # Same as ci.yml (node-db job): the database service is PostgreSQL 17 but the runner ships older client tools (16).
+      # A dump from a 17 server cannot be taken or restored by older tools, so install 17 and put it first on PATH.
+      # The backup and restore test fails loudly if the tools are older than the server.
+      - name: Install PostgreSQL 17 client tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          if [ -x /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh ]; then
+            sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          else
+            sudo install -d /usr/share/postgresql-common/pgdg
+            sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+            echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list
+          fi
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
+      - name: Show PostgreSQL client versions
+        run: |
+          pg_dump --version
+          pg_restore --version
+          psql --version
+
+      - name: Run all checks
+        id: checks
+        shell: bash
+        env:
+          NAME: ${{ steps.stage.outputs.name }}
+        run: |
+          set -uo pipefail
+          LOGS="$RUNNER_TEMP/logs"
+          mkdir -p "$LOGS"
+          : > "$RUNNER_TEMP/results.txt"
+
+          run_check() {
+            local label="$1" dir="$2" limit="$3"
+            shift 3
+            echo "::group::START $label (timeout ${limit}s)"
+            echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] START $label"
+            local rc=0
+            (
+              cd "$dir" || exit 125
+              timeout --signal=TERM --kill-after=15s "${limit}s" stdbuf -oL -eL "$@"
+            ) 2>&1 | tee "$LOGS/$label.log"
+            local -a statuses=("${PIPESTATUS[@]}")
+            rc="${statuses[0]}"
+            if [ "${statuses[1]:-0}" -ne 0 ] && [ "$rc" -eq 0 ]; then
+              rc="${statuses[1]}"
+            fi
+            if [ "$rc" -eq 124 ] || [ "$rc" -eq 137 ]; then
+              echo "::error::$label timed out after ${limit}s"
+            elif [ "$rc" -ne 0 ]; then
+              echo "::error::$label failed with exit code $rc"
+            fi
+            echo "[$(date -u +'%Y-%m-%dT%H:%M:%SZ')] END $label (exit $rc)"
+            echo "::endgroup::"
+            printf '%s %s\n' "$rc" "$label" >> "$RUNNER_TEMP/results.txt"
+          }
+
+          run_check backend-install   backend-node 600 npm ci --no-audit --no-fund
+          run_check backend-audit     backend-node 180 npm audit --audit-level=high
+          run_check backend-check     backend-node 300 npm run check
+          run_check backend-test      backend-node 720 npm test
+          run_check backend-migrate-1 backend-node 180 npm run migrate
+          run_check backend-migrate-2 backend-node 180 npm run migrate
+          run_check backend-seed      backend-node 180 npm run seed-plans
+          run_check backend-schema    backend-node 180 npm run check-schema
+          run_check backend-db-tests  backend-node 1200 node --test "test/db/**/*.test.js"
+          run_check web-install       web 600 npm ci --no-audit --no-fund
+          run_check web-audit         web 180 npm audit --audit-level=high
+          run_check web-typecheck     web 300 npm run typecheck
+          run_check web-test          web 720 npm test -- --reporter=verbose
+          run_check web-build         web 900 npm run build
+
+          {
+            echo "## Results for \`$NAME\` on \`$BASE_BRANCH\`"
+            echo
+            echo "| Check | Result |"
+            echo "|---|---|"
+            while read -r rc label; do
+              if [ "$rc" = "0" ]; then
+                echo "| $label | PASS |"
+              elif [ "$rc" = "124" ] || [ "$rc" = "137" ]; then
+                echo "| $label | **TIMEOUT (exit $rc)** |"
+              else
+                echo "| $label | **FAIL (exit $rc)** |"
+              fi
+            done < "$RUNNER_TEMP/results.txt"
+            echo
+            echo "### Test totals"
+            echo '```'
+            grep -hE "^# (tests|suites|pass|fail|skipped)" "$LOGS/backend-test.log" "$LOGS/backend-db-tests.log" 2>/dev/null | sed 's/^/backend: /' || true
+            grep -hE "Test Files|^ *Tests " "$LOGS/web-test.log" 2>/dev/null | sed 's/^/web: /' || true
+            echo '```'
+            while read -r rc label; do
+              if [ "$rc" != "0" ]; then
+                echo "<details><summary>Last 60 lines of $label</summary>"
+                echo
+                echo '```'
+                tail -n 60 "$LOGS/$label.log" || true
+                echo '```'
+                echo "</details>"
+                if grep -qE "^ *not ok" "$LOGS/$label.log"; then
+                  echo "<details open><summary>Failing tests in $label</summary>"
+                  echo
+                  echo '```'
+                  grep -E -A 24 "^ *not ok" "$LOGS/$label.log" | head -n 150 || true
+                  echo '```'
+                  echo "</details>"
+                fi
+              fi
+            done < "$RUNNER_TEMP/results.txt"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if grep -qv '^0 ' "$RUNNER_TEMP/results.txt"; then
+            echo "passed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "passed=true" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
+
+      - name: Push the branch
+        if: ${{ always() && steps.apply.outputs.applied == 'true' }}
+        shell: bash
+        env:
+          NAME: ${{ steps.stage.outputs.name }}
+        run: git push --force origin "HEAD:refs/heads/$NAME"
+
+      - name: Delete the patch file from the branch it was uploaded to
+        if: ${{ always() && steps.apply.outputs.applied == 'true' }}
+        continue-on-error: true
+        shell: bash
+        env:
+          NAME: ${{ steps.stage.outputs.name }}
+          SOURCE_BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git fetch -q origin "$SOURCE_BRANCH"
+          git checkout -q -B "cleanup-$NAME" "origin/$SOURCE_BRANCH"
+          if [ -f "$PATCH_INPUT" ]; then
+            git rm -q -- "$PATCH_INPUT"
+            git commit -q -m "Remove applied patch $PATCH_INPUT"
+            git push origin "HEAD:refs/heads/$SOURCE_BRANCH"
+          else
+            echo "$PATCH_INPUT is already gone from $SOURCE_BRANCH."
+          fi
+
+      - name: Upload full logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: step-logs-${{ steps.stage.outputs.name }}
+          path: ${{ runner.temp }}/logs
+          if-no-files-found: ignore
+
+      - name: Open a pull request
+        if: ${{ steps.checks.outputs.passed == 'true' && inputs.open_pr && steps.stage.outputs.mode != 'check' }}
+        shell: bash
+        env:
+          NAME: ${{ steps.stage.outputs.name }}
+        run: |
+          set -euo pipefail
+          if gh pr list --head "$NAME" --base "$BASE_BRANCH" --state open --json number --jq 'length' | grep -qv '^0$'; then
+            echo "A pull request for $NAME already exists."; exit 0
+          fi
+          gh pr create --base "$BASE_BRANCH" --head "$NAME" --title "$NAME" \
+            --body "Automated: patch \`$PATCH_INPUT\` applied on \`$BASE_BRANCH\`. All checks passed in the Apply patch workflow run."
+
+      - name: Fail the run if any check failed
+        if: ${{ steps.checks.outputs.passed != 'true' }}
+        shell: bash
+        run: |
+          echo "One or more checks failed. See the run summary and the logs artifact."
+          exit 1

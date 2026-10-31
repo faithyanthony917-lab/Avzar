@@ -1,0 +1,8149 @@
+{
+ "generatedFrom": "AppDbContextModelSnapshot.cs",
+ "tables": {
+  "AspNetRoleClaims": {
+   "columns": {
+    "Id": {
+     "type": "integer",
+     "nullable": false,
+     "identity": true
+    },
+    "ClaimType": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "ClaimValue": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "RoleId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_AspNetRoleClaims_RoleId",
+     "columns": [
+      "RoleId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "RoleId"
+     ],
+     "referencedTable": "AspNetRoles",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "AspNetRoles": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "ConcurrencyStamp": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(256)",
+     "nullable": true,
+     "identity": false
+    },
+    "NormalizedName": {
+     "type": "character varying(256)",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "RoleNameIndex",
+     "columns": [
+      "NormalizedName"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": []
+  },
+  "AspNetUserClaims": {
+   "columns": {
+    "Id": {
+     "type": "integer",
+     "nullable": false,
+     "identity": true
+    },
+    "ClaimType": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "ClaimValue": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "UserId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_AspNetUserClaims_UserId",
+     "columns": [
+      "UserId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "UserId"
+     ],
+     "referencedTable": "AspNetUsers",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "AspNetUserLogins": {
+   "columns": {
+    "LoginProvider": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "ProviderKey": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "ProviderDisplayName": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "UserId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "LoginProvider",
+    "ProviderKey"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_AspNetUserLogins_UserId",
+     "columns": [
+      "UserId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "UserId"
+     ],
+     "referencedTable": "AspNetUsers",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "AspNetUserRoles": {
+   "columns": {
+    "UserId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "RoleId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "UserId",
+    "RoleId"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_AspNetUserRoles_RoleId",
+     "columns": [
+      "RoleId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "RoleId"
+     ],
+     "referencedTable": "AspNetRoles",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "CASCADE"
+    },
+    {
+     "columns": [
+      "UserId"
+     ],
+     "referencedTable": "AspNetUsers",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "AspNetUserTokens": {
+   "columns": {
+    "UserId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "LoginProvider": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "Name": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "Value": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "UserId",
+    "LoginProvider",
+    "Name"
+   ],
+   "uniqueKeys": [],
+   "indexes": [],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "UserId"
+     ],
+     "referencedTable": "AspNetUsers",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "AspNetUsers": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "AccessFailedCount": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "ConcurrencyStamp": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Email": {
+     "type": "character varying(256)",
+     "nullable": true,
+     "identity": false
+    },
+    "EmailConfirmed": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "FullName": {
+     "type": "character varying(120)",
+     "nullable": false,
+     "identity": false
+    },
+    "LastTotpStep": {
+     "type": "bigint",
+     "nullable": true,
+     "identity": false
+    },
+    "LockoutEnabled": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "LockoutEnd": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "NormalizedEmail": {
+     "type": "character varying(256)",
+     "nullable": true,
+     "identity": false
+    },
+    "NormalizedUserName": {
+     "type": "character varying(256)",
+     "nullable": true,
+     "identity": false
+    },
+    "PasswordHash": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "PhoneNumber": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "PhoneNumberConfirmed": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "SecurityStamp": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "TwoFactorEnabled": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "UserName": {
+     "type": "character varying(256)",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "EmailIndex",
+     "columns": [
+      "NormalizedEmail"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "UserNameIndex",
+     "columns": [
+      "NormalizedUserName"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": []
+  },
+  "AuditLogs": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Action": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "ActorUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "DetailsJson": {
+     "type": "jsonb",
+     "nullable": true,
+     "identity": false
+    },
+    "EntityId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "EntityType": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_AuditLogs_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_AuditLogs_BusinessId_CreatedAtUtc",
+     "columns": [
+      "BusinessId",
+      "CreatedAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "BusinessHolidays": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Date": {
+     "type": "date",
+     "nullable": false,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_BusinessHolidays_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_BusinessHolidays_BusinessId_Date",
+     "columns": [
+      "BusinessId",
+      "Date"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "BusinessHours": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "ClosesAt": {
+     "type": "time without time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "DayOfWeek": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "IsOpen": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "OpensAt": {
+     "type": "time without time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_BusinessHours_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_BusinessHours_BusinessId_DayOfWeek",
+     "columns": [
+      "BusinessId",
+      "DayOfWeek"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_BusinessHours_Day": "\"DayOfWeek\" BETWEEN 0 AND 6",
+    "CK_BusinessHours_Times": "(\"IsOpen\" = FALSE AND \"OpensAt\" IS NULL AND \"ClosesAt\" IS NULL) OR (\"IsOpen\" = TRUE AND \"OpensAt\" IS NOT NULL AND \"ClosesAt\" IS NOT NULL AND \"OpensAt\" < \"ClosesAt\")"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "BusinessRoles": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "IsSystem": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(60)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_BusinessRoles_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_BusinessRoles_BusinessId_Name",
+     "columns": [
+      "BusinessId",
+      "Name"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "Businesses": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BrandColor": {
+     "type": "character varying(7)",
+     "nullable": true,
+     "identity": false
+    },
+    "ContactEmail": {
+     "type": "character varying(254)",
+     "nullable": true,
+     "identity": false
+    },
+    "ContactPhone": {
+     "type": "character varying(40)",
+     "nullable": true,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CurrencyCode": {
+     "type": "character varying(3)",
+     "nullable": false,
+     "identity": false
+    },
+    "IsActive": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "LogoMediaId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(120)",
+     "nullable": false,
+     "identity": false
+    },
+    "PdfFooterNote": {
+     "type": "character varying(300)",
+     "nullable": true,
+     "identity": false
+    },
+    "TaxNumber": {
+     "type": "character varying(60)",
+     "nullable": true,
+     "identity": false
+    },
+    "TimeZoneId": {
+     "type": "character varying(64)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [],
+   "checks": {},
+   "foreignKeys": []
+  },
+  "CreditNotes": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Amount": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "InvoiceId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Number": {
+     "type": "character varying(30)",
+     "nullable": false,
+     "identity": false
+    },
+    "Reason": {
+     "type": "character varying(500)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_CreditNotes_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_CreditNotes_BusinessId_Number",
+     "columns": [
+      "BusinessId",
+      "Number"
+     ],
+     "unique": true,
+     "filter": null
+    },
+    {
+     "name": "IX_CreditNotes_InvoiceId",
+     "columns": [
+      "InvoiceId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_CreditNotes_InvoiceId_BusinessId",
+     "columns": [
+      "InvoiceId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_CreditNotes_Amount": "\"Amount\" > 0"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "InvoiceId",
+      "BusinessId"
+     ],
+     "referencedTable": "Invoices",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "CustomerCommunications": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Body": {
+     "type": "character varying(4000)",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Channel": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CustomerId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Direction": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "RecordedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "Subject": {
+     "type": "character varying(200)",
+     "nullable": true,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_CustomerCommunications_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_CustomerCommunications_CustomerId_BusinessId",
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_CustomerCommunications_CustomerId_CreatedAtUtc",
+     "columns": [
+      "CustomerId",
+      "CreatedAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "referencedTable": "Customers",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "CustomerPortalGrants": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CustomerId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "ExpiresAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "LastUsedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "RevokedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "TokenHash": {
+     "type": "character varying(64)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "UseCount": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_CustomerPortalGrants_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_CustomerPortalGrants_BusinessId_CustomerId_ExpiresAtUtc",
+     "columns": [
+      "BusinessId",
+      "CustomerId",
+      "ExpiresAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_CustomerPortalGrants_CustomerId_BusinessId",
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_CustomerPortalGrants_TokenHash",
+     "columns": [
+      "TokenHash"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_CustomerPortalGrants_UseCount": "\"UseCount\" >= 0"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "referencedTable": "Customers",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "Customers": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "AddressLine": {
+     "type": "character varying(300)",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "City": {
+     "type": "character varying(100)",
+     "nullable": true,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Email": {
+     "type": "character varying(256)",
+     "nullable": true,
+     "identity": false
+    },
+    "FullName": {
+     "type": "character varying(120)",
+     "nullable": false,
+     "identity": false
+    },
+    "GarmentPreferences": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "MergedIntoCustomerId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "NormalizedEmail": {
+     "type": "character varying(256)",
+     "nullable": true,
+     "identity": false
+    },
+    "NormalizedPhone": {
+     "type": "character varying(40)",
+     "nullable": true,
+     "identity": false
+    },
+    "Notes": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "Phone": {
+     "type": "character varying(40)",
+     "nullable": true,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_Customers_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Customers_BusinessId_FullName",
+     "columns": [
+      "BusinessId",
+      "FullName"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Customers_BusinessId_NormalizedEmail",
+     "columns": [
+      "BusinessId",
+      "NormalizedEmail"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Customers_BusinessId_NormalizedPhone",
+     "columns": [
+      "BusinessId",
+      "NormalizedPhone"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Customers_MergedIntoCustomerId_BusinessId",
+     "columns": [
+      "MergedIntoCustomerId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "MergedIntoCustomerId",
+      "BusinessId"
+     ],
+     "referencedTable": "Customers",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "DataProtectionKeys": {
+   "columns": {
+    "Id": {
+     "type": "integer",
+     "nullable": false,
+     "identity": true
+    },
+    "FriendlyName": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "Xml": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [],
+   "checks": {},
+   "foreignKeys": []
+  },
+  "DesignCategories": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "SortOrder": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_DesignCategories_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_DesignCategories_BusinessId_Name",
+     "columns": [
+      "BusinessId",
+      "Name"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "DesignCollectionItems": {
+   "columns": {
+    "CollectionId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "DesignId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "SortOrder": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "CollectionId",
+    "DesignId"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_DesignCollectionItems_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_DesignCollectionItems_CollectionId_BusinessId",
+     "columns": [
+      "CollectionId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_DesignCollectionItems_CollectionId_SortOrder",
+     "columns": [
+      "CollectionId",
+      "SortOrder"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_DesignCollectionItems_DesignId",
+     "columns": [
+      "DesignId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_DesignCollectionItems_DesignId_BusinessId",
+     "columns": [
+      "DesignId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "CollectionId",
+      "BusinessId"
+     ],
+     "referencedTable": "DesignCollections",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    },
+    {
+     "columns": [
+      "DesignId",
+      "BusinessId"
+     ],
+     "referencedTable": "Designs",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "DesignCollections": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Description": {
+     "type": "character varying(2000)",
+     "nullable": true,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(120)",
+     "nullable": false,
+     "identity": false
+    },
+    "Slug": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "SortOrder": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "Visibility": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_DesignCollections_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_DesignCollections_BusinessId_Slug",
+     "columns": [
+      "BusinessId",
+      "Slug"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "DesignImages": {
+   "columns": {
+    "DesignId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "MediaAssetId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "AltText": {
+     "type": "character varying(200)",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "SortOrder": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "DesignId",
+    "MediaAssetId"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_DesignImages_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_DesignImages_DesignId_BusinessId",
+     "columns": [
+      "DesignId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_DesignImages_DesignId_SortOrder",
+     "columns": [
+      "DesignId",
+      "SortOrder"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_DesignImages_MediaAssetId",
+     "columns": [
+      "MediaAssetId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_DesignImages_MediaAssetId_BusinessId",
+     "columns": [
+      "MediaAssetId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "DesignId",
+      "BusinessId"
+     ],
+     "referencedTable": "Designs",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    },
+    {
+     "columns": [
+      "MediaAssetId",
+      "BusinessId"
+     ],
+     "referencedTable": "MediaAssets",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "Designs": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BasePrice": {
+     "type": "numeric(18,2)",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CategoryId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "Colours": {
+     "type": "text[]",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "CurrencyCode": {
+     "type": "character varying(3)",
+     "nullable": true,
+     "identity": false
+    },
+    "Description": {
+     "type": "character varying(4000)",
+     "nullable": true,
+     "identity": false
+    },
+    "Fabrics": {
+     "type": "text[]",
+     "nullable": false,
+     "identity": false
+    },
+    "GarmentType": {
+     "type": "character varying(60)",
+     "nullable": true,
+     "identity": false
+    },
+    "IsFeatured": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "Kind": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(120)",
+     "nullable": false,
+     "identity": false
+    },
+    "ParentDesignId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "ProductionDays": {
+     "type": "integer",
+     "nullable": true,
+     "identity": false
+    },
+    "Sizes": {
+     "type": "text[]",
+     "nullable": false,
+     "identity": false
+    },
+    "Slug": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "Tags": {
+     "type": "text[]",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "Visibility": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_Designs_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Designs_BusinessId_Slug",
+     "columns": [
+      "BusinessId",
+      "Slug"
+     ],
+     "unique": true,
+     "filter": null
+    },
+    {
+     "name": "IX_Designs_BusinessId_Status_Visibility",
+     "columns": [
+      "BusinessId",
+      "Status",
+      "Visibility"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Designs_CategoryId_BusinessId",
+     "columns": [
+      "CategoryId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Designs_ParentDesignId_BusinessId",
+     "columns": [
+      "ParentDesignId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_Designs_ArchivedIsPrivate": "\"Status\" <> 'Archived' OR \"Visibility\" = 'Private'",
+    "CK_Designs_PriceHasCurrency": "\"BasePrice\" IS NULL OR \"CurrencyCode\" IS NOT NULL",
+    "CK_Designs_PriceNonNegative": "\"BasePrice\" IS NULL OR \"BasePrice\" >= 0"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "CategoryId",
+      "BusinessId"
+     ],
+     "referencedTable": "DesignCategories",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "ParentDesignId",
+      "BusinessId"
+     ],
+     "referencedTable": "Designs",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "DocumentCounters": {
+   "columns": {
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Kind": {
+     "type": "character varying(30)",
+     "nullable": true,
+     "identity": false
+    },
+    "Year": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "LastValue": {
+     "type": "bigint",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "BusinessId",
+    "Kind",
+    "Year"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_DocumentCounters_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "Documents": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "ContentType": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CustomerId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "Description": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "FileName": {
+     "type": "character varying(200)",
+     "nullable": false,
+     "identity": false
+    },
+    "Kind": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "OrderId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "ScanStatus": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "Sha256": {
+     "type": "character varying(64)",
+     "nullable": false,
+     "identity": false
+    },
+    "SizeBytes": {
+     "type": "bigint",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "UploadedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_Documents_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Documents_BusinessId_CreatedAtUtc",
+     "columns": [
+      "BusinessId",
+      "CreatedAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Documents_BusinessId_CustomerId",
+     "columns": [
+      "BusinessId",
+      "CustomerId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Documents_BusinessId_OrderId",
+     "columns": [
+      "BusinessId",
+      "OrderId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Documents_CustomerId_BusinessId",
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Documents_OrderId_BusinessId",
+     "columns": [
+      "OrderId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_Documents_Size": "\"SizeBytes\" > 0"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "referencedTable": "Customers",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "OrderId",
+      "BusinessId"
+     ],
+     "referencedTable": "Orders",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "EmailOutbox": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Attempts": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "BodyPurgedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "DeduplicationKey": {
+     "type": "character varying(200)",
+     "nullable": true,
+     "identity": false
+    },
+    "DeliveryDetail": {
+     "type": "character varying(300)",
+     "nullable": true,
+     "identity": false
+    },
+    "DeliveryStatus": {
+     "type": "character varying(20)",
+     "nullable": true,
+     "identity": false
+    },
+    "DeliveryUpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "HtmlBody": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "LastError": {
+     "type": "character varying(400)",
+     "nullable": true,
+     "identity": false
+    },
+    "LeaseUntilUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "NextAttemptUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "ProviderMessageId": {
+     "type": "character varying(200)",
+     "nullable": true,
+     "identity": false
+    },
+    "SentAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(10)",
+     "nullable": false,
+     "identity": false
+    },
+    "Subject": {
+     "type": "character varying(200)",
+     "nullable": false,
+     "identity": false
+    },
+    "TemplateKey": {
+     "type": "character varying(60)",
+     "nullable": true,
+     "identity": false
+    },
+    "TextBody": {
+     "type": "text",
+     "nullable": false,
+     "identity": false
+    },
+    "ToAddress": {
+     "type": "character varying(254)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_EmailOutbox_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_EmailOutbox_DeduplicationKey",
+     "columns": [
+      "DeduplicationKey"
+     ],
+     "unique": true,
+     "filter": "\"DeduplicationKey\" IS NOT NULL"
+    },
+    {
+     "name": "IX_EmailOutbox_NextAttemptUtc",
+     "columns": [
+      "NextAttemptUtc"
+     ],
+     "unique": false,
+     "filter": "\"Status\" = 'Pending'"
+    },
+    {
+     "name": "IX_EmailOutbox_ProviderMessageId",
+     "columns": [
+      "ProviderMessageId"
+     ],
+     "unique": false,
+     "filter": "\"ProviderMessageId\" IS NOT NULL"
+    }
+   ],
+   "checks": {
+    "CK_EmailOutbox_Attempts": "\"Attempts\" >= 0"
+   },
+   "foreignKeys": []
+  },
+  "EmailSuppressions": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Address": {
+     "type": "character varying(254)",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Reason": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_EmailSuppressions_Address",
+     "columns": [
+      "Address"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": []
+  },
+  "EntitlementOverrides": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "ExpiresAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "Key": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "Reason": {
+     "type": "character varying(500)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "Value": {
+     "type": "character varying(60)",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_EntitlementOverrides_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_EntitlementOverrides_BusinessId_Key",
+     "columns": [
+      "BusinessId",
+      "Key"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "ExpenseCategories": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "IsActive": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "SortOrder": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_ExpenseCategories_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_ExpenseCategories_BusinessId_Name",
+     "columns": [
+      "BusinessId",
+      "Name"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "Expenses": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Amount": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CategoryId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "CurrencyCode": {
+     "type": "character varying(3)",
+     "nullable": false,
+     "identity": false
+    },
+    "Description": {
+     "type": "character varying(300)",
+     "nullable": false,
+     "identity": false
+    },
+    "ExpenseDate": {
+     "type": "date",
+     "nullable": false,
+     "identity": false
+    },
+    "LocationId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "Reference": {
+     "type": "character varying(100)",
+     "nullable": true,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "Vendor": {
+     "type": "character varying(120)",
+     "nullable": true,
+     "identity": false
+    },
+    "VoidReason": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "VoidedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_Expenses_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Expenses_BusinessId_ExpenseDate",
+     "columns": [
+      "BusinessId",
+      "ExpenseDate"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Expenses_BusinessId_LocationId",
+     "columns": [
+      "BusinessId",
+      "LocationId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Expenses_CategoryId_BusinessId",
+     "columns": [
+      "CategoryId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Expenses_LocationId_BusinessId",
+     "columns": [
+      "LocationId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_Expenses_Amount": "\"Amount\" > 0",
+    "CK_Expenses_VoidHasReason": "\"VoidedAtUtc\" IS NULL OR \"VoidReason\" IS NOT NULL"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "CategoryId",
+      "BusinessId"
+     ],
+     "referencedTable": "ExpenseCategories",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "LocationId",
+      "BusinessId"
+     ],
+     "referencedTable": "Locations",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "Fittings": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "CustomerId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "DurationMinutes": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "LocationId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Notes": {
+     "type": "character varying(2000)",
+     "nullable": true,
+     "identity": false
+    },
+    "OrderId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "ScheduledAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_Fittings_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Fittings_BusinessId_ScheduledAtUtc",
+     "columns": [
+      "BusinessId",
+      "ScheduledAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Fittings_CustomerId_BusinessId",
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Fittings_LocationId_BusinessId",
+     "columns": [
+      "LocationId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Fittings_OrderId_BusinessId",
+     "columns": [
+      "OrderId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "referencedTable": "Customers",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "LocationId",
+      "BusinessId"
+     ],
+     "referencedTable": "Locations",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "OrderId",
+      "BusinessId"
+     ],
+     "referencedTable": "Orders",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "Inquiries": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Budget": {
+     "type": "character varying(60)",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "ConvertedOrderId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "DesignId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "DesignNameSnapshot": {
+     "type": "character varying(120)",
+     "nullable": true,
+     "identity": false
+    },
+    "Email": {
+     "type": "character varying(120)",
+     "nullable": true,
+     "identity": false
+    },
+    "EventDate": {
+     "type": "date",
+     "nullable": true,
+     "identity": false
+    },
+    "GarmentType": {
+     "type": "character varying(60)",
+     "nullable": true,
+     "identity": false
+    },
+    "HandledAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "HandledByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "InternalNote": {
+     "type": "character varying(1000)",
+     "nullable": true,
+     "identity": false
+    },
+    "IpHash": {
+     "type": "character varying(64)",
+     "nullable": true,
+     "identity": false
+    },
+    "Kind": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "Message": {
+     "type": "character varying(2000)",
+     "nullable": false,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(100)",
+     "nullable": false,
+     "identity": false
+    },
+    "Phone": {
+     "type": "character varying(40)",
+     "nullable": true,
+     "identity": false
+    },
+    "PreferredDate": {
+     "type": "date",
+     "nullable": true,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "StorefrontId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_Inquiries_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Inquiries_BusinessId_Status_CreatedAtUtc",
+     "columns": [
+      "BusinessId",
+      "Status",
+      "CreatedAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Inquiries_DesignId_BusinessId",
+     "columns": [
+      "DesignId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Inquiries_StorefrontId_BusinessId",
+     "columns": [
+      "StorefrontId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Inquiries_StorefrontId_IpHash_CreatedAtUtc",
+     "columns": [
+      "StorefrontId",
+      "IpHash",
+      "CreatedAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_Inquiries_Contactable": "\"Email\" IS NOT NULL OR \"Phone\" IS NOT NULL"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "DesignId",
+      "BusinessId"
+     ],
+     "referencedTable": "Designs",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "StorefrontId",
+      "BusinessId"
+     ],
+     "referencedTable": "Storefronts",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "Invitations": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "AcceptedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Email": {
+     "type": "character varying(256)",
+     "nullable": false,
+     "identity": false
+    },
+    "ExpiresAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "FullName": {
+     "type": "character varying(120)",
+     "nullable": false,
+     "identity": false
+    },
+    "InvitedByUserId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "LocationIds": {
+     "type": "uuid[]",
+     "nullable": false,
+     "identity": false
+    },
+    "RevokedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "RoleIds": {
+     "type": "uuid[]",
+     "nullable": false,
+     "identity": false
+    },
+    "TokenHash": {
+     "type": "character varying(64)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_Invitations_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Invitations_BusinessId_Email",
+     "columns": [
+      "BusinessId",
+      "Email"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Invitations_TokenHash",
+     "columns": [
+      "TokenHash"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "InvoiceLines": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Description": {
+     "type": "character varying(200)",
+     "nullable": false,
+     "identity": false
+    },
+    "Discount": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "InvoiceId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "LineNumber": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "LineTotal": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "NetAmount": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "Quantity": {
+     "type": "numeric(12,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "TaxAmount": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "TaxPercent": {
+     "type": "numeric(5,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "UnitPrice": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_InvoiceLines_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_InvoiceLines_InvoiceId_BusinessId",
+     "columns": [
+      "InvoiceId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_InvoiceLines_InvoiceId_LineNumber",
+     "columns": [
+      "InvoiceId",
+      "LineNumber"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_InvoiceLines_Amounts": "\"Quantity\" > 0 AND \"UnitPrice\" >= 0 AND \"Discount\" >= 0 AND \"NetAmount\" >= 0 AND \"LineTotal\" = \"NetAmount\" + \"TaxAmount\""
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "InvoiceId",
+      "BusinessId"
+     ],
+     "referencedTable": "Invoices",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "Invoices": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "CurrencyCode": {
+     "type": "character varying(3)",
+     "nullable": false,
+     "identity": false
+    },
+    "CustomerId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "DueDate": {
+     "type": "date",
+     "nullable": true,
+     "identity": false
+    },
+    "IdempotencyKey": {
+     "type": "character varying(100)",
+     "nullable": true,
+     "identity": false
+    },
+    "IssueDate": {
+     "type": "date",
+     "nullable": true,
+     "identity": false
+    },
+    "IssuedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "Kind": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "Notes": {
+     "type": "character varying(2000)",
+     "nullable": true,
+     "identity": false
+    },
+    "Number": {
+     "type": "character varying(30)",
+     "nullable": true,
+     "identity": false
+    },
+    "OrderId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "Subtotal": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "TaxTotal": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "Terms": {
+     "type": "character varying(2000)",
+     "nullable": true,
+     "identity": false
+    },
+    "Total": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "VoidReason": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "VoidedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_Invoices_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Invoices_BusinessId_IdempotencyKey",
+     "columns": [
+      "BusinessId",
+      "IdempotencyKey"
+     ],
+     "unique": true,
+     "filter": "\"IdempotencyKey\" IS NOT NULL"
+    },
+    {
+     "name": "IX_Invoices_BusinessId_Number",
+     "columns": [
+      "BusinessId",
+      "Number"
+     ],
+     "unique": true,
+     "filter": "\"Number\" IS NOT NULL"
+    },
+    {
+     "name": "IX_Invoices_BusinessId_Status_DueDate",
+     "columns": [
+      "BusinessId",
+      "Status",
+      "DueDate"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Invoices_CustomerId",
+     "columns": [
+      "CustomerId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Invoices_CustomerId_BusinessId",
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Invoices_OrderId",
+     "columns": [
+      "OrderId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Invoices_OrderId_BusinessId",
+     "columns": [
+      "OrderId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_Invoices_Amounts": "\"Subtotal\" >= 0 AND \"TaxTotal\" >= 0 AND \"Total\" = \"Subtotal\" + \"TaxTotal\"",
+    "CK_Invoices_NumberWhenIssued": "\"Status\" = 'Draft' OR \"Number\" IS NOT NULL",
+    "CK_Invoices_VoidHasReason": "\"Status\" <> 'Void' OR \"VoidReason\" IS NOT NULL"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "referencedTable": "Customers",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "OrderId",
+      "BusinessId"
+     ],
+     "referencedTable": "Orders",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "Locations": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Address": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "IsActive": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(120)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_Locations_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Locations_BusinessId_Name",
+     "columns": [
+      "BusinessId",
+      "Name"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "Materials": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "LocationId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(160)",
+     "nullable": false,
+     "identity": false
+    },
+    "Notes": {
+     "type": "character varying(1000)",
+     "nullable": true,
+     "identity": false
+    },
+    "OnHand": {
+     "type": "numeric(18,3)",
+     "nullable": false,
+     "identity": false
+    },
+    "ReorderLevel": {
+     "type": "numeric(18,3)",
+     "nullable": false,
+     "identity": false
+    },
+    "Reserved": {
+     "type": "numeric(18,3)",
+     "nullable": false,
+     "identity": false
+    },
+    "Sku": {
+     "type": "character varying(64)",
+     "nullable": false,
+     "identity": false
+    },
+    "Unit": {
+     "type": "character varying(24)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_Materials_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Materials_BusinessId_Sku",
+     "columns": [
+      "BusinessId",
+      "Sku"
+     ],
+     "unique": true,
+     "filter": null
+    },
+    {
+     "name": "IX_Materials_LocationId_BusinessId",
+     "columns": [
+      "LocationId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_Materials_Quantities": "\"OnHand\" >= 0 AND \"Reserved\" >= 0 AND \"Reserved\" <= \"OnHand\" AND \"ReorderLevel\" >= 0"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "LocationId",
+      "BusinessId"
+     ],
+     "referencedTable": "Locations",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "MeasurementRevisions": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Notes": {
+     "type": "character varying(2000)",
+     "nullable": true,
+     "identity": false
+    },
+    "RecordedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "RevisionNumber": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "SetId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "ValuesJson": {
+     "type": "jsonb",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_MeasurementRevisions_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_MeasurementRevisions_SetId_BusinessId",
+     "columns": [
+      "SetId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_MeasurementRevisions_SetId_RevisionNumber",
+     "columns": [
+      "SetId",
+      "RevisionNumber"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "SetId",
+      "BusinessId"
+     ],
+     "referencedTable": "MeasurementSets",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "MeasurementSets": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CurrentRevision": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "CustomerId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Label": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "TemplateId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_MeasurementSets_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_MeasurementSets_BusinessId_CustomerId_Label",
+     "columns": [
+      "BusinessId",
+      "CustomerId",
+      "Label"
+     ],
+     "unique": true,
+     "filter": null
+    },
+    {
+     "name": "IX_MeasurementSets_CustomerId_BusinessId",
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_MeasurementSets_TemplateId_BusinessId",
+     "columns": [
+      "TemplateId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "referencedTable": "Customers",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "TemplateId",
+      "BusinessId"
+     ],
+     "referencedTable": "MeasurementTemplates",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "MeasurementTemplateFields": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "IsRequired": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "Key": {
+     "type": "character varying(40)",
+     "nullable": false,
+     "identity": false
+    },
+    "Label": {
+     "type": "character varying(60)",
+     "nullable": false,
+     "identity": false
+    },
+    "MaxValue": {
+     "type": "numeric(10,2)",
+     "nullable": true,
+     "identity": false
+    },
+    "MinValue": {
+     "type": "numeric(10,2)",
+     "nullable": true,
+     "identity": false
+    },
+    "SortOrder": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "TemplateId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Unit": {
+     "type": "character varying(8)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_MeasurementTemplateFields_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_MeasurementTemplateFields_TemplateId_BusinessId",
+     "columns": [
+      "TemplateId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_MeasurementTemplateFields_TemplateId_Key",
+     "columns": [
+      "TemplateId",
+      "Key"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "TemplateId",
+      "BusinessId"
+     ],
+     "referencedTable": "MeasurementTemplates",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "MeasurementTemplates": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Description": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "IsActive": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_MeasurementTemplates_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_MeasurementTemplates_BusinessId_Name",
+     "columns": [
+      "BusinessId",
+      "Name"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "MediaAssets": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "ContentType": {
+     "type": "character varying(60)",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Height": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "OriginalFileName": {
+     "type": "character varying(200)",
+     "nullable": false,
+     "identity": false
+    },
+    "Purpose": {
+     "type": "character varying(30)",
+     "nullable": false,
+     "identity": false
+    },
+    "Sha256": {
+     "type": "character varying(64)",
+     "nullable": false,
+     "identity": false
+    },
+    "SizeBytes": {
+     "type": "bigint",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "UploadedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "Width": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_MediaAssets_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_MediaAssets_BusinessId_CreatedAtUtc",
+     "columns": [
+      "BusinessId",
+      "CreatedAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_MediaAssets_Dimensions": "\"Width\" > 0 AND \"Height\" > 0",
+    "CK_MediaAssets_Size": "\"SizeBytes\" > 0"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "MembershipLocations": {
+   "columns": {
+    "MembershipId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "LocationId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "MembershipId",
+    "LocationId"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_MembershipLocations_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_MembershipLocations_LocationId_BusinessId",
+     "columns": [
+      "LocationId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_MembershipLocations_MembershipId_BusinessId",
+     "columns": [
+      "MembershipId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "LocationId",
+      "BusinessId"
+     ],
+     "referencedTable": "Locations",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "MembershipId",
+      "BusinessId"
+     ],
+     "referencedTable": "Memberships",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "MembershipRoles": {
+   "columns": {
+    "MembershipId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "RoleId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "MembershipId",
+    "RoleId"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_MembershipRoles_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_MembershipRoles_MembershipId_BusinessId",
+     "columns": [
+      "MembershipId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_MembershipRoles_RoleId_BusinessId",
+     "columns": [
+      "RoleId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "MembershipId",
+      "BusinessId"
+     ],
+     "referencedTable": "Memberships",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    },
+    {
+     "columns": [
+      "RoleId",
+      "BusinessId"
+     ],
+     "referencedTable": "BusinessRoles",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "Memberships": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "DeactivatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "DisplayName": {
+     "type": "character varying(120)",
+     "nullable": false,
+     "identity": false
+    },
+    "IsOwner": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "Status": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "UserId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_Memberships_BusinessId_UserId",
+     "columns": [
+      "BusinessId",
+      "UserId"
+     ],
+     "unique": true,
+     "filter": null
+    },
+    {
+     "name": "IX_Memberships_UserId",
+     "columns": [
+      "UserId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "UX_Memberships_OneOwner",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": true,
+     "filter": "\"IsOwner\""
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "UserId"
+     ],
+     "referencedTable": "AspNetUsers",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "OrderCounters": {
+   "columns": {
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Year": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "LastValue": {
+     "type": "bigint",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "BusinessId",
+    "Year"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_OrderCounters_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "OrderGarments": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "AlterationNotes": {
+     "type": "character varying(2000)",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Category": {
+     "type": "character varying(80)",
+     "nullable": true,
+     "identity": false
+    },
+    "Colour": {
+     "type": "character varying(60)",
+     "nullable": true,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "DesignId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "DesignNameSnapshot": {
+     "type": "character varying(120)",
+     "nullable": true,
+     "identity": false
+    },
+    "DesignPriceSnapshot": {
+     "type": "numeric(18,2)",
+     "nullable": true,
+     "identity": false
+    },
+    "Fabric": {
+     "type": "character varying(120)",
+     "nullable": true,
+     "identity": false
+    },
+    "LineNumber": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "LineTotal": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "MeasurementRevision": {
+     "type": "integer",
+     "nullable": true,
+     "identity": false
+    },
+    "MeasurementSetId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "MeasurementSnapshotJson": {
+     "type": "jsonb",
+     "nullable": true,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(120)",
+     "nullable": false,
+     "identity": false
+    },
+    "OrderId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "PriceOverrideReason": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "PricingSnapshotJson": {
+     "type": "jsonb",
+     "nullable": true,
+     "identity": false
+    },
+    "Quantity": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "StyleInstructions": {
+     "type": "character varying(4000)",
+     "nullable": true,
+     "identity": false
+    },
+    "UnitPrice": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_OrderGarments_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_OrderGarments_DesignId",
+     "columns": [
+      "DesignId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_OrderGarments_DesignId_BusinessId",
+     "columns": [
+      "DesignId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_OrderGarments_MeasurementSetId_BusinessId",
+     "columns": [
+      "MeasurementSetId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_OrderGarments_OrderId_BusinessId",
+     "columns": [
+      "OrderId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_OrderGarments_OrderId_LineNumber",
+     "columns": [
+      "OrderId",
+      "LineNumber"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_OrderGarments_Qty": "\"Quantity\" > 0 AND \"UnitPrice\" >= 0"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "DesignId",
+      "BusinessId"
+     ],
+     "referencedTable": "Designs",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "MeasurementSetId",
+      "BusinessId"
+     ],
+     "referencedTable": "MeasurementSets",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "OrderId",
+      "BusinessId"
+     ],
+     "referencedTable": "Orders",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "Orders": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CancellationReason": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "CancelledAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "ConfirmedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "CurrencyCode": {
+     "type": "character varying(3)",
+     "nullable": false,
+     "identity": false
+    },
+    "CustomerId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "DeliveredAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "DeliveryAddress": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "DeliveryInstructions": {
+     "type": "character varying(1000)",
+     "nullable": true,
+     "identity": false
+    },
+    "DeliveryMethod": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "Discount": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "IdempotencyKey": {
+     "type": "character varying(100)",
+     "nullable": true,
+     "identity": false
+    },
+    "LocationId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Notes": {
+     "type": "text",
+     "nullable": true,
+     "identity": false
+    },
+    "OrderNumber": {
+     "type": "character varying(30)",
+     "nullable": false,
+     "identity": false
+    },
+    "Priority": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "PromisedDate": {
+     "type": "date",
+     "nullable": false,
+     "identity": false
+    },
+    "QuotedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "ReadyAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "Subtotal": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "Total": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_Orders_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Orders_BusinessId_CustomerId",
+     "columns": [
+      "BusinessId",
+      "CustomerId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Orders_BusinessId_IdempotencyKey",
+     "columns": [
+      "BusinessId",
+      "IdempotencyKey"
+     ],
+     "unique": true,
+     "filter": "\"IdempotencyKey\" IS NOT NULL"
+    },
+    {
+     "name": "IX_Orders_BusinessId_OrderNumber",
+     "columns": [
+      "BusinessId",
+      "OrderNumber"
+     ],
+     "unique": true,
+     "filter": null
+    },
+    {
+     "name": "IX_Orders_BusinessId_Status_PromisedDate",
+     "columns": [
+      "BusinessId",
+      "Status",
+      "PromisedDate"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Orders_CustomerId_BusinessId",
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Orders_LocationId_BusinessId",
+     "columns": [
+      "LocationId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_Orders_Money": "\"Subtotal\" >= 0 AND \"Discount\" >= 0 AND \"Discount\" <= \"Subtotal\" AND \"Total\" = \"Subtotal\" - \"Discount\""
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "CustomerId",
+      "BusinessId"
+     ],
+     "referencedTable": "Customers",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "LocationId",
+      "BusinessId"
+     ],
+     "referencedTable": "Locations",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "OwnershipTransferChallenges": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CancelledAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "ConsumedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "ExpiresAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "NewOwnerMembershipId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "RequestingUserId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "TokenHash": {
+     "type": "character varying(64)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_OwnershipTransferChallenges_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_OwnershipTransferChallenges_BusinessId_ConsumedAtUtc_CancelledAtUtc",
+     "columns": [
+      "BusinessId",
+      "ConsumedAtUtc",
+      "CancelledAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_OwnershipTransferChallenges_BusinessId_RequestingUserId_ExpiresAtUtc",
+     "columns": [
+      "BusinessId",
+      "RequestingUserId",
+      "ExpiresAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_OwnershipTransferChallenges_NewOwnerMembershipId_BusinessId",
+     "columns": [
+      "NewOwnerMembershipId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_OwnershipTransferChallenges_TokenHash",
+     "columns": [
+      "TokenHash"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "NewOwnerMembershipId",
+      "BusinessId"
+     ],
+     "referencedTable": "Memberships",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "Payments": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Amount": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CurrencyCode": {
+     "type": "character varying(3)",
+     "nullable": false,
+     "identity": false
+    },
+    "CustomerId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "IdempotencyKey": {
+     "type": "character varying(100)",
+     "nullable": true,
+     "identity": false
+    },
+    "InvoiceId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Method": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "Notes": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "ReceivedOn": {
+     "type": "date",
+     "nullable": false,
+     "identity": false
+    },
+    "RecordedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "Reference": {
+     "type": "character varying(100)",
+     "nullable": true,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "StatusReason": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "VerifiedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "VerifiedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_Payments_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Payments_BusinessId_IdempotencyKey",
+     "columns": [
+      "BusinessId",
+      "IdempotencyKey"
+     ],
+     "unique": true,
+     "filter": "\"IdempotencyKey\" IS NOT NULL"
+    },
+    {
+     "name": "IX_Payments_CustomerId",
+     "columns": [
+      "CustomerId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Payments_InvoiceId_BusinessId",
+     "columns": [
+      "InvoiceId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Payments_InvoiceId_Status",
+     "columns": [
+      "InvoiceId",
+      "Status"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_Payments_Amount": "\"Amount\" > 0",
+    "CK_Payments_ReasonWhenClosed": "\"Status\" NOT IN ('Rejected','Reversed') OR \"StatusReason\" IS NOT NULL",
+    "CK_Payments_VerifiedHasVerifier": "\"Status\" <> 'Verified' OR (\"VerifiedAtUtc\" IS NOT NULL AND \"VerifiedByUserId\" IS NOT NULL)"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "InvoiceId",
+      "BusinessId"
+     ],
+     "referencedTable": "Invoices",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "PlanEntitlements": {
+   "columns": {
+    "PlanId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Key": {
+     "type": "character varying(80)",
+     "nullable": true,
+     "identity": false
+    },
+    "Value": {
+     "type": "character varying(60)",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "PlanId",
+    "Key"
+   ],
+   "uniqueKeys": [],
+   "indexes": [],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "PlanId"
+     ],
+     "referencedTable": "Plans",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "Plans": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "AnnualPrice": {
+     "type": "numeric(18,2)",
+     "nullable": true,
+     "identity": false
+    },
+    "Code": {
+     "type": "character varying(40)",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CurrencyCode": {
+     "type": "character varying(3)",
+     "nullable": false,
+     "identity": false
+    },
+    "Description": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "IsActive": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "MonthlyPrice": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "SortOrder": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_Plans_Code",
+     "columns": [
+      "Code"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": []
+  },
+  "PricingProfiles": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "DefaultHourlyRate": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "Method": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "OverheadPercent": {
+     "type": "numeric(7,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "RoundingStep": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "TargetPercent": {
+     "type": "numeric(7,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "TaxPercent": {
+     "type": "numeric(7,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_PricingProfiles_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_PricingProfiles_Ranges": "\"DefaultHourlyRate\" >= 0 AND \"OverheadPercent\" BETWEEN 0 AND 200 AND \"TaxPercent\" BETWEEN 0 AND 100 AND \"RoundingStep\" >= 0",
+    "CK_PricingProfiles_Target": "(\"Method\" = 'Margin' AND \"TargetPercent\" BETWEEN 0 AND 95) OR (\"Method\" = 'Markup' AND \"TargetPercent\" BETWEEN 0 AND 1000)"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "ProductionTasks": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "ActualStartUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "AssignedMembershipId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "BlockedReason": {
+     "type": "character varying(2000)",
+     "nullable": true,
+     "identity": false
+    },
+    "BlockedType": {
+     "type": "character varying(20)",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CancelReason": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "CompletedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "CompletedChecks": {
+     "type": "text[]",
+     "nullable": false,
+     "identity": false
+    },
+    "CompletionNotes": {
+     "type": "character varying(2000)",
+     "nullable": true,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "DeadlineUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "EstimatedMinutes": {
+     "type": "integer",
+     "nullable": true,
+     "identity": false
+    },
+    "Instructions": {
+     "type": "character varying(4000)",
+     "nullable": true,
+     "identity": false
+    },
+    "IsConditional": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "OrderGarmentId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "OrderId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "PlannedEndUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "PlannedStartUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "Priority": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "Quantity": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "RequiredChecks": {
+     "type": "text[]",
+     "nullable": false,
+     "identity": false
+    },
+    "RequiredMaterialsJson": {
+     "type": "jsonb",
+     "nullable": false,
+     "identity": false
+    },
+    "RequiredSkill": {
+     "type": "character varying(60)",
+     "nullable": true,
+     "identity": false
+    },
+    "StageId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "StageName": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "StageOrder": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "StatusBeforeBlock": {
+     "type": "character varying(20)",
+     "nullable": true,
+     "identity": false
+    },
+    "Title": {
+     "type": "character varying(160)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "UpdatedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_ProductionTasks_AssignedMembershipId_BusinessId",
+     "columns": [
+      "AssignedMembershipId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_ProductionTasks_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_ProductionTasks_BusinessId_AssignedMembershipId_Status",
+     "columns": [
+      "BusinessId",
+      "AssignedMembershipId",
+      "Status"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_ProductionTasks_BusinessId_Status_DeadlineUtc",
+     "columns": [
+      "BusinessId",
+      "Status",
+      "DeadlineUtc"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_ProductionTasks_OrderGarmentId",
+     "columns": [
+      "OrderGarmentId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_ProductionTasks_OrderGarmentId_BusinessId",
+     "columns": [
+      "OrderGarmentId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_ProductionTasks_OrderId",
+     "columns": [
+      "OrderId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_ProductionTasks_OrderId_BusinessId",
+     "columns": [
+      "OrderId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_ProductionTasks_Dates": "\"CompletedAtUtc\" IS NULL OR \"Status\" = 'Completed'",
+    "CK_ProductionTasks_Qty": "\"Quantity\" > 0 AND (\"EstimatedMinutes\" IS NULL OR \"EstimatedMinutes\" > 0)"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "AssignedMembershipId",
+      "BusinessId"
+     ],
+     "referencedTable": "Memberships",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "OrderGarmentId",
+      "BusinessId"
+     ],
+     "referencedTable": "OrderGarments",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "OrderId",
+      "BusinessId"
+     ],
+     "referencedTable": "Orders",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "Receipts": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Amount": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "BalanceAfter": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "InvoiceId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "IssuedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Number": {
+     "type": "character varying(30)",
+     "nullable": false,
+     "identity": false
+    },
+    "PaymentId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "VoidedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_Receipts_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Receipts_BusinessId_Number",
+     "columns": [
+      "BusinessId",
+      "Number"
+     ],
+     "unique": true,
+     "filter": null
+    },
+    {
+     "name": "IX_Receipts_PaymentId",
+     "columns": [
+      "PaymentId"
+     ],
+     "unique": true,
+     "filter": null
+    },
+    {
+     "name": "IX_Receipts_PaymentId_BusinessId",
+     "columns": [
+      "PaymentId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_Receipts_Amount": "\"Amount\" > 0"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "PaymentId",
+      "BusinessId"
+     ],
+     "referencedTable": "Payments",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "RolePermissions": {
+   "columns": {
+    "RoleId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Permission": {
+     "type": "character varying(80)",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "RoleId",
+    "Permission"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_RolePermissions_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_RolePermissions_RoleId_BusinessId",
+     "columns": [
+      "RoleId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "RoleId",
+      "BusinessId"
+     ],
+     "referencedTable": "BusinessRoles",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "SectionPresets": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(60)",
+     "nullable": false,
+     "identity": false
+    },
+    "PropsJson": {
+     "type": "jsonb",
+     "nullable": false,
+     "identity": false
+    },
+    "SectionType": {
+     "type": "character varying(30)",
+     "nullable": false,
+     "identity": false
+    },
+    "StyleJson": {
+     "type": "jsonb",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "Variant": {
+     "type": "character varying(30)",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_SectionPresets_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_SectionPresets_BusinessId_Name",
+     "columns": [
+      "BusinessId",
+      "Name"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "StageDependencies": {
+   "columns": {
+    "StageId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "DependsOnStageId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "StageId",
+    "DependsOnStageId"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_StageDependencies_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_StageDependencies_DependsOnStageId_BusinessId",
+     "columns": [
+      "DependsOnStageId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_StageDependencies_StageId_BusinessId",
+     "columns": [
+      "StageId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_StageDependencies_NotSelf": "\"StageId\" <> \"DependsOnStageId\""
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "DependsOnStageId",
+      "BusinessId"
+     ],
+     "referencedTable": "Stages",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    },
+    {
+     "columns": [
+      "StageId",
+      "BusinessId"
+     ],
+     "referencedTable": "Stages",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "Stages": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CompletionChecks": {
+     "type": "text[]",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "DefaultMinutes": {
+     "type": "integer",
+     "nullable": true,
+     "identity": false
+    },
+    "Instructions": {
+     "type": "character varying(2000)",
+     "nullable": true,
+     "identity": false
+    },
+    "IsConditional": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "Key": {
+     "type": "character varying(40)",
+     "nullable": false,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "RequiredSkill": {
+     "type": "character varying(60)",
+     "nullable": true,
+     "identity": false
+    },
+    "SortOrder": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "WorkflowId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_Stages_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Stages_WorkflowId_BusinessId",
+     "columns": [
+      "WorkflowId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Stages_WorkflowId_Key",
+     "columns": [
+      "WorkflowId",
+      "Key"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "WorkflowId",
+      "BusinessId"
+     ],
+     "referencedTable": "Workflows",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "StockMovements": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "ActorUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Kind": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "MaterialId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Note": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "OnHandAfter": {
+     "type": "numeric(18,3)",
+     "nullable": false,
+     "identity": false
+    },
+    "OrderId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "Quantity": {
+     "type": "numeric(18,3)",
+     "nullable": false,
+     "identity": false
+    },
+    "ReservedAfter": {
+     "type": "numeric(18,3)",
+     "nullable": false,
+     "identity": false
+    },
+    "TaskId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_StockMovements_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_StockMovements_BusinessId_MaterialId_CreatedAtUtc",
+     "columns": [
+      "BusinessId",
+      "MaterialId",
+      "CreatedAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_StockMovements_MaterialId_BusinessId",
+     "columns": [
+      "MaterialId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "MaterialId",
+      "BusinessId"
+     ],
+     "referencedTable": "Materials",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "StorefrontDomains": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Hostname": {
+     "type": "character varying(253)",
+     "nullable": false,
+     "identity": false
+    },
+    "LastCheckedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "LastError": {
+     "type": "character varying(300)",
+     "nullable": true,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "StorefrontId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "VerificationToken": {
+     "type": "character varying(64)",
+     "nullable": false,
+     "identity": false
+    },
+    "VerifiedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_StorefrontDomains_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_StorefrontDomains_Hostname",
+     "columns": [
+      "Hostname"
+     ],
+     "unique": true,
+     "filter": null
+    },
+    {
+     "name": "IX_StorefrontDomains_StorefrontId_BusinessId",
+     "columns": [
+      "StorefrontId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "StorefrontId",
+      "BusinessId"
+     ],
+     "referencedTable": "Storefronts",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "StorefrontVersionMedia": {
+   "columns": {
+    "VersionId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "MediaAssetId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "VersionId",
+    "MediaAssetId"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_StorefrontVersionMedia_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_StorefrontVersionMedia_MediaAssetId",
+     "columns": [
+      "MediaAssetId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_StorefrontVersionMedia_MediaAssetId_BusinessId",
+     "columns": [
+      "MediaAssetId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_StorefrontVersionMedia_VersionId_BusinessId",
+     "columns": [
+      "VersionId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "MediaAssetId",
+      "BusinessId"
+     ],
+     "referencedTable": "MediaAssets",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "VersionId",
+      "BusinessId"
+     ],
+     "referencedTable": "StorefrontVersions",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "StorefrontVersions": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "DocumentJson": {
+     "type": "jsonb",
+     "nullable": false,
+     "identity": false
+    },
+    "Note": {
+     "type": "character varying(200)",
+     "nullable": true,
+     "identity": false
+    },
+    "PublishedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "RolledBackFromVersion": {
+     "type": "integer",
+     "nullable": true,
+     "identity": false
+    },
+    "SchemaVersion": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "StorefrontId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "TemplateKey": {
+     "type": "character varying(40)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "VersionNumber": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_StorefrontVersions_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_StorefrontVersions_StorefrontId_BusinessId",
+     "columns": [
+      "StorefrontId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_StorefrontVersions_StorefrontId_VersionNumber",
+     "columns": [
+      "StorefrontId",
+      "VersionNumber"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "StorefrontId",
+      "BusinessId"
+     ],
+     "referencedTable": "Storefronts",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "Storefronts": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Address": {
+     "type": "character varying(300)",
+     "nullable": true,
+     "identity": false
+    },
+    "AllowSearchIndexing": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "ContactEmail": {
+     "type": "character varying(120)",
+     "nullable": true,
+     "identity": false
+    },
+    "ContactPhone": {
+     "type": "character varying(40)",
+     "nullable": true,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "DraftJson": {
+     "type": "text",
+     "nullable": false,
+     "identity": false
+    },
+    "DraftRevision": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "OpeningHours": {
+     "type": "character varying(300)",
+     "nullable": true,
+     "identity": false
+    },
+    "PublishedVersionId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "Slug": {
+     "type": "character varying(40)",
+     "nullable": false,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "TemplateKey": {
+     "type": "character varying(40)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "WorkflowBooking": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "WorkflowContact": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "WorkflowCustomOrder": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "WorkflowInquiry": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_Storefronts_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_Storefronts_Slug",
+     "columns": [
+      "Slug"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_Storefronts_PublishedNeedsVersion": "\"Status\" <> 'Published' OR \"PublishedVersionId\" IS NOT NULL"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "SubscriptionPayments": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Amount": {
+     "type": "numeric(18,2)",
+     "nullable": false,
+     "identity": false
+    },
+    "BillingPeriod": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CurrencyCode": {
+     "type": "character varying(3)",
+     "nullable": false,
+     "identity": false
+    },
+    "PaidAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "PlanId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Provider": {
+     "type": "character varying(30)",
+     "nullable": false,
+     "identity": false
+    },
+    "ProviderReference": {
+     "type": "character varying(120)",
+     "nullable": false,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_SubscriptionPayments_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_SubscriptionPayments_BusinessId_Status_CreatedAtUtc",
+     "columns": [
+      "BusinessId",
+      "Status",
+      "CreatedAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_SubscriptionPayments_PlanId",
+     "columns": [
+      "PlanId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_SubscriptionPayments_ProviderReference",
+     "columns": [
+      "ProviderReference"
+     ],
+     "unique": true,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "PlanId"
+     ],
+     "referencedTable": "Plans",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "Subscriptions": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CurrentPeriodEndUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "CurrentPeriodStartUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "PlanId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "TrialStartedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "GraceEndsAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "SuspendedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "PendingPlanId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_Subscriptions_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": true,
+     "filter": null
+    },
+    {
+     "name": "IX_Subscriptions_PlanId",
+     "columns": [
+      "PlanId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "PlanId"
+     ],
+     "referencedTable": "Plans",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "PendingPlanId"
+     ],
+     "referencedTable": "Plans",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "TaskDependencies": {
+   "columns": {
+    "TaskId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "DependsOnTaskId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "TaskId",
+    "DependsOnTaskId"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_TaskDependencies_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_TaskDependencies_DependsOnTaskId",
+     "columns": [
+      "DependsOnTaskId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_TaskDependencies_DependsOnTaskId_BusinessId",
+     "columns": [
+      "DependsOnTaskId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_TaskDependencies_TaskId_BusinessId",
+     "columns": [
+      "TaskId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_TaskDependencies_NotSelf": "\"TaskId\" <> \"DependsOnTaskId\""
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "DependsOnTaskId",
+      "BusinessId"
+     ],
+     "referencedTable": "ProductionTasks",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "TaskId",
+      "BusinessId"
+     ],
+     "referencedTable": "ProductionTasks",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "TaskEvents": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "ActorUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "DataJson": {
+     "type": "jsonb",
+     "nullable": true,
+     "identity": false
+    },
+    "FromStatus": {
+     "type": "character varying(20)",
+     "nullable": true,
+     "identity": false
+    },
+    "Note": {
+     "type": "character varying(2000)",
+     "nullable": true,
+     "identity": false
+    },
+    "TaskId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "ToStatus": {
+     "type": "character varying(20)",
+     "nullable": true,
+     "identity": false
+    },
+    "Type": {
+     "type": "character varying(40)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_TaskEvents_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_TaskEvents_TaskId_BusinessId",
+     "columns": [
+      "TaskId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_TaskEvents_TaskId_CreatedAtUtc",
+     "columns": [
+      "TaskId",
+      "CreatedAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "TaskId",
+      "BusinessId"
+     ],
+     "referencedTable": "ProductionTasks",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "UsageCounters": {
+   "columns": {
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Key": {
+     "type": "character varying(80)",
+     "nullable": true,
+     "identity": false
+    },
+    "PeriodStartUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Count": {
+     "type": "bigint",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "BusinessId",
+    "Key",
+    "PeriodStartUtc"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_UsageCounters_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_UsageCounters_NonNegative": "\"Count\" >= 0"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "UserSessions": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "AbsoluteExpiresAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CurrentTokenHash": {
+     "type": "character varying(64)",
+     "nullable": false,
+     "identity": false
+    },
+    "DeviceName": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "IdleExpiresAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "LastUsedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "PreviousTokenHash": {
+     "type": "character varying(64)",
+     "nullable": true,
+     "identity": false
+    },
+    "RevokedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "RevokedReason": {
+     "type": "character varying(80)",
+     "nullable": true,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "UserId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_UserSessions_UserId",
+     "columns": [
+      "UserId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "UserId"
+     ],
+     "referencedTable": "AspNetUsers",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "WorkerAvailability": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CapacityMinutes": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "ClosesAt": {
+     "type": "time without time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "DayOfWeek": {
+     "type": "integer",
+     "nullable": false,
+     "identity": false
+    },
+    "IsAvailable": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "MembershipId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "OpensAt": {
+     "type": "time without time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_WorkerAvailability_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_WorkerAvailability_BusinessId_MembershipId_DayOfWeek",
+     "columns": [
+      "BusinessId",
+      "MembershipId",
+      "DayOfWeek"
+     ],
+     "unique": true,
+     "filter": null
+    },
+    {
+     "name": "IX_WorkerAvailability_MembershipId_BusinessId",
+     "columns": [
+      "MembershipId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_WorkerAvailability_Day": "\"DayOfWeek\" BETWEEN 0 AND 6",
+    "CK_WorkerAvailability_Window": "(\"IsAvailable\" = FALSE AND \"OpensAt\" IS NULL AND \"ClosesAt\" IS NULL AND \"CapacityMinutes\" = 0) OR (\"IsAvailable\" = TRUE AND \"OpensAt\" IS NOT NULL AND \"ClosesAt\" IS NOT NULL AND \"OpensAt\" < \"ClosesAt\" AND \"CapacityMinutes\" BETWEEN 1 AND 1440)"
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "MembershipId",
+      "BusinessId"
+     ],
+     "referencedTable": "Memberships",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "WorkerLeaves": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "EndsAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "MembershipId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Reason": {
+     "type": "character varying(300)",
+     "nullable": false,
+     "identity": false
+    },
+    "ReviewNote": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "ReviewedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    },
+    "ReviewedByUserId": {
+     "type": "uuid",
+     "nullable": true,
+     "identity": false
+    },
+    "StartsAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Status": {
+     "type": "character varying(20)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_WorkerLeaves_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_WorkerLeaves_BusinessId_MembershipId_StartsAtUtc_EndsAtUtc",
+     "columns": [
+      "BusinessId",
+      "MembershipId",
+      "StartsAtUtc",
+      "EndsAtUtc"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_WorkerLeaves_MembershipId_BusinessId",
+     "columns": [
+      "MembershipId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {
+    "CK_WorkerLeaves_Interval": "\"StartsAtUtc\" < \"EndsAtUtc\""
+   },
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "MembershipId",
+      "BusinessId"
+     ],
+     "referencedTable": "Memberships",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "WorkerSkills": {
+   "columns": {
+    "MembershipId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "Skill": {
+     "type": "character varying(60)",
+     "nullable": true,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "MembershipId",
+    "Skill"
+   ],
+   "uniqueKeys": [],
+   "indexes": [
+    {
+     "name": "IX_WorkerSkills_BusinessId",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    },
+    {
+     "name": "IX_WorkerSkills_MembershipId_BusinessId",
+     "columns": [
+      "MembershipId",
+      "BusinessId"
+     ],
+     "unique": false,
+     "filter": null
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    },
+    {
+     "columns": [
+      "MembershipId",
+      "BusinessId"
+     ],
+     "referencedTable": "Memberships",
+     "referencedColumns": [
+      "Id",
+      "BusinessId"
+     ],
+     "onDelete": "CASCADE"
+    }
+   ]
+  },
+  "Workflows": {
+   "columns": {
+    "Id": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "BusinessId": {
+     "type": "uuid",
+     "nullable": false,
+     "identity": false
+    },
+    "CreatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": false,
+     "identity": false
+    },
+    "Description": {
+     "type": "character varying(500)",
+     "nullable": true,
+     "identity": false
+    },
+    "GarmentCategories": {
+     "type": "text[]",
+     "nullable": false,
+     "identity": false
+    },
+    "IsActive": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "IsDefault": {
+     "type": "boolean",
+     "nullable": false,
+     "identity": false
+    },
+    "Name": {
+     "type": "character varying(80)",
+     "nullable": false,
+     "identity": false
+    },
+    "UpdatedAtUtc": {
+     "type": "timestamp with time zone",
+     "nullable": true,
+     "identity": false
+    }
+   },
+   "primaryKey": [
+    "Id"
+   ],
+   "uniqueKeys": [
+    [
+     "Id",
+     "BusinessId"
+    ]
+   ],
+   "indexes": [
+    {
+     "name": "IX_Workflows_BusinessId_Name",
+     "columns": [
+      "BusinessId",
+      "Name"
+     ],
+     "unique": true,
+     "filter": null
+    },
+    {
+     "name": "UX_Workflows_OneDefault",
+     "columns": [
+      "BusinessId"
+     ],
+     "unique": true,
+     "filter": "\"IsDefault\""
+    }
+   ],
+   "checks": {},
+   "foreignKeys": [
+    {
+     "columns": [
+      "BusinessId"
+     ],
+     "referencedTable": "Businesses",
+     "referencedColumns": [
+      "Id"
+     ],
+     "onDelete": "RESTRICT"
+    }
+   ]
+  },
+  "QuotationEvents": {
+    "columns": {
+      "Id": {
+        "type": "uuid",
+        "nullable": false,
+        "identity": false
+      },
+      "ActorUserId": {
+        "type": "uuid",
+        "nullable": true,
+        "identity": false
+      },
+      "BusinessId": {
+        "type": "uuid",
+        "nullable": false,
+        "identity": false
+      },
+      "CreatedAtUtc": {
+        "type": "timestamp with time zone",
+        "nullable": false,
+        "identity": false
+      },
+      "Note": {
+        "type": "character varying(500)",
+        "nullable": true,
+        "identity": false
+      },
+      "OrderId": {
+        "type": "uuid",
+        "nullable": false,
+        "identity": false
+      },
+      "QuotedAtUtc": {
+        "type": "timestamp with time zone",
+        "nullable": false,
+        "identity": false
+      },
+      "Total": {
+        "type": "numeric(18,2)",
+        "nullable": false,
+        "identity": false
+      },
+      "Type": {
+        "type": "character varying(20)",
+        "nullable": false,
+        "identity": false
+      }
+    },
+    "primaryKey": [
+      "Id"
+    ],
+    "uniqueKeys": [],
+    "indexes": [
+      {
+        "name": "IX_QuotationEvents_BusinessId_OrderId_CreatedAtUtc",
+        "columns": [
+          "BusinessId",
+          "OrderId",
+          "CreatedAtUtc"
+        ],
+        "unique": false,
+        "filter": null
+      }
+    ],
+    "checks": {
+      "CK_QuotationEvents_Type": "\"Type\" IN ('Sent', 'Approved', 'Declined')"
+    },
+    "foreignKeys": [
+      {
+        "columns": [
+          "BusinessId"
+        ],
+        "referencedTable": "Businesses",
+        "referencedColumns": [
+          "Id"
+        ],
+        "onDelete": "RESTRICT"
+      },
+      {
+        "columns": [
+          "OrderId",
+          "BusinessId"
+        ],
+        "referencedTable": "Orders",
+        "referencedColumns": [
+          "Id",
+          "BusinessId"
+        ],
+        "onDelete": "RESTRICT"
+      }
+    ]
+  }
+ }
+}

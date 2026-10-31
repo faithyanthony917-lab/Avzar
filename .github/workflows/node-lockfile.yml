@@ -1,0 +1,43 @@
+name: Update backend-node lockfile
+
+# Run this on the branch that changed backend-node/package.json (Actions > "Update backend-node lockfile" > choose the branch).
+# It regenerates package-lock.json, proves `npm ci` works with it, runs the tests, and commits ONLY the lockfile back to that branch.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  lockfile:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: backend-node
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: Regenerate lockfile (no install scripts run)
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Prove the lockfile installs reproducibly
+        run: npm ci --no-audit --no-fund
+
+      - name: Syntax check and tests (real-database tests are skipped here; the main CI job runs them)
+        run: |
+          npm run check
+          npm test
+
+      - name: Commit lockfile
+        working-directory: .
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add backend-node/package-lock.json
+          git diff --cached --quiet && { echo "Lockfile already up to date."; exit 0; }
+          git commit -m "Update backend-node lockfile"
+          git pull --rebase
+          git push

@@ -1,0 +1,127 @@
+#!/usr/bin/env node
+// Builds docs/API.md from the route files, so the route table cannot drift from the code. It is a static reader (regular expressions
+// over the source), not a replacement for OpenAPI: it lists method, full path, who may call it and the rate limiters named on the route.
+// Usage:  node scripts/generate-api-doc.js          (writes ../docs/API.md)
+//         node scripts/generate-api-doc.js --check  (exit 1 when docs/API.md is out of date)
+import { readdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SRC = path.join(ROOT, 'src');
+const DOC = path.resolve(ROOT, '../docs/API.md');
+const METHODS = ['get', 'post', 'put', 'patch', 'delete'];
+
+async function listJs(dir) {
+  const out = [];
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...await listJs(full));
+    else if (entry.name.endsWith('.js')) out.push(full);
+  }
+  return out.sort();
+}
+
+/** Router factory name -> mount prefix, read from the app.use(...) lines in app.js. */
+export function mountPrefixes(appSource) {
+  const map = new Map();
+  for (const m of appSource.matchAll(/app\.use\(\s*'(\/api|\/)'\s*,\s*(create\w+)\(/g)) map.set(m[2], m[1] === '/' ? '' : m[1]);
+  return map;
+}
+
+/** `export const NAME = '/path'` constants, so a route registered with NAME shows its real path. */
+export function pathConstants(sources) {
+  const map = new Map();
+  for (const source of sources) for (const m of source.matchAll(/export const (\w+) = '([^']*)'/g)) map.set(m[1], m[2]);
+  return map;
+}
+
+function describeAccess(argsText, aliases) {
+  const expanded = argsText.replace(/\.\.\.(\w+)/g, (whole, name) => aliases.get(name) ?? whole);
+  const permissions = [...expanded.matchAll(/requirePermission\('([a-z.]+)'\)/g)].map((m) => m[1]);
+  const limits = [...new Set([...argsText.matchAll(/\b(\w*[lL]imit\w*)\b/g)].map((m) => m[1]).filter((name) => name !== 'limit'))];
+  const signedIn = /requireBearerAuth|\bsignedIn\b|\bauth\b|requireAuth/.test(expanded) || permissions.length > 0 || /\bbearer\w*\b/i.test(expanded);
+  let access;
+  if (permissions.length) access = `permission ${permissions.join(' + ')}`;
+  else if (signedIn) access = 'signed in';
+  else access = 'public';
+  return { access, limits };
+}
+
+/** Platform-admin routes only need a signed-in user at the route; the e-mail allow-list is checked in the service. */
+function withPlatformNote(row) {
+  return row.path.startsWith('/api/platform-admin/') ? { ...row, access: `${row.access} + platform admin (checked in service)` } : row;
+}
+
+/** Pure parser: one source file in, route rows out. `prefixes` comes from mountPrefixes(). */
+export function parseRouteFile(source, file, prefixes, constants) {
+  const aliases = new Map();
+  for (const m of source.matchAll(/const (\w+) = (\[[^\]]*\]|requireBearerAuth\([^)]*\)|rateLimit\(\{[^}]*\}\));/g)) aliases.set(m[1], m[2]);
+  const factories = [...source.matchAll(/export function (create\w+Router)\b/g)].map((m) => ({ name: m[1], index: m.index }));
+  const rows = [];
+  const callPattern = new RegExp(`router\\.(${METHODS.join('|')})\\(\\s*([^,]+?)\\s*,`, 'g');
+  for (const m of source.matchAll(callPattern)) {
+    const factory = [...factories].reverse().find((f) => f.index < m.index);
+    if (!factory) continue;
+    const prefix = prefixes.get(factory.name);
+    if (prefix === undefined) continue;
+    const rawPath = m[2].trim();
+    const literal = /^['"`]([^'"`]*)['"`]$/.exec(rawPath);
+    const routePath = literal ? literal[1] : constants.get(rawPath) ?? `\${${rawPath}}`;
+    const rest = source.slice(m.index + m[0].length, m.index + m[0].length + 600);
+    const end = rest.search(/=>/);
+    const argsText = end === -1 ? rest : rest.slice(0, end);
+    rows.push(withPlatformNote({ method: m[1].toUpperCase(), path: `${prefix}${routePath}`.replace(/\/{2,}/g, '/'), file, ...describeAccess(argsText, aliases) }));
+  }
+  return rows;
+}
+
+export async function buildApiDoc() {
+  const files = await listJs(SRC);
+  const sources = new Map(await Promise.all(files.map(async (f) => [f, await readFile(f, 'utf8')])));
+  const prefixes = mountPrefixes(sources.get(path.join(SRC, 'http/app.js')));
+  const constants = pathConstants([...sources.values()]);
+  const rows = [];
+  for (const [file, source] of sources) {
+    if (!/router\.(get|post|put|patch|delete)\(/.test(source)) continue;
+    rows.push(...parseRouteFile(source, path.relative(SRC, file).replaceAll('\\', '/'), prefixes, constants));
+  }
+  rows.sort((a, b) => a.file.localeCompare(b.file) || a.path.localeCompare(b.path) || a.method.localeCompare(b.method));
+  const byFile = new Map();
+  for (const row of rows) byFile.set(row.file, [...(byFile.get(row.file) ?? []), row]);
+  const lines = [
+    '# Avzar API route table',
+    '',
+    '<!-- Generated by backend-node/scripts/generate-api-doc.js. Do not edit by hand: run `npm run docs:api` and commit the result. A test fails when this file is out of date. -->',
+    '',
+    `${rows.length} routes in ${byFile.size} route files. This is a route list read from the source, **not an OpenAPI description**: it has no request or response schemas (OpenAPI is planned for step-17).`,
+    '',
+    '## What the table does and does not say',
+    '',
+    '- **Access** is read from the middleware named on the route: `public` (no bearer token; this includes routes that check a token in the body, such as the customer portal, and webhooks that check a signature instead), `signed in` (any signed-in member of the business) or `permission X` (owners always pass; other members need X). Permission names are in `src/security/permissions.js` and the role tables.',
+    '- **Not shown:** plan limits and entitlements (checked inside services, for example `entitlementService.js`), platform-admin checks (`PLATFORM_ADMIN_EMAILS`, checked inside `adminService.js` and `platformOperationsService.js`), and per-route business rules. Read the service for those.',
+    '- **Limiters** are the rate-limit variables named on the route; their windows are set at the top of each route file.',
+    '- **Mount prefix:** most routers are mounted at `/api`. `createPublicSiteRouter` and `createPublicMediaRouter` are mounted at `/`, so their paths have no `/api`. Browser code reaches `/api/...` only through the web app proxy `/backend/...`.',
+    '- **CSRF:** unsafe requests without a bearer token need the double-submit CSRF cookie and header, except the paths listed in `src/http/app.js` (token and refresh routes, portal, privacy, webhooks, analytics).',
+    '- Health checks, outside the table: `GET /health/live`, `GET /health/ready`, `GET /health` (database check), `GET /api/v1`.',
+    '',
+  ];
+  for (const [file, list] of byFile) {
+    lines.push(`## ${file}`, '', '| Method | Path | Access | Limiters |', '|---|---|---|---|');
+    for (const r of list) lines.push(`| ${r.method} | \`${r.path}\` | ${r.access} | ${r.limits.length ? r.limits.join(', ') : ''} |`);
+    lines.push('');
+  }
+  return `${lines.join('\n').trimEnd()}\n`;
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const text = await buildApiDoc();
+  if (process.argv.includes('--check')) {
+    const current = await readFile(DOC, 'utf8').catch(() => '');
+    if (current !== text) { console.error('docs/API.md is out of date. Run: npm run docs:api'); process.exit(1); }
+    console.info('docs/API.md is up to date.');
+  } else {
+    await writeFile(DOC, text);
+    console.info(`Wrote ${DOC}`);
+  }
+}

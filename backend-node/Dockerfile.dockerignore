@@ -1,0 +1,10 @@
+**/node_modules
+**/.git
+**/.env
+**/.next
+**/coverage
+backend
+web
+mobile
+backend-node/test
+backend-node/data

@@ -92,6 +92,9 @@ const EnvSchema = z.object({
   META_WHATSAPP_TEMPLATE_LANGUAGE: z.string().default('en'),
   CUSTOMER_MESSAGE_WORKER_ENABLED: bool('true'),
   CUSTOMER_MESSAGE_WORKER_POLL_SECONDS: z.coerce.number().int().min(1).max(3600).default(15),
+  // Step 17c: removes finished customer-message rows after 180 days and finished email rows after 90 days.
+  RETENTION_WORKER_ENABLED: bool('true'),
+  RETENTION_POLL_SECONDS: z.coerce.number().int().min(60).max(86400).default(21600),
   OVERDUE_TASK_REMINDERS_ENABLED: bool('true'),
   OVERDUE_TASK_REMINDER_POLL_SECONDS: z.coerce.number().int().min(60).max(3600).default(900),
   NOTIFICATION_SWEEP_ENABLED: bool('true'),

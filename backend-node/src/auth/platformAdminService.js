@@ -54,7 +54,7 @@ export async function listPlatformBusinesses(pool, actorEmail, allowlist, { q, l
 export async function getPlatformBusiness(pool, actorEmail, allowlist, businessId) {
   requirePlatformAdmin(actorEmail, allowlist);
   if (!UUID.test(String(businessId))) throw AppError.notFound('business_not_found', 'Business was not found.');
-  const business = (await pool.query(`SELECT "Id","Name","ContactEmail","CurrencyCode","TimeZoneId","IsActive","CreatedAtUtc","UpdatedAtUtc" FROM "Businesses" WHERE "Id"=$1`, [businessId])).rows[0];
+  const business = (await pool.query(`SELECT "Id","Name","ContactEmail","CurrencyCode","TimeZoneId","IsActive","CreatedAtUtc","UpdatedAtUtc","SuspendedAtUtc","SuspendedReason" FROM "Businesses" WHERE "Id"=$1`, [businessId])).rows[0];
   if (!business) throw AppError.notFound('business_not_found', 'Business was not found.');
   // Counts and the plan are read inside this business's own context: another business's rows can never be added in.
   const usage = await runWithTenantRlsContext(async () => {
@@ -77,10 +77,70 @@ export async function getPlatformBusiness(pool, actorEmail, allowlist, businessI
   return {
     id: business.Id, name: business.Name, contactEmail: business.ContactEmail, currencyCode: business.CurrencyCode, timeZoneId: business.TimeZoneId,
     isActive: business.IsActive, createdAtUtc: business.CreatedAtUtc, updatedAtUtc: business.UpdatedAtUtc,
+    suspendedAtUtc: business.SuspendedAtUtc, suspendedReason: business.SuspendedReason,
     owner: usage.owner ? { email: usage.owner.Email, fullName: usage.owner.FullName } : null,
     plan: usage.plan ? { code: usage.plan.Code, name: usage.plan.Name, status: usage.plan.Status, currentPeriodEndUtc: usage.plan.CurrentPeriodEndUtc } : null,
     usage: { activeStaff: c.activeStaff, locations: c.locations, customers: c.customers, orders: c.orders, ordersLast30Days: c.ordersLast30Days, invoices: c.invoices, storageBytes: Number(c.storageBytes) },
   };
+}
+
+export const SUSPEND_REASON_MIN = 3;
+export const SUSPEND_REASON_MAX = 200;
+
+async function explainNoChange(pool, businessId, wantActive) {
+  const row = (await pool.query('SELECT "IsActive" FROM "Businesses" WHERE "Id" = $1', [businessId])).rows[0];
+  if (!row) throw AppError.notFound('business_not_found', 'Business was not found.');
+  if (wantActive) throw AppError.conflict('not_suspended', 'This business is not suspended.');
+  throw AppError.conflict('already_suspended', 'This business is already suspended.');
+}
+
+/**
+ * Step 17c: switch a business off. Staff of that business are refused at once (every authenticated request re-reads Businesses.IsActive),
+ * its public pages answer "not found", and its background work pauses. Nothing is deleted, and money already paid is still recorded
+ * (provider webhooks are not blocked). The change and its audit entry are written by one statement, so neither can exist without the other.
+ * An administrator cannot suspend the business they are signed in to, which would lock them out of the platform screens.
+ */
+export async function suspendPlatformBusiness(pool, actorEmail, allowlist, actorBusinessId, businessId, reason) {
+  requirePlatformAdmin(actorEmail, allowlist);
+  if (!UUID.test(String(businessId))) throw AppError.notFound('business_not_found', 'Business was not found.');
+  const text = String(reason ?? '').trim();
+  if (text.length < SUSPEND_REASON_MIN || text.length > SUSPEND_REASON_MAX) {
+    throw AppError.badRequest('invalid_reason', `Give a reason of ${SUSPEND_REASON_MIN} to ${SUSPEND_REASON_MAX} characters.`);
+  }
+  if (String(businessId).toLowerCase() === String(actorBusinessId ?? '').toLowerCase()) {
+    throw AppError.conflict('cannot_suspend_own_business', 'You cannot suspend the business you are signed in to.');
+  }
+  const { rows } = await pool.query(`
+    WITH changed AS (
+      UPDATE "Businesses" SET "IsActive" = FALSE, "SuspendedAtUtc" = now(), "SuspendedReason" = $2, "UpdatedAtUtc" = now()
+      WHERE "Id" = $1 AND "IsActive" = TRUE RETURNING "Id", "SuspendedAtUtc"
+    ), audited AS (
+      INSERT INTO "PlatformAuditLogs" ("Id","ActorEmail","Action","EntityType","EntityId","DetailsJson")
+      SELECT $3::uuid, $4::text, 'platform.business.suspended', 'Business', changed."Id", $5::jsonb FROM changed RETURNING "EntityId"
+    )
+    SELECT "Id", "SuspendedAtUtc" FROM changed`,
+  [businessId, text, randomUUID(), actorEmail.trim().toLowerCase(), JSON.stringify({ reason: text })]);
+  if (!rows[0]) await explainNoChange(pool, businessId, false);
+  return { id: rows[0].Id, isActive: false, suspendedAtUtc: rows[0].SuspendedAtUtc, suspendedReason: text };
+}
+
+/** Step 17c: switch a suspended business back on. Sessions that were not revoked work again; queued work resumes. */
+export async function reactivatePlatformBusiness(pool, actorEmail, allowlist, businessId) {
+  requirePlatformAdmin(actorEmail, allowlist);
+  if (!UUID.test(String(businessId))) throw AppError.notFound('business_not_found', 'Business was not found.');
+  const { rows } = await pool.query(`
+    WITH before AS (SELECT "Id", "SuspendedReason" FROM "Businesses" WHERE "Id" = $1 AND "IsActive" = FALSE FOR UPDATE),
+    changed AS (
+      UPDATE "Businesses" b SET "IsActive" = TRUE, "SuspendedAtUtc" = NULL, "SuspendedReason" = NULL, "UpdatedAtUtc" = now()
+      FROM before WHERE b."Id" = before."Id" RETURNING b."Id"
+    ), audited AS (
+      INSERT INTO "PlatformAuditLogs" ("Id","ActorEmail","Action","EntityType","EntityId","DetailsJson")
+      SELECT $2::uuid, $3::text, 'platform.business.reactivated', 'Business', before."Id", jsonb_build_object('previousReason', before."SuspendedReason") FROM before RETURNING "EntityId"
+    )
+    SELECT "Id" FROM changed`,
+  [businessId, randomUUID(), actorEmail.trim().toLowerCase()]);
+  if (!rows[0]) await explainNoChange(pool, businessId, true);
+  return { id: rows[0].Id, isActive: true, suspendedAtUtc: null, suspendedReason: null };
 }
 
 export async function lookupPlatformUser(pool, actorEmail, allowlist, email) {

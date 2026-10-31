@@ -43,6 +43,7 @@ All are started in `src/server.js` and stopped on `SIGTERM` or `SIGINT`.
 | Appointment reminders | `notifications/appointmentReminderWorker.js` | Staff reminders before appointments | always on |
 | Customer messages | `messaging/customerMessageWorker.js` | Sends customer SMS reminders from `CustomerMessageOutbox` | `CUSTOMER_MESSAGE_WORKER_ENABLED` |
 | Customer order and payment messages | `messaging/customerEventWorker.js` | Sends order amended, order ready and payment receipt messages from `CustomerEventOutbox` (step-16b) | `CUSTOMER_MESSAGE_WORKER_ENABLED` (the same switch) |
+| Retention (step-17c) | `retention/retentionWorker.js` | Removes finished customer-message rows after 180 days and finished email rows after 90 days; never touches rows still to be sent | `RETENTION_WORKER_ENABLED` |
 | Editable customer wording | `messaging/templateCatalog.js`, `auth/messageTemplateRoutes.js` | Default and saved wording of the four customer messages (`NotificationTemplates`, step-16c); read when a message is sent | none |
 | Orphan cleanup | `storage/orphanCleanup.js` | Deletes stored files no row points to, after a grace period | `ORPHAN_CLEANUP_ENABLED` |
 | Subscription lifecycle | `auth/subscriptionLifecycleService.js` | Trial end, overdue, suspension, subscription end | `SUBSCRIPTION_LIFECYCLE_ENABLED` |

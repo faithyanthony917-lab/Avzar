@@ -1,6 +1,6 @@
 import { AppError } from '../http/errors.js';
 import { issueAccessToken, verifyAccessToken } from './jwt.js';
-import { currentUser } from '../auth/mobileAuthService.js';
+import { BUSINESS_SUSPENDED_MESSAGE, currentUser, isBusinessSuspended } from '../auth/mobileAuthService.js';
 import { readCookie } from './csrf.js';
 import { SESSION_COOKIE, setSessionCookie } from './sessionCookie.js';
 import { setTenantRlsContext } from '../db/tenantRlsContext.js';
@@ -27,7 +27,11 @@ export function requireBearerAuth(env, pool) {
       [identity.sessionId, identity.userId]);
       if (!rows.length) return next(AppError.unauthorized('unauthorized', 'Authentication is required.'));
       const user = await currentUser(pool, identity.userId, identity.businessId);
-      if (!user) return next(AppError.unauthorized('membership_inactive', 'Your membership in this business is no longer active.'));
+      if (!user) {
+        // Step 17c: a suspended business gets its own code, so the app can show the reason instead of "membership no longer active".
+        if (await isBusinessSuspended(pool, identity.businessId)) return next(AppError.unauthorized('business_suspended', BUSINESS_SUSPENDED_MESSAGE));
+        return next(AppError.unauthorized('membership_inactive', 'Your membership in this business is no longer active.'));
+      }
       req.auth = identity;
       req.authTransport = cookieToken ? 'cookie' : 'bearer';
       req.currentUser = user;

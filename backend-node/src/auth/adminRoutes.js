@@ -4,7 +4,7 @@ import { AppError } from '../http/errors.js';
 import { requireBearerAuth } from '../security/bearerAuth.js';
 import { requirePermission } from '../security/permissions.js';
 import { confirmOwnershipTransfer, getPublicPlans, getTenantEntitlements, listEmailSuppressions, listPlatformPlans, requestOwnershipTransfer, updatePlatformPlan } from './adminService.js';
-import { getPlatformBusiness, getPlatformHealth, listPlatformAuditLogs, listPlatformBusinesses, lookupPlatformUser } from './platformAdminService.js';
+import { getPlatformBusiness, getPlatformHealth, listPlatformAuditLogs, listPlatformBusinesses, lookupPlatformUser, reactivatePlatformBusiness, suspendPlatformBusiness } from './platformAdminService.js';
 import { platformEmails } from './platformAccess.js';
 import { listPlatformBackgroundJobs, listPlatformFeatureFlags, retryPlatformNotification, updatePlatformFeatureFlag } from './platformOperationsService.js';
 
@@ -38,6 +38,7 @@ const auditQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).optional(), before: z.string().max(300).optional(),
 });
 const jobRetrySchema = z.object({ kind: z.enum(['notification','push']) });
+const suspendSchema = z.object({ reason: z.string().trim().min(3).max(200) }).strict();
 
 export function createAdminRouter({ env, pool }) {
   const router = Router();
@@ -82,6 +83,12 @@ export function createAdminRouter({ env, pool }) {
 
   router.get('/platform-admin/businesses/:id', auth, async (req, res) =>
     res.status(200).json(await getPlatformBusiness(pool, req.currentUser.email, platformEmails(env), req.params.id)));
+
+  router.post('/platform-admin/businesses/:id/suspend', auth, async (req, res) =>
+    res.status(200).json(await suspendPlatformBusiness(pool, req.currentUser.email, platformEmails(env), req.currentUser.businessId, req.params.id, parse(suspendSchema, req.body).reason)));
+
+  router.post('/platform-admin/businesses/:id/reactivate', auth, async (req, res) =>
+    res.status(200).json(await reactivatePlatformBusiness(pool, req.currentUser.email, platformEmails(env), req.params.id)));
 
   router.get('/platform-admin/users', auth, async (req, res) =>
     res.status(200).json(await lookupPlatformUser(pool, req.currentUser.email, platformEmails(env), parse(userLookupQuerySchema, req.query).email)));

@@ -3,6 +3,8 @@ export type PlatformBusiness = { id: string; name: string; contactEmail: string 
 export type PlatformBusinessPage = { items: PlatformBusiness[]; next: string | null };
 export type PlatformBusinessDetail = PlatformBusiness & {
   updatedAtUtc: string | null;
+  suspendedAtUtc?: string | null;
+  suspendedReason?: string | null;
   owner: { email: string; fullName: string } | null;
   plan: { code: string; name: string; status: string; currentPeriodEndUtc: string | null } | null;
   usage: { activeStaff: number; locations: number; customers: number; orders: number; ordersLast30Days: number; invoices: number; storageBytes: number };

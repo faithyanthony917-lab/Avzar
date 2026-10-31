@@ -160,9 +160,19 @@ CI green at `58c6710` (node-api 583 of 583; node-db 199 of 199; web 510 of 510).
 - **Run here (no database, no express, no zod, no browser):** `node --check` on every changed file; `platformAdminService`, `platformOperations`, `tenantLookup`, `forEachBusiness`, `workerTenantContext` unit tests; `npm run docs:api`. **Not run here:** the DB suite, every web test, the web typecheck.
 - **Open:** CI; no staging or phone check; worker last-run times and a plan column in the list not built; the platform audit viewer shows platform entries only (a business's own audit log is not shown).
 
+## Step-17c (business suspension and retention): written 2026-10-31, CI not yet seen
+
+- **Base:** the `6929351` tree (CI green on all three jobs). Defaults taken on your "go": a reason is required; webhooks keep running during a suspension; reminders count as customer messages for the 180 days.
+- **Correction to the design report:** I said an already signed-in session would keep working. It would not: `currentUser` checks `Businesses.IsActive` on every request, at sign-in, at refresh and at the realtime stream. So no session revocation was added. What was missing was a clear reason (now `business_suspended`) and the public pages.
+- **Changed:** migration `0044_business_suspension.sql` (two columns on `Businesses`, three partial retention indexes); `tenantLookup.js` (`SUSPENDABLE_LOOKUPS`: a suspended business makes storefront, old address, hostname, portal, calendar and media lookups behave as no match); `mobileAuthService.js` and `bearerAuth.js` (`business_suspended`); `platformAdminService.js` (`suspendPlatformBusiness`, `reactivatePlatformBusiness`, one statement each so the change and its audit entry go together; the detail shows the suspension); `adminRoutes.js` (two routes); `retention/retentionWorker.js`, `server.js`, `env.js`, `.env.example`; docs; `docs/API.md` (365 routes). Web: `PlatformBusinessSuspension.tsx`, the business detail page, `Suspended` wording in the list.
+- **Rules:** only a platform administrator; an administrator cannot suspend the business they are signed in to; suspending twice is 409; nothing is deleted; Pending and Leased queue rows are never removed by retention.
+- **Tests added:** `test/retentionWorker.test.js` (7), four in `test/tenantLookup.test.js`, seven in `test/platformAdminService.test.js`, `test/db/businessSuspension.integration.test.js` and `test/db/retention.integration.test.js` (restricted role), `web/test/components/PlatformBusinessSuspension.test.tsx`. `adoption.integration.test.js` (+2 columns) and the Node-only column list in `efSchema.integration.test.js` updated.
+- **Run here (no database, no express, no zod, no browser):** `node --check` on every changed file; `retentionWorker`, `tenantLookup`, `platformAdminService`, `apiDoc` and `workerTenantContext` unit tests. **Not run:** the two database suites, the web tests and typecheck, the rest of the suite. CI is the authority.
+- **Open:** CI; an open realtime stream is not closed at the moment of suspension (the next connect is refused); no staging check; the customer-reminder rows are checked with data only under the restricted role in the new retention test.
+
 ## Known open items
 
-No request IDs or stacks in error logs; no per-account login lockout; no `helmet`; no business closure; a storefront booking creates an inquiry, not an appointment; order amendments show a preview, invalidate unstarted task slots and require an explicit schedule preview/publish in the planner; customers cannot opt out of messages themselves; the storefront link default points at `avzar.app`, which has no DNS record (use `/sites/<slug>`).
+a storefront booking creates an inquiry, not an appointment; order amendments show a preview, invalidate unstarted task slots and require an explicit schedule preview/publish in the planner; customers cannot opt out of messages themselves; the storefront link default points at `avzar.app`, which has no DNS record (use `/sites/<slug>`).
 
 ## Web app: PWA removed (step-06)
 

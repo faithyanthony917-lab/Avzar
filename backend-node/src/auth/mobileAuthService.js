@@ -29,6 +29,14 @@ const isSameHash = (left, right) => {
 };
 const tokenFor = (sessionId, secret) => `${sessionId.replaceAll('-', '')}.${secret}`;
 
+export const BUSINESS_SUSPENDED_MESSAGE = 'This business has been suspended. Please contact Avzar support.';
+
+/** True when the business exists and has been switched off (Businesses has no row-level security, so any context can read it). */
+export async function isBusinessSuspended(db, businessId) {
+  const { rows } = await db.query('SELECT 1 FROM "Businesses" WHERE "Id" = $1 AND "IsActive" = FALSE', [businessId]);
+  return rows.length > 0;
+}
+
 export async function currentUser(db, userId, businessId) {
   const { rows } = await db.query(`
     SELECT u."Id" AS "UserId", u."Email", u."FullName", b."Id" AS "BusinessId", b."Name" AS "BusinessName",
@@ -95,7 +103,14 @@ export async function authenticate(pool, request, env, now = new Date()) {
     FROM "Memberships" m JOIN "Businesses" b ON b."Id" = m."BusinessId"
     WHERE m."UserId" = $1 AND m."Status" = 0 AND b."IsActive" = TRUE ORDER BY b."Name"`, [user.Id]));
   const choices = choicesResult.rows.map((row) => ({ businessId: row.BusinessId, businessName: row.BusinessName }));
-  if (choices.length === 0) throw AppError.forbidden('no_active_membership', 'This account has no active business membership.');
+  if (choices.length === 0) {
+    // Step 17c: say so when the only reason is a suspended business, so the person knows to contact support rather than retry.
+    const suspended = await withUserLookup(pool, user.Id, () => pool.query(`
+      SELECT 1 FROM "Memberships" m JOIN "Businesses" b ON b."Id" = m."BusinessId"
+      WHERE m."UserId" = $1 AND m."Status" = 0 AND b."IsActive" = FALSE LIMIT 1`, [user.Id]));
+    if (suspended.rows.length > 0) throw AppError.forbidden('business_suspended', BUSINESS_SUSPENDED_MESSAGE);
+    throw AppError.forbidden('no_active_membership', 'This account has no active business membership.');
+  }
   if (request.businessId) {
     if (!choices.some((choice) => choice.businessId === request.businessId)) {
       throw AppError.forbidden('not_a_member', 'You are not an active member of that business.');

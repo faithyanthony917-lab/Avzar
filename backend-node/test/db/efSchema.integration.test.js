@@ -102,7 +102,7 @@ const NODE_ONLY_INDEXES = {
 
 // Explicit, reviewed Node-only extensions to the EF-owned StockMovements table.
 const NODE_ONLY_COLUMNS = {
-  Businesses: new Set(['PaymentSubaccountCode']), // 0037
+  Businesses: new Set(['PaymentSubaccountCode', 'SuspendedAtUtc', 'SuspendedReason']), // 0037, 0044
   Inquiries: new Set(['AppointmentId']), // 0036
   StockMovements: new Set([
     'LocationId', 'MovementType', 'QuantityDelta', 'UnitCost', 'ReferenceType',

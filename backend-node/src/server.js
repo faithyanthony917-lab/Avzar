@@ -19,6 +19,7 @@ import { startWorkerSummaryWorker } from './notifications/workerSummaryService.j
 import { startAppointmentReminderWorker } from './notifications/appointmentReminderWorker.js';
 import { startCustomerMessageWorker } from './messaging/customerMessageWorker.js';
 import { startCustomerEventWorker } from './messaging/customerEventWorker.js';
+import { startRetentionWorker } from './retention/retentionWorker.js';
 import { attachRealtimeHub, closeRealtimeConnections } from './realtime/events.js';
 
 const env = loadEnv();
@@ -60,6 +61,7 @@ const stopWorkerSummaries = startWorkerSummaryWorker({
 const stopAppointmentReminders = startAppointmentReminderWorker({ pool });
 const stopCustomerMessageWorker = startCustomerMessageWorker({ pool, env, enabled: env.CUSTOMER_MESSAGE_WORKER_ENABLED, pollSeconds: env.CUSTOMER_MESSAGE_WORKER_POLL_SECONDS });
 const stopCustomerEventWorker = startCustomerEventWorker({ pool, env, enabled: env.CUSTOMER_MESSAGE_WORKER_ENABLED, pollSeconds: env.CUSTOMER_MESSAGE_WORKER_POLL_SECONDS });
+const stopRetention = startRetentionWorker({ pool, enabled: env.RETENTION_WORKER_ENABLED, pollSeconds: env.RETENTION_POLL_SECONDS });
 const stopOrphanCleanup = startOrphanCleanupWorker({
   pool, storage: app.locals.objectStorage, enabled: env.ORPHAN_CLEANUP_ENABLED,
   graceHours: env.ORPHAN_CLEANUP_GRACE_HOURS, intervalMinutes: env.ORPHAN_CLEANUP_INTERVAL_MINUTES,
@@ -83,7 +85,7 @@ function shutdown(signal) {
     }
     resolve();
   }));
-  void Promise.all([httpClosed, stopEmailDispatcher(), stopOverdueTaskReminders(), stopNotificationWorker(), stopNotificationOutboxWorker(), stopPushDeliveryWorker(), stopWorkerSummaries(), stopAppointmentReminders(), stopCustomerMessageWorker(), stopCustomerEventWorker(), stopOrphanCleanup(), stopSubscriptionLifecycle()]).then(() => {
+  void Promise.all([httpClosed, stopEmailDispatcher(), stopOverdueTaskReminders(), stopNotificationWorker(), stopNotificationOutboxWorker(), stopPushDeliveryWorker(), stopWorkerSummaries(), stopAppointmentReminders(), stopCustomerMessageWorker(), stopCustomerEventWorker(), stopRetention(), stopOrphanCleanup(), stopSubscriptionLifecycle()]).then(() => {
     app.locals.objectStorage.close();
     pool?.end().catch(() => { process.exitCode = 1; });
   });

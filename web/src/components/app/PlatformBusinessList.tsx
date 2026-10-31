@@ -18,7 +18,7 @@ export function PlatformBusinessList({ page, q }: { page: PlatformBusinessPage; 
                 <tr key={b.id}>
                   <td><a href={`/platform-admin/businesses/${b.id}`}>{b.name}</a></td>
                   <td>{b.contactEmail ?? '—'}</td>
-                  <td>{b.isActive ? 'Active' : 'Inactive'}</td>
+                  <td>{b.isActive ? 'Active' : 'Suspended'}</td>
                   <td>{when(b.createdAtUtc)}</td>
                 </tr>
               ))}

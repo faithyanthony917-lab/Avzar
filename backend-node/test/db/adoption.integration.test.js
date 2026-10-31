@@ -74,13 +74,13 @@ describe('adopting an EF-created database', { skip: !url }, () => {
 
     assert.equal(
   afterState.columns,
-  before.columns + 13 + 14 + 5 + 6 + 25 + 23 + 24 + 9 + 7 + 10 + 4 + 16 + 15 + 22 + 57 + 36 + 10 + 9 + 9 + 18 + 1 + 7 + 2 + 1 + 18 + 18 + 17 + 8,
-  'the Node-only migrations (0009 task requests  through 0041 notification templates, including the stock ledger extension) add their expected columns'
+  before.columns + 13 + 14 + 5 + 6 + 25 + 23 + 24 + 9 + 7 + 10 + 4 + 16 + 15 + 22 + 57 + 36 + 10 + 9 + 9 + 18 + 1 + 7 + 2 + 1 + 18 + 18 + 17 + 8 + 2,
+  'the Node-only migrations (0009 task requests  through 0044 business suspension, including the stock ledger extension) add their expected columns'
 );
     assert.equal(
   afterState.fks,
   before.fks + 3 + 5 + 2 + 6 + 5 + 2 + 2 + 4 + 2 + 1 + 5 + 3 + 4 + 9 + 8 + 2 + 1 + 1 + 4 + 4 + 1 + 1,
-  'the Node-only migrations add their expected foreign keys through 0041 notification templates'
+  'the Node-only migrations add their expected foreign keys through 0044 business suspension (0042 to 0044 add none)'
 );
     assert.equal(afterState.arrays, before.arrays + 1, 'the calendar-feed migration adds only AllowedLocationIds as a new array column');
     assert.equal((await db.pool.query(`SELECT to_regclass('"TaskWorkerRequests"') IS NOT NULL AS present`)).rows[0].present, true);

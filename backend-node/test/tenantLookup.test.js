@@ -7,7 +7,7 @@ import {
   adoptTenant, currentTenantRlsBusinessId, installTenantRlsContext, LOOKUP_KINDS, runWithTenantPlatformScope,
   runWithPlatformAdminRead, runWithTenantRlsContext, setTenantLookup,
 } from '../src/db/tenantRlsContext.js';
-import { bindTenantByLookup, TENANT_LOOKUPS } from '../src/db/tenantLookup.js';
+import { bindTenantByLookup, SUSPENDABLE_LOOKUPS, TENANT_LOOKUPS } from '../src/db/tenantLookup.js';
 
 const BUSINESS_A = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const USER_ID = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -181,4 +181,55 @@ test('migration 0043 opens SELECT only, on exactly the five queue tables, behind
   assert.ok(sql.includes('FOR SELECT'));
   assert.ok(sql.includes("current_setting('app.platform_admin_read', true) = 'on'"));
   assert.doesNotMatch(sql, /FOR (ALL|INSERT|UPDATE|DELETE)/);
+});
+
+// Step 17c: a business that has been switched off is invisible to customer-facing links, but money already paid is still recorded.
+function poolWhereBusinessIsSuspended() {
+  const calls = [];
+  const makeClient = () => ({
+    async query(sql, values) {
+      const text = String(sql);
+      calls.push({ sql: text, values });
+      if (/^\s*SELECT "BusinessId"/.test(text)) return { rows: [{ BusinessId: BUSINESS_A }], rowCount: 1 };
+      if (text.includes('FROM "Businesses"') && text.includes('"IsActive" = FALSE')) return { rows: [{ ok: 1 }], rowCount: 1 };
+      return { rows: [], rowCount: 0 };
+    },
+    release() {},
+  });
+  return installTenantRlsContext({ calls, async query(sql, values) { const c = makeClient(); try { return await c.query(sql, values); } finally { c.release(); } }, async connect() { return makeClient(); } });
+}
+
+test('a suspended business makes every customer-facing lookup behave as "no match"', async () => {
+  for (const name of SUSPENDABLE_LOOKUPS) {
+    const pool = poolWhereBusinessIsSuspended();
+    await runWithTenantRlsContext(async () => {
+      assert.equal(await bindTenantByLookup(pool, name, 'KEY'), null, name);
+      assert.equal(currentTenantRlsBusinessId(), null, `${name} must not bind the tenant`);
+    });
+    assert.ok(!pool.calls.some((c) => c.sql.includes("'app.business_id'")), `${name}: no business is ever set`);
+  }
+});
+
+test('payment, email, subscription, invitation and session lookups still bind a suspended business (webhooks must record paid money)', async () => {
+  for (const name of Object.keys(TENANT_LOOKUPS).filter((key) => !SUSPENDABLE_LOOKUPS.has(key))) {
+    const pool = poolWhereBusinessIsSuspended();
+    await runWithTenantRlsContext(async () => {
+      assert.equal(await bindTenantByLookup(pool, name, 'KEY'), BUSINESS_A, name);
+    });
+    assert.ok(!pool.calls.some((c) => c.sql.includes('FROM "Businesses"')), `${name} does not even ask whether the business is suspended`);
+  }
+});
+
+test('the suspendable keys are exactly the customer-facing ones, and every one is a real lookup', () => {
+  assert.deepEqual([...SUSPENDABLE_LOOKUPS].sort(), ['calendar_token_hash', 'media_asset_id', 'portal_token_hash', 'storefront_hostname', 'storefront_redirect_slug', 'storefront_slug']);
+  for (const name of SUSPENDABLE_LOOKUPS) assert.ok(Object.hasOwn(TENANT_LOOKUPS, name), name);
+});
+
+test('an active business is bound as before (the suspension check finds nothing)', async () => {
+  const pool = installTenantRlsContext(fakePool((text, values) => (values[0] === 'sartoria' ? [{ BusinessId: BUSINESS_A }] : [])));
+  await runWithTenantRlsContext(async () => {
+    assert.equal(await bindTenantByLookup(pool, 'storefront_slug', 'sartoria'), BUSINESS_A);
+    assert.equal(currentTenantRlsBusinessId(), BUSINESS_A);
+  });
+  assert.ok(pool.calls.some((c) => c.sql.includes('FROM "Businesses"') && c.values[0] === BUSINESS_A));
 });

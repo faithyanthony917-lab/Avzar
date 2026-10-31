@@ -43,7 +43,7 @@ describe('PlatformBusinessList', () => {
     render(<PlatformBusinessList page={{ items: [biz(1), biz(2, { isActive: false })], next: 'CUR' }} q="shop" />);
     expect(screen.getByRole('link', { name: 'Shop 1' }).getAttribute('href')).toBe('/platform-admin/businesses/b1');
     expect(screen.getByText('one@example.test')).toBeTruthy();
-    expect(screen.getByText('Inactive')).toBeTruthy();
+    expect(screen.getByText('Suspended')).toBeTruthy();
     const older = screen.getByRole('link', { name: 'Older businesses' }).getAttribute('href')!;
     expect(older).toContain('q=shop');
     expect(older).toContain('before=CUR');

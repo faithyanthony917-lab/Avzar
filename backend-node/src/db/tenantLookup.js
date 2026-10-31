@@ -19,6 +19,14 @@ export const TENANT_LOOKUPS = Object.freeze({
   // user_id has no single business: after the user is verified, the caller reads every Memberships row for that user.
 });
 
+// Step 17c: a suspended business (Businesses.IsActive = false) is invisible to the public. These keys come from customer-facing links
+// and pages (storefront address, old address, custom hostname, portal link, calendar link, public media). A suspended business makes
+// the lookup behave as "no match", so every caller already answers with its own 404 or 401. Payment, email and subscription
+// references are deliberately not listed: a provider webhook for money already paid must still be recorded during a suspension.
+export const SUSPENDABLE_LOOKUPS = Object.freeze(new Set([
+  'storefront_slug', 'storefront_redirect_slug', 'storefront_hostname', 'portal_token_hash', 'calendar_token_hash', 'media_asset_id',
+]));
+
 /**
  * Find the business that owns the row a public key names and make it the tenant of this request.
  * Returns the business ID, or null when no row matches (the lookup is then cleared and the caller returns today's 404 or 401).
@@ -43,6 +51,11 @@ export async function bindTenantByLookup(poolOrClient, name, value) {
     const { rows } = await poolOrClient.query(`SELECT "BusinessId" FROM "${entry.table}" WHERE ${entry.where} LIMIT 1`, [key]);
     const businessId = rows[0]?.BusinessId ?? null;
     if (!businessId) { await forget(); return null; }
+    // Businesses has no row-level security, so this read works before any tenant is bound. Only a business that is switched off matches.
+    if (SUSPENDABLE_LOOKUPS.has(name)) {
+      const suspended = await poolOrClient.query('SELECT 1 FROM "Businesses" WHERE "Id" = $1 AND "IsActive" = FALSE', [businessId]);
+      if (suspended.rows.length > 0) { await forget(); return null; }
+    }
     await adoptTenant(businessId, isClient ? poolOrClient : undefined);
     return businessId;
   } catch (error) {

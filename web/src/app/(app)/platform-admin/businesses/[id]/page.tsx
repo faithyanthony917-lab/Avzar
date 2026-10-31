@@ -20,7 +20,7 @@ export default async function PlatformBusinessPage({ params }: { params: Promise
     <div className="ap-stack">
       <PageHead title={res.data.name} intro="Opening this page is recorded in the platform audit log." zone={me.timeZoneId} back={<a href="/platform-admin/businesses">All businesses</a>} />
       <PlatformAdminNav current="/platform-admin/businesses" />
-      <PlatformBusinessDetailView business={res.data} />
+      <PlatformBusinessDetailView business={res.data} isOwnBusiness={me.businessId === res.data.id} />
     </div>
   );
 }

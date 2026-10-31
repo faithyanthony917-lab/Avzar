@@ -2,7 +2,7 @@
 // Isolation under a restricted role is proved in test/db/platformAdmin.integration.test.js.
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { configurationFlags, decodeCursor, encodeCursor, getPlatformBusiness, getPlatformHealth, listPlatformAuditLogs, listPlatformBusinesses, lookupPlatformUser } from '../src/auth/platformAdminService.js';
+import { configurationFlags, decodeCursor, encodeCursor, getPlatformBusiness, getPlatformHealth, listPlatformAuditLogs, listPlatformBusinesses, lookupPlatformUser, reactivatePlatformBusiness, suspendPlatformBusiness } from '../src/auth/platformAdminService.js';
 
 const admin = 'ops@example.test';
 const allow = [admin];
@@ -145,5 +145,86 @@ describe('platform admin services', () => {
     assert.equal(report.database.ok, false);
     assert.equal(report.migrations, null);
     assert.equal(report.queues, null);
+  });
+});
+
+describe('suspend and reactivate (step 17c)', () => {
+  const OTHER = '00000000-0000-4000-8000-0000000000b2';
+  const reason = 'Chargeback dispute under review';
+  const code = (c, status) => (error) => error.code === c && error.status === status;
+
+  it('both refuse a person who is not on the allowlist, before touching the database', async () => {
+    const pool = recordingPool();
+    await refused(() => suspendPlatformBusiness(pool, 'tenant@example.test', allow, OTHER, A, reason));
+    await refused(() => reactivatePlatformBusiness(pool, 'tenant@example.test', allow, A));
+    assert.equal(pool.calls.length, 0);
+  });
+
+  it('suspend checks the ID, the reason and the signed-in business before any write', async () => {
+    const pool = recordingPool();
+    await assert.rejects(() => suspendPlatformBusiness(pool, admin, allow, OTHER, 'not-a-uuid', reason), code('business_not_found', 404));
+    await assert.rejects(() => suspendPlatformBusiness(pool, admin, allow, OTHER, A, '  ab '), code('invalid_reason', 400));
+    await assert.rejects(() => suspendPlatformBusiness(pool, admin, allow, OTHER, A, 'x'.repeat(201)), code('invalid_reason', 400));
+    await assert.rejects(() => suspendPlatformBusiness(pool, admin, allow, OTHER, A, undefined), code('invalid_reason', 400));
+    await assert.rejects(() => suspendPlatformBusiness(pool, admin, allow, A.toUpperCase(), A, reason), code('cannot_suspend_own_business', 409));
+    assert.equal(pool.calls.length, 0);
+  });
+
+  it('suspend is one statement that switches the business off and writes the audit entry with the reason', async () => {
+    const pool = recordingPool(() => ({ rows: [{ Id: A, SuspendedAtUtc: new Date('2026-10-31T10:00:00Z') }] }));
+    const result = await suspendPlatformBusiness(pool, admin, allow, OTHER, A, `  ${reason}  `);
+    assert.equal(pool.calls.length, 1);
+    const { sql, values } = pool.calls[0];
+    assert.match(sql, /UPDATE "Businesses" SET "IsActive" = FALSE, "SuspendedAtUtc" = now\(\)/);
+    assert.match(sql, /WHERE "Id" = \$1 AND "IsActive" = TRUE/);
+    assert.match(sql, /INSERT INTO "PlatformAuditLogs"/);
+    assert.match(sql, /'platform\.business\.suspended'/);
+    assert.equal(values[0], A);
+    assert.equal(values[1], reason, 'the reason is trimmed');
+    assert.equal(values[3], admin);
+    assert.deepEqual(JSON.parse(values[4]), { reason });
+    assert.deepEqual(result, { id: A, isActive: false, suspendedAtUtc: new Date('2026-10-31T10:00:00Z'), suspendedReason: reason });
+    assert.doesNotMatch(sql, /Customers|Orders|Invoices/);
+  });
+
+  it('suspending an unknown business is 404 and an already suspended one is 409', async () => {
+    const none = recordingPool(() => ({ rows: [] }));
+    await assert.rejects(() => suspendPlatformBusiness(none, admin, allow, OTHER, A, reason), code('business_not_found', 404));
+    const already = recordingPool((sql) => (sql.includes('WITH changed') ? { rows: [] } : { rows: [{ IsActive: false }] }));
+    await assert.rejects(() => suspendPlatformBusiness(already, admin, allow, OTHER, A, reason), code('already_suspended', 409));
+  });
+
+  it('reactivate is one statement that switches the business on, clears the reason and audits the earlier one', async () => {
+    const pool = recordingPool(() => ({ rows: [{ Id: A }] }));
+    const result = await reactivatePlatformBusiness(pool, admin, allow, A);
+    assert.equal(pool.calls.length, 1);
+    const { sql, values } = pool.calls[0];
+    assert.match(sql, /"IsActive" = TRUE, "SuspendedAtUtc" = NULL, "SuspendedReason" = NULL/);
+    assert.match(sql, /"IsActive" = FALSE FOR UPDATE/);
+    assert.match(sql, /'platform\.business\.reactivated'/);
+    assert.match(sql, /previousReason/);
+    assert.equal(values[0], A);
+    assert.equal(values[2], admin);
+    assert.deepEqual(result, { id: A, isActive: true, suspendedAtUtc: null, suspendedReason: null });
+  });
+
+  it('reactivating an unknown business is 404, a business that is not suspended is 409, a malformed ID is 404', async () => {
+    await assert.rejects(() => reactivatePlatformBusiness(recordingPool(() => ({ rows: [] })), admin, allow, A), code('business_not_found', 404));
+    const active = recordingPool((sql) => (sql.includes('WITH before') ? { rows: [] } : { rows: [{ IsActive: true }] }));
+    await assert.rejects(() => reactivatePlatformBusiness(active, admin, allow, A), code('not_suspended', 409));
+    await assert.rejects(() => reactivatePlatformBusiness(recordingPool(), admin, allow, 'nope'), code('business_not_found', 404));
+  });
+
+  it('the business detail carries the suspension fields', async () => {
+    const detailRow = { Id: A, Name: 'Shop', ContactEmail: null, CurrencyCode: 'NGN', TimeZoneId: 'UTC', IsActive: false, CreatedAtUtc: new Date(), UpdatedAtUtc: null, SuspendedAtUtc: new Date('2026-10-31T10:00:00Z'), SuspendedReason: reason };
+    const pool = recordingPool((sql) => {
+      if (sql.includes('FROM "Businesses" WHERE "Id"=$1')) return { rows: [detailRow] };
+      if (sql.includes('"activeStaff"')) return { rows: [{ activeStaff: 0, locations: 0, customers: 0, orders: 0, ordersLast30Days: 0, invoices: 0, storageBytes: '0' }] };
+      return { rows: [] };
+    });
+    const detail = await getPlatformBusiness(pool, admin, allow, A);
+    assert.equal(detail.isActive, false);
+    assert.equal(detail.suspendedReason, reason);
+    assert.ok(detail.suspendedAtUtc);
   });
 });

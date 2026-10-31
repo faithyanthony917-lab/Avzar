@@ -1,0 +1,397 @@
+diff --git a/backend-node/src/auth/accountRoutes.js b/backend-node/src/auth/accountRoutes.js
+index c7ae2d3..31f2387 100644
+--- a/backend-node/src/auth/accountRoutes.js
++++ b/backend-node/src/auth/accountRoutes.js
+@@ -18,6 +18,11 @@ const schemas = {
+   disable2fa: z.object({ password: z.string().min(1).max(128), code: z.string().max(12).nullish(), recoveryCode: z.string().max(80).nullish() }),
+   deleteAccount: z.object({ password: z.string().min(1).max(128), twoFactorCode: z.string().max(12).nullish(), recoveryCode: z.string().max(80).nullish() }),
+   sessionId: z.string().uuid(),
++  // Only these two fields can change. Any other key in the body (userId, email) is dropped by zod, so a request can only ever edit its own row.
++  profile: z.object({
++    fullName: z.string().trim().min(2).max(120),
++    phone: z.string().trim().max(40).regex(/^([+(0-9][0-9 ()\-.]{3,39})?$/, 'Enter a phone number using digits, spaces, + ( ) - or .').nullish(),
++  }),
+ };
+ 
+ function parse(schema, value) {
+@@ -51,6 +56,13 @@ export function createAccountRouter({ env, pool }) {
+   });
+ 
+   // Signed-in account endpoints. The user id always comes from the verified token, never from the request.
++  router.get('/account/profile', signedIn, async (req, res) => {
++    res.set('cache-control', 'no-store').status(200).json(await account.getProfile(pool, req.currentUser.userId));
++  });
++  router.put('/account/profile', authLimit, signedIn, async (req, res) => {
++    const input = parse(schemas.profile, req.body);
++    res.set('cache-control', 'no-store').status(200).json(await account.updateProfile(pool, req.currentUser.userId, req.currentUser.businessId, input));
++  });
+   router.get('/account/security', signedIn, async (req, res) => {
+     res.status(200).json(await account.getSecurity(pool, req.currentUser.userId));
+   });
+diff --git a/backend-node/src/auth/accountService.js b/backend-node/src/auth/accountService.js
+index 17a60c0..2bc2dad 100644
+--- a/backend-node/src/auth/accountService.js
++++ b/backend-node/src/auth/accountService.js
+@@ -226,6 +226,31 @@ export async function changePassword(pool, userId, businessId, { currentPassword
+   });
+ }
+ 
++// ---------- profile ----------
++
++export async function getProfile(db, userId) {
++  const user = await requireUser(db, userId);
++  const { rows } = await db.query('SELECT "PhoneNumber" FROM "AspNetUsers" WHERE "Id" = $1', [userId]);
++  return { fullName: user.FullName, email: user.Email, phone: rows[0]?.PhoneNumber ?? null };
++}
++
++/** Changes only the signed-in person's own name and phone. Email changes need their own verification flow and are not done here. */
++export async function updateProfile(pool, userId, businessId, { fullName, phone }) {
++  await requireUser(pool, userId);
++  const name = fullName.trim();
++  const number = phone?.trim() || null;
++  return withTransaction(pool, async (tx) => {
++    const { rows } = await tx.query(
++      `UPDATE "AspNetUsers" SET "FullName" = $2, "PhoneNumber" = $3,
++         "PhoneNumberConfirmed" = CASE WHEN "PhoneNumber" IS NOT DISTINCT FROM $3 THEN "PhoneNumberConfirmed" ELSE FALSE END
++       WHERE "Id" = $1 RETURNING "FullName", "Email", "PhoneNumber"`,
++      [userId, name, number]);
++    await recordAudit(tx, businessId, userId, 'account.profile_updated');
++    const row = rows[0];
++    return { fullName: row.FullName, email: row.Email, phone: row.PhoneNumber ?? null };
++  });
++}
++
+ // ---------- security overview and two-factor ----------
+ 
+ export async function listSessions(db, userId) {
+diff --git a/backend-node/test/accountProfile.test.js b/backend-node/test/accountProfile.test.js
+new file mode 100644
+index 0000000..239a5c6
+--- /dev/null
++++ b/backend-node/test/accountProfile.test.js
+@@ -0,0 +1,112 @@
++import { describe, it } from 'node:test';
++import assert from 'node:assert/strict';
++import { createServer } from 'node:http';
++import { createApp } from '../src/http/app.js';
++import { issueAccessToken } from '../src/security/jwt.js';
++
++const KEY = 'test-signing-key-with-at-least-thirty-two-characters';
++const env = { NODE_ENV: 'test', PORT: 8081, HOST: '127.0.0.1', LOG_LEVEL: 'silent', JWT_SIGNING_KEY: KEY, JWT_ISSUER: 'avzar-api', JWT_AUDIENCE: 'avzar-mobile', ACCESS_TOKEN_MINUTES: 10 };
++const ME = { userId: '00000000-0000-4000-8000-000000000001', businessId: '00000000-0000-4000-8000-000000000002', sessionId: '00000000-0000-4000-8000-000000000003' };
++const SOMEONE_ELSE = '00000000-0000-4000-8000-0000000000aa';
++const bearer = () => ({
++  authorization: `Bearer ${issueAccessToken({ jwtSigningKey: KEY, jwtIssuer: 'avzar-api', jwtAudience: 'avzar-mobile', accessTokenMinutes: 10 }, ME).token}`,
++  'content-type': 'application/json',
++});
++
++async function call(app, path, init = {}) {
++  const server = createServer(app);
++  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
++  try {
++    const res = await fetch(`http://127.0.0.1:${server.address().port}${path}`, init);
++    const text = await res.text();
++    let body = text;
++    try { body = JSON.parse(text); } catch { /* not JSON */ }
++    return { status: res.status, body };
++  } finally {
++    await new Promise((resolve) => server.close(resolve));
++  }
++}
++
++/** A pool that answers the sign-in checks and the profile queries, and records every statement it was asked to run. */
++function fakePool({ phone = null } = {}) {
++  const calls = [];
++  const answer = async (sql, values = []) => {
++    calls.push({ sql, values });
++    if (sql.includes('FROM "UserSessions"')) return { rows: [{ '?column?': 1 }] };
++    if (sql.includes('JOIN "AspNetUsers" u ON u."Id" = m."UserId"')) {
++      return { rows: [{ UserId: ME.userId, Email: 'owner@example.test', FullName: 'Owner', BusinessId: ME.businessId, BusinessName: 'Shop', TimeZoneId: 'UTC', CurrencyCode: 'USD', IsOwner: false, Permissions: ['customers.view'] }] };
++    }
++    if (sql.includes('UPDATE "AspNetUsers"')) return { rows: [{ FullName: values[1], Email: 'owner@example.test', PhoneNumber: values[2] }] };
++    if (sql.includes('SELECT "PhoneNumber" FROM "AspNetUsers"')) return { rows: [{ PhoneNumber: phone }] };
++    if (sql.includes('FROM "AspNetUsers" WHERE "Id" = $1')) return { rows: [{ Id: ME.userId, Email: 'owner@example.test', FullName: 'Owner', Deleted: false }] };
++    return { rows: [] };
++  };
++  return { calls, query: answer, connect: async () => ({ query: answer, release() {} }) };
++}
++
++const put = (pool, body) => call(createApp(env, pool), '/api/account/profile', { method: 'PUT', headers: bearer(), body: JSON.stringify(body) });
++const updates = (pool) => pool.calls.filter((c) => c.sql.includes('UPDATE "AspNetUsers"'));
++
++describe('account profile', () => {
++  it('returns the signed-in person\'s name, email and phone', async () => {
++    const pool = fakePool({ phone: '+234 801 234 5678' });
++    const res = await call(createApp(env, pool), '/api/account/profile', { headers: bearer() });
++    assert.equal(res.status, 200);
++    assert.deepEqual(res.body, { fullName: 'Owner', email: 'owner@example.test', phone: '+234 801 234 5678' });
++  });
++
++  it('requires sign-in', async () => {
++    const pool = fakePool();
++    const res = await call(createApp(env, pool), '/api/account/profile');
++    assert.equal(res.status, 401);
++  });
++
++  it('saves a trimmed name and phone and writes one audit row without the values', async () => {
++    const pool = fakePool();
++    const res = await put(pool, { fullName: '  Ada Obi  ', phone: ' +234 801 234 5678 ' });
++    assert.equal(res.status, 200);
++    assert.deepEqual(res.body, { fullName: 'Ada Obi', email: 'owner@example.test', phone: '+234 801 234 5678' });
++    const [update] = updates(pool);
++    assert.deepEqual(update.values, [ME.userId, 'Ada Obi', '+234 801 234 5678']);
++    const audit = pool.calls.filter((c) => c.sql.includes('INSERT INTO "AuditLogs"'));
++    assert.equal(audit.length, 1);
++    assert.equal(audit[0].values[1], 'account.profile_updated');
++    assert.ok(!JSON.stringify(audit[0].values).includes('Ada'));
++  });
++
++  it('clears the phone when it is blank or null', async () => {
++    for (const phone of ['', '   ', null, undefined]) {
++      const pool = fakePool();
++      const res = await put(pool, { fullName: 'Ada Obi', phone });
++      assert.equal(res.status, 200);
++      assert.equal(updates(pool)[0].values[2], null);
++      assert.equal(res.body.phone, null);
++    }
++  });
++
++  it('only ever edits the caller\'s own row, whatever the body says', async () => {
++    const pool = fakePool();
++    const res = await put(pool, { fullName: 'Ada Obi', userId: SOMEONE_ELSE, email: 'other@example.test' });
++    assert.equal(res.status, 200);
++    assert.equal(updates(pool).length, 1);
++    assert.equal(updates(pool)[0].values[0], ME.userId);
++    assert.ok(!JSON.stringify(updates(pool)[0].values).includes('other@example.test'));
++  });
++
++  it('rejects a bad name or phone without touching the database', async () => {
++    for (const body of [
++      { fullName: 'A' },
++      { fullName: '   ' },
++      { fullName: 'x'.repeat(121) },
++      { fullName: 'Ada Obi', phone: 'call me' },
++      { fullName: 'Ada Obi', phone: '1'.repeat(41) },
++      {},
++    ]) {
++      const pool = fakePool();
++      const res = await put(pool, body);
++      assert.equal(res.status, 400, JSON.stringify(body).slice(0, 60));
++      assert.equal(res.body.code, 'validation_failed');
++      assert.equal(updates(pool).length, 0);
++    }
++  });
++});
+diff --git a/docs/API.md b/docs/API.md
+index 0405672..80429a6 100644
+--- a/docs/API.md
++++ b/docs/API.md
+@@ -2,7 +2,7 @@
+ 
+ <!-- Generated by backend-node/scripts/generate-api-doc.js. Do not edit by hand: run `npm run docs:api` and commit the result. A test fails when this file is out of date. -->
+ 
+-356 routes in 27 route files. This is a route list read from the source, **not an OpenAPI description**: it has no request or response schemas (OpenAPI is planned for step-17).
++358 routes in 27 route files. This is a route list read from the source, **not an OpenAPI description**: it has no request or response schemas (OpenAPI is planned for step-17).
+ 
+ ## What the table does and does not say
+ 
+@@ -20,6 +20,8 @@
+ | POST | `/api/account/change-password` | signed in | authLimit |
+ | POST | `/api/account/delete` | signed in | authLimit |
+ | GET | `/api/account/export` | signed in |  |
++| GET | `/api/account/profile` | signed in |  |
++| PUT | `/api/account/profile` | signed in | authLimit |
+ | POST | `/api/account/resend-verification` | signed in | authLimit |
+ | GET | `/api/account/security` | signed in |  |
+ | GET | `/api/account/sessions` | signed in |  |
+diff --git a/web/src/app/(app)/account/page.tsx b/web/src/app/(app)/account/page.tsx
+index 75649d3..7cf8616 100644
+--- a/web/src/app/(app)/account/page.tsx
++++ b/web/src/app/(app)/account/page.tsx
+@@ -1,7 +1,6 @@
+ import Link from 'next/link';
+ import { BusinessSwitcher } from '@/components/app/BusinessSwitcher';
+ import { NavGlyph } from '@/components/app/NavGlyph';
+-import { ComingSoon } from '@/components/app/ComingSoon';
+ import { SignOutButton } from '@/components/app/SignOutButton';
+ import { PageHead } from '@/components/app/PageHead';
+ import { initials } from '@/lib/people-view';
+@@ -41,7 +40,7 @@ export default async function ProfilePage() {
+           <p className="ap-foot" style={{ margin: 0 }}>{me.isOwner ? 'Studio owner' : 'Staff'} · {me.businessName}</p>
+           <p className="ap-foot" style={{ margin: 0, overflowWrap: 'anywhere' }}>{me.email}</p>
+         </div>
+-        <ComingSoon className="ap-soon" message="Coming soon. Editing your profile is not available yet.">Edit</ComingSoon>
++        <Link href="/account/profile" className="ap-soon" style={{ textDecoration: 'none', flex: 'none', alignSelf: 'flex-start' }}>Edit</Link>
+       </section>
+       <BusinessSwitcher currentBusinessId={me.businessId} />
+       <section className="ap-xgroup" aria-labelledby="p-ws">
+diff --git a/web/src/app/(app)/account/profile/page.tsx b/web/src/app/(app)/account/profile/page.tsx
+new file mode 100644
+index 0000000..c9d051e
+--- /dev/null
++++ b/web/src/app/(app)/account/profile/page.tsx
+@@ -0,0 +1,21 @@
++import Link from 'next/link';
++import { LoadError } from '@/components/app/Notices';
++import { ProfileForm } from '@/components/app/ProfileForm';
++import type { Profile } from '@/lib/profile-view-model';
++import { serverGet } from '@/lib/session';
++
++export const metadata = { title: 'Edit profile · Avzar' };
++export const dynamic = 'force-dynamic';
++
++/** Signed-in only. Every role can edit their own name and phone, so there is no business permission (accountRoutes.js). */
++export default async function EditProfilePage() {
++  const res = await serverGet<Profile>('/api/account/profile');
++  if (!res.ok) return <LoadError status={res.status} />;
++  return (
++    <>
++      <p style={{ margin: '0 0 .5rem' }}><Link href="/account">← Profile</Link></p>
++      <h1>Edit profile</h1>
++      <ProfileForm profile={res.data} />
++    </>
++  );
++}
+diff --git a/web/src/components/app/ProfileForm.tsx b/web/src/components/app/ProfileForm.tsx
+new file mode 100644
+index 0000000..55f2557
+--- /dev/null
++++ b/web/src/components/app/ProfileForm.tsx
+@@ -0,0 +1,58 @@
++'use client';
++
++import Link from 'next/link';
++import { useRouter } from 'next/navigation';
++import { useState, type FormEvent } from 'react';
++import { api } from '@/lib/client';
++import { ApiError, messageFor } from '@/lib/problem';
++import {
++  PROFILE_NAME_MAX, PROFILE_PHONE_MAX, profileChanged, validateProfile, type Profile, type ProfileErrors,
++} from '@/lib/profile-view-model';
++import { toast } from '@/lib/toast';
++import { Field } from './Field';
++
++/** Edits the signed-in person's own name and phone. Email is shown but cannot be changed here. */
++export function ProfileForm({ profile }: { profile: Profile }) {
++  const router = useRouter();
++  const [fullName, setFullName] = useState(profile.fullName);
++  const [phone, setPhone] = useState(profile.phone ?? '');
++  const [errors, setErrors] = useState<ProfileErrors>({});
++  const [error, setError] = useState<string | null>(null);
++  const [busy, setBusy] = useState(false);
++
++  async function submit(e: FormEvent) {
++    e.preventDefault();
++    if (busy) return;
++    setError(null);
++    const check = validateProfile({ fullName, phone });
++    if (!check.ok) { setErrors(check.errors); setError('Please fix the highlighted fields.'); return; }
++    setErrors({});
++    if (!profileChanged(profile, check.body)) { router.push('/account'); return; }
++    setBusy(true);
++    try {
++      await api<Profile>('/api/account/profile', { method: 'PUT', json: check.body });
++      toast.success('Profile saved.');
++      router.push('/account');
++      router.refresh();
++    } catch (err) {
++      if (err instanceof ApiError) setErrors({ fullName: err.fields.fullName?.[0], phone: err.fields.phone?.[0] });
++      setError(messageFor(err));
++    } finally {
++      setBusy(false);
++    }
++  }
++
++  return (
++    <form onSubmit={submit} className="ap-panel ap-form" aria-busy={busy} noValidate>
++      <h2 className="ap-h2">Edit profile</h2>
++      {error && <p role="alert" className="ap-alert">{error}</p>}
++      <Field id="p-name" label="Full name" required maxLength={PROFILE_NAME_MAX} autoComplete="name" value={fullName} onChange={setFullName} error={errors.fullName} />
++      <Field id="p-phone" label="Phone (optional)" type="tel" inputMode="tel" maxLength={PROFILE_PHONE_MAX} autoComplete="tel" value={phone} onChange={setPhone} error={errors.phone} hint="Leave blank to remove it." />
++      <Field id="p-email" label="Email" value={profile.email} onChange={() => undefined} readOnly disabled hint="Your sign-in email cannot be changed here." />
++      <div className="ap-row" style={{ justifyContent: 'flex-start' }}>
++        <button className="ap-btn" type="submit" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button>
++        <Link href="/account" className="ap-btn ap-btn-quiet" style={{ textDecoration: 'none' }}>Cancel</Link>
++      </div>
++    </form>
++  );
++}
+diff --git a/web/src/lib/__tests__/profile-view-model.test.ts b/web/src/lib/__tests__/profile-view-model.test.ts
+new file mode 100644
+index 0000000..e14997a
+--- /dev/null
++++ b/web/src/lib/__tests__/profile-view-model.test.ts
+@@ -0,0 +1,38 @@
++import { describe, expect, it } from 'vitest';
++import { profileChanged, validateProfile } from '../profile-view-model';
++
++describe('validateProfile', () => {
++  it('trims both fields and turns a blank phone into null', () => {
++    expect(validateProfile({ fullName: '  Ada Obi ', phone: ' +234 801 234 5678 ' })).toEqual({ ok: true, body: { fullName: 'Ada Obi', phone: '+234 801 234 5678' } });
++    expect(validateProfile({ fullName: 'Ada Obi', phone: '   ' })).toEqual({ ok: true, body: { fullName: 'Ada Obi', phone: null } });
++  });
++  it('accepts common phone shapes', () => {
++    for (const phone of ['08012345678', '(0801) 234-5678', '+1.555.123.4567']) expect(validateProfile({ fullName: 'Ada Obi', phone }).ok).toBe(true);
++  });
++  it('asks for a real name', () => {
++    for (const fullName of ['', ' ', 'A', 'x'.repeat(121)]) {
++      const check = validateProfile({ fullName, phone: '' });
++      expect(check.ok).toBe(false);
++      if (!check.ok) expect(check.errors.fullName).toBeTruthy();
++    }
++  });
++  it('rejects text and over-long phone numbers', () => {
++    for (const phone of ['call me', '12', '1'.repeat(41)]) {
++      const check = validateProfile({ fullName: 'Ada Obi', phone });
++      expect(check.ok).toBe(false);
++      if (!check.ok) expect(check.errors.phone).toBeTruthy();
++    }
++  });
++});
++
++describe('profileChanged', () => {
++  const original = { fullName: 'Ada Obi', email: 'ada@example.test', phone: null };
++  it('is false when nothing changed, treating missing and blank phone alike', () => {
++    expect(profileChanged(original, { fullName: 'Ada Obi', phone: null })).toBe(false);
++  });
++  it('is true for a new name or phone', () => {
++    expect(profileChanged(original, { fullName: 'Ada B. Obi', phone: null })).toBe(true);
++    expect(profileChanged(original, { fullName: 'Ada Obi', phone: '08012345678' })).toBe(true);
++    expect(profileChanged({ ...original, phone: '0801 234 5678' }, { fullName: 'Ada Obi', phone: null })).toBe(true);
++  });
++});
+diff --git a/web/src/lib/profile-view-model.ts b/web/src/lib/profile-view-model.ts
+new file mode 100644
+index 0000000..4a0ca6c
+--- /dev/null
++++ b/web/src/lib/profile-view-model.ts
+@@ -0,0 +1,29 @@
++/** Mirrors GET/PUT /api/account/profile in backend-node/src/auth/accountRoutes.js. */
++export interface Profile { fullName: string; email: string; phone: string | null }
++export interface ProfileBody { fullName: string; phone: string | null }
++
++export const PROFILE_NAME_MIN = 2;
++export const PROFILE_NAME_MAX = 120;
++export const PROFILE_PHONE_MAX = 40;
++/** Same pattern as the API: digits, spaces, + ( ) - . and at least four characters. */
++const PHONE_PATTERN = /^[+(0-9][0-9 ()\-.]{3,39}$/;
++
++export interface ProfileErrors { fullName?: string; phone?: string }
++export type ProfileCheck = { ok: true; body: ProfileBody } | { ok: false; errors: ProfileErrors };
++
++export function validateProfile(input: { fullName: string; phone: string }): ProfileCheck {
++  const fullName = input.fullName.trim();
++  const phone = input.phone.trim();
++  const errors: ProfileErrors = {};
++  if (fullName.length < PROFILE_NAME_MIN) errors.fullName = `Enter your name (at least ${PROFILE_NAME_MIN} characters).`;
++  else if (fullName.length > PROFILE_NAME_MAX) errors.fullName = `Keep your name to ${PROFILE_NAME_MAX} characters or fewer.`;
++  if (phone && phone.length > PROFILE_PHONE_MAX) errors.phone = `Keep the number to ${PROFILE_PHONE_MAX} characters or fewer.`;
++  else if (phone && !PHONE_PATTERN.test(phone)) errors.phone = 'Use digits, spaces, + ( ) - or . for the phone number.';
++  if (errors.fullName || errors.phone) return { ok: false, errors };
++  return { ok: true, body: { fullName, phone: phone || null } };
++}
++
++/** True when saving would change something, so an untouched form does not send a request. */
++export function profileChanged(original: Profile, body: ProfileBody): boolean {
++  return original.fullName !== body.fullName || (original.phone ?? null) !== body.phone;
++}

@@ -93,7 +93,11 @@ const NODE_ONLY_INDEXES = {
   ],
   Inquiries: [
     { name: 'UX_Inquiries_AppointmentId', columns: ['AppointmentId'], unique: true, predicate: '"AppointmentId" IS NOT NULL' },
-  ], // 0036
+ 
+    ], // 0036
+  EmailOutbox: [
+    { name: 'IX_EmailOutbox_Retention', columns: ['CreatedAtUtc', 'Id'], unique: false, predicate: '"Status" IN (\'Sent\', \'Failed\')' },
+  ], // 0044
   StockMovements: [
     { name: 'UX_StockMovements_BusinessId_IdempotencyKey', columns: ['BusinessId', 'IdempotencyKey'], unique: true, predicate: '"IdempotencyKey" IS NOT NULL' },
     { name: 'IX_StockMovements_BusinessId_LocationId_CreatedAtUtc', columns: ['BusinessId', 'LocationId', 'CreatedAtUtc'], unique: false },

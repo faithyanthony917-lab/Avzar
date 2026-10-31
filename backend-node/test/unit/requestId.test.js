@@ -91,6 +91,14 @@ describe('security headers', () => {
     assert.match(headers['content-security-policy'], /frame-ancestors 'none'/);
     assert.equal(headers['strict-transport-security'], undefined);
   });
+  it('keeps /api answers out of other sites and out of caches, and leaves other paths alone', () => {
+    const at = (url) => { const res = fakeRes(); securityHeaders({ NODE_ENV: 'test' })({ originalUrl: url }, res, () => {}); return res.headers; };
+    assert.equal(at('/api/orders?x=1')['cross-origin-resource-policy'], 'same-origin');
+    assert.equal(at('/api/orders')['cache-control'], 'no-store');
+    assert.equal(at('/sites/shop')['cross-origin-resource-policy'], undefined);
+    assert.equal(at('/sites/shop')['cache-control'], undefined);
+    assert.equal(at('/media/public/abc')['cross-origin-resource-policy'], undefined);
+  });
   it('adds strict transport security only in production, without subdomains', () => {
     assert.equal(apply({ NODE_ENV: 'production' }).headers['strict-transport-security'], 'max-age=15552000');
     assert.equal(apply({ NODE_ENV: 'development' }).headers['strict-transport-security'], undefined);

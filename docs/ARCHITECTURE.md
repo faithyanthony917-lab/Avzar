@@ -61,4 +61,4 @@ Workers live inside the API process. While the API is asleep (the Render Free pl
 
 ## Known limits
 
-No request IDs or stack traces in error logs; no `helmet` package (headers are set by hand); one API replica only (realtime and the per-business worker loop assume it). Full list: `TODO.md`.
+Request IDs, an access log and error causes exist (step-17a); worker failures log no message or stack; no `helmet` package (headers are set by hand, by decision); one API replica only (realtime and the per-business worker loop assume it). Full list: `TODO.md`.

@@ -37,11 +37,15 @@ import { errorHandler } from './errors.js';
 import { checkDatabaseReadiness } from './readiness.js';
 import { runWithTenantRlsContext } from '../db/tenantRlsContext.js';
 import { requestIdMiddleware } from './requestId.js';
+import { accessLogMiddleware } from './accessLog.js';
 import { securityHeaders } from './securityHeaders.js';
 
 export function createApp(env = loadEnv(), dbPool = null, dependencies = {}) {
   const app = express();
   app.use(requestIdMiddleware());
+  // One log line per request in production (or whenever a test passes its own logger).
+  const accessLog = dependencies.accessLog ?? (env.NODE_ENV === 'production' ? console : null);
+  if (accessLog) app.use(accessLogMiddleware(accessLog));
   // Isolate tenant identity per HTTP request; authenticated route middleware binds it from the signed token.
   app.use((_req, _res, next) => runWithTenantRlsContext(next));
   const storage = dependencies.storage ?? createObjectStorage(env);

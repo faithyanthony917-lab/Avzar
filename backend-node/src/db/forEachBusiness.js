@@ -1,3 +1,4 @@
+import { describeErrorShape } from '../http/errors.js';
 import { isRlsPool } from './userScope.js';
 import { runWithTenantPlatformScope, runWithTenantRlsContext, setTenantRlsContext } from './tenantRlsContext.js';
 
@@ -26,7 +27,7 @@ export async function forEachBusiness(pool, fn, { platform = false, log = consol
   const attempt = async (label, run) => {
     try { results.push(await run()); } catch (error) {
       failures.push(error);
-      log.error?.('A worker run failed for one scope; the other scopes continue.', { scope: label, errorType: error?.constructor?.name ?? 'Error' });
+      log.error?.('A worker run failed for one scope; the other scopes continue.', { scope: label, errorType: error?.constructor?.name ?? 'Error', error: describeErrorShape(error) });
     }
   };
   for (const businessId of await listBusinessIds(pool)) {

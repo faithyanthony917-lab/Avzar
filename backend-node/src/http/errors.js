@@ -25,6 +25,15 @@ export function describeError(err, depth = 0) {
   return out;
 }
 
+// Message-free description for background workers: type, code and HTTP status of the error and of each cause (the S3 case).
+// A worker has no request to answer, and a message can carry a stored value, so no message and no stack are kept.
+export function describeErrorShape(err, depth = 0) {
+  if (!err || typeof err !== 'object') return { name: typeof err };
+  const out = { name: err.name, code: err.code, httpStatus: err.$metadata?.httpStatusCode };
+  if (err.cause && depth < 3) out.cause = describeErrorShape(err.cause, depth + 1);
+  return out;
+}
+
 // Express 5 error middleware: expected AppErrors become problem+json; anything else is a generic 500 (details logged, never leaked).
 export function errorHandler(log = console) {
   return (err, req, res, _next) => {

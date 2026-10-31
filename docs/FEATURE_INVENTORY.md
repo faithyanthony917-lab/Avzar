@@ -13,7 +13,8 @@ What exists, how far it goes, and what has been checked. Built from the code and
 | Two-factor sign-in (TOTP), session list and revoke | Done | `/account/security` | |
 | Invitations and roles with permissions | Done | web `staff`, `staff/roles`, `staff/locations` | |
 | Ownership transfer | Done | `adminRoutes.js`, web `ownership-transfer/confirm` | Needs an HTTPS public URL |
-| Per-account login lockout | Missing | | Only the per-IP limit applies (step-17) |
+| Per-account login lockout | Done | `security/accountLockout.js`, unit and database tests | 5 wrong attempts lock for 15 minutes |
+| Request IDs, access log, error causes | Done (step-17a) | `http/requestId.js`, `http/accessLog.js`, `http/errors.js` | Route pattern logged, never real addresses |
 | Business closure, data retention jobs | Missing | | Step-17 |
 
 ## Customers and orders

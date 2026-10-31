@@ -81,6 +81,7 @@ test('one failing business is logged and skipped; all failing rethrows the first
   assert.equal(errors.length, 1);
   assert.equal(errors[0].details.scope, A);
   assert.equal(JSON.stringify(errors[0]).includes('boom'), false);
+  assert.equal(errors[0].details.error.name, 'Error');
 
   await assert.rejects(() => forEachBusiness(wrappedPool([A, B]), async () => { throw new RangeError('all'); }, { log }), /all/);
 });

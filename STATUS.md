@@ -142,6 +142,13 @@ CI green at `58c6710` (node-api 583 of 583; node-db 199 of 199; web 510 of 510).
 - **Ran here:** the backend rule and starter tests with plain `node --test` (41 of 41); the new web helpers with Node type stripping (pass). **Not run here:** the HTTP tests (need express), real Vitest, the web typecheck, lint, the build, any browser. CI is the authority.
 - **Not done / open:** the preview frame has never been seen in a browser (sandbox flags, the 700 px height and the phone width are unchecked on a device); the preview shows the saved draft, not unsaved edits; the old `publicUrlPath` is still returned by the API; African heritage is the first template after 13c; the other four templates still look like Standard.
 
+## Step-17a (observability and headers): written 2026-10-31, CI not yet seen
+
+- **Built on:** the `f2a052f` tree. No migration, no route change, `docs/API.md` unchanged.
+- **What it does:** access log (one JSON line per request in production, route pattern only); message-free error shape in the per-business worker failure log; `Cross-Origin-Resource-Policy` and `Cache-Control: no-store` on `/api` answers unless the route sets its own.
+- **Found:** request IDs, error stacks and causes, per-account lockout and security headers were already in the code; `SECURITY.md` and the audit said otherwise. Docs corrected.
+- **Ran:** `node --check` on every changed file; the new and changed unit tests that need no installed packages (`accessLog`, `requestId`, `forEachBusiness`). Not run: the rest of the suite, the database job, the web job. CI is the authority.
+
 ## Known open items
 
 No request IDs or stacks in error logs; no per-account login lockout; no `helmet`; no business closure; a storefront booking creates an inquiry, not an appointment; order amendments show a preview, invalidate unstarted task slots and require an explicit schedule preview/publish in the planner; customers cannot opt out of messages themselves; the storefront link default points at `avzar.app`, which has no DNS record (use `/sites/<slug>`).

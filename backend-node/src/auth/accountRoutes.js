@@ -18,6 +18,11 @@ const schemas = {
   disable2fa: z.object({ password: z.string().min(1).max(128), code: z.string().max(12).nullish(), recoveryCode: z.string().max(80).nullish() }),
   deleteAccount: z.object({ password: z.string().min(1).max(128), twoFactorCode: z.string().max(12).nullish(), recoveryCode: z.string().max(80).nullish() }),
   sessionId: z.string().uuid(),
+  // Only these two fields can change. Any other key in the body (userId, email) is dropped by zod, so a request can only ever edit its own row.
+  profile: z.object({
+    fullName: z.string().trim().min(2).max(120),
+    phone: z.string().trim().max(40).regex(/^([+(0-9][0-9 ()\-.]{3,39})?$/, 'Enter a phone number using digits, spaces, + ( ) - or .').nullish(),
+  }),
 };
 
 function parse(schema, value) {
@@ -51,6 +56,13 @@ export function createAccountRouter({ env, pool }) {
   });
 
   // Signed-in account endpoints. The user id always comes from the verified token, never from the request.
+  router.get('/account/profile', signedIn, async (req, res) => {
+    res.set('cache-control', 'no-store').status(200).json(await account.getProfile(pool, req.currentUser.userId));
+  });
+  router.put('/account/profile', authLimit, signedIn, async (req, res) => {
+    const input = parse(schemas.profile, req.body);
+    res.set('cache-control', 'no-store').status(200).json(await account.updateProfile(pool, req.currentUser.userId, req.currentUser.businessId, input));
+  });
   router.get('/account/security', signedIn, async (req, res) => {
     res.status(200).json(await account.getSecurity(pool, req.currentUser.userId));
   });

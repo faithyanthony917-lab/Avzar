@@ -226,6 +226,31 @@ export async function changePassword(pool, userId, businessId, { currentPassword
   });
 }
 
+// ---------- profile ----------
+
+export async function getProfile(db, userId) {
+  const user = await requireUser(db, userId);
+  const { rows } = await db.query('SELECT "PhoneNumber" FROM "AspNetUsers" WHERE "Id" = $1', [userId]);
+  return { fullName: user.FullName, email: user.Email, phone: rows[0]?.PhoneNumber ?? null };
+}
+
+/** Changes only the signed-in person's own name and phone. Email changes need their own verification flow and are not done here. */
+export async function updateProfile(pool, userId, businessId, { fullName, phone }) {
+  await requireUser(pool, userId);
+  const name = fullName.trim();
+  const number = phone?.trim() || null;
+  return withTransaction(pool, async (tx) => {
+    const { rows } = await tx.query(
+      `UPDATE "AspNetUsers" SET "FullName" = $2, "PhoneNumber" = $3,
+         "PhoneNumberConfirmed" = CASE WHEN "PhoneNumber" IS NOT DISTINCT FROM $3 THEN "PhoneNumberConfirmed" ELSE FALSE END
+       WHERE "Id" = $1 RETURNING "FullName", "Email", "PhoneNumber"`,
+      [userId, name, number]);
+    await recordAudit(tx, businessId, userId, 'account.profile_updated');
+    const row = rows[0];
+    return { fullName: row.FullName, email: row.Email, phone: row.PhoneNumber ?? null };
+  });
+}
+
 // ---------- security overview and two-factor ----------
 
 export async function listSessions(db, userId) {

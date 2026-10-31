@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { BusinessSwitcher } from '@/components/app/BusinessSwitcher';
 import { NavGlyph } from '@/components/app/NavGlyph';
-import { ComingSoon } from '@/components/app/ComingSoon';
 import { SignOutButton } from '@/components/app/SignOutButton';
 import { PageHead } from '@/components/app/PageHead';
 import { initials } from '@/lib/people-view';
@@ -41,7 +40,7 @@ export default async function ProfilePage() {
           <p className="ap-foot" style={{ margin: 0 }}>{me.isOwner ? 'Studio owner' : 'Staff'} · {me.businessName}</p>
           <p className="ap-foot" style={{ margin: 0, overflowWrap: 'anywhere' }}>{me.email}</p>
         </div>
-        <ComingSoon className="ap-soon" message="Coming soon. Editing your profile is not available yet.">Edit</ComingSoon>
+        <Link href="/account/profile" className="ap-soon" style={{ textDecoration: 'none', flex: 'none', alignSelf: 'flex-start' }}>Edit</Link>
       </section>
       <BusinessSwitcher currentBusinessId={me.businessId} />
       <section className="ap-xgroup" aria-labelledby="p-ws">

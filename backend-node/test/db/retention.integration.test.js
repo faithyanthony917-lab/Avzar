@@ -62,7 +62,7 @@ describe('retention job on PostgreSQL (restricted role)', { skip: !url }, () => 
   it('the migration adds the suspension columns and the three retention indexes', async () => {
     const cols = (await db.pool.query(`SELECT column_name FROM information_schema.columns WHERE table_name = 'Businesses' AND column_name IN ('SuspendedAtUtc','SuspendedReason')`)).rows.length;
     assert.equal(cols, 2);
-    const idx = (await db.pool.query(`SELECT indexname FROM pg_indexes WHERE indexname LIKE 'IX\\_%\\_Retention' ORDER BY indexname`)).rows.map((r) => r.indexname);
+    const idx = (await db.pool.query(`SELECT indexname FROM pg_indexes WHERE indexname IN ('IX_CustomerEventOutbox_Retention', 'IX_CustomerMessageOutbox_Retention', 'IX_EmailOutbox_Retention') ORDER BY indexname`)).rows.map((r) => r.indexname);
     assert.deepEqual(idx, ['IX_CustomerEventOutbox_Retention', 'IX_CustomerMessageOutbox_Retention', 'IX_EmailOutbox_Retention']);
   });
 

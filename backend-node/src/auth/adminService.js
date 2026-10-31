@@ -6,6 +6,7 @@ import { verifySecondFactor, withTransaction } from './accountService.js';
 import { ensureBelowLimit, entitlementValue } from './entitlementService.js';
 import { OWNER_PERMISSIONS } from './mobileAuthService.js';
 import { lastPaidBillingPeriod } from './subscriptionBillingService.js';
+import { requirePlatformAdmin } from './platformAccess.js';
 
 export const AVAILABLE_PERMISSIONS = [
   'staff.view', 'staff.manage', 'roles.manage', 'locations.manage', 'locations.all', 'audit.view', 'business.settings',
@@ -429,11 +430,6 @@ export async function listEmailSuppressions(pool, userEmail, configuredEmails, {
     items: rows.map((row) => ({ id: row.Id, address: row.Address, reason: row.Reason, createdAtUtc: row.CreatedAtUtc })),
     limit: take,
   };
-}
-
-function requirePlatformAdmin(email, configuredEmails) {
-  const allowed = new Set(configuredEmails.map((value) => value.trim().toLowerCase()).filter(Boolean));
-  if (!email || !allowed.has(email.trim().toLowerCase())) throw AppError.forbidden('platform_admin_required', 'Platform administrator access is required.');
 }
 
 export async function updatePlatformPlan(pool, userEmail, configuredEmails, code, request) {

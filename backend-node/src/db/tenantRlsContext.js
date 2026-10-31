@@ -23,7 +23,7 @@ export const LOOKUP_KINDS = Object.freeze({
 const MAX_LOOKUP_LENGTH = 512;
 
 function newStore() {
-  return { businessId: null, lookups: new Map(), platformScope: false };
+  return { businessId: null, lookups: new Map(), platformScope: false, platformAdminRead: false };
 }
 
 export function runWithTenantRlsContext(callback) {
@@ -52,6 +52,7 @@ export function clearTenantRlsContext() {
     current.businessId = null;
     current.lookups.clear();
     current.platformScope = false;
+    current.platformAdminRead = false;
   }
 }
 
@@ -96,12 +97,21 @@ export function runWithTenantPlatformScope(callback) {
   return tenantContext.run({ ...newStore(), platformScope: true }, callback);
 }
 
+/**
+ * Platform-administrator read access (migration 0043): SELECT only, on the job and outbox tables the platform screens list across
+ * businesses. Used only by the platform-admin services, after the allowlist check. Writes still need that business's own context.
+ */
+export function runWithPlatformAdminRead(callback) {
+  return tenantContext.run({ ...newStore(), platformAdminRead: true }, callback);
+}
+
 // Settings other than app.business_id that the current request needs on every query: lookup keys and platform scope.
 function extraSettings() {
   const store = tenantContext.getStore();
   if (!store) return [];
   const extras = [...store.lookups].map(([name, value]) => [`app.lookup_${name}`, value]);
   if (store.platformScope) extras.push(['app.platform_scope', 'on']);
+  if (store.platformAdminRead) extras.push(['app.platform_admin_read', 'on']);
   return extras;
 }
 

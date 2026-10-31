@@ -1,4 +1,5 @@
 import { PageHead } from '@/components/app/PageHead';
+import { PlatformAdminNav } from '@/components/app/PlatformAdminNav';
 import { PlatformOperations } from '@/components/app/PlatformOperations';
 import { LoadError, NoAccess } from '@/components/app/Notices';
 import { getSession, serverGet } from '@/lib/session';
@@ -21,5 +22,5 @@ export default async function PlatformOperationsPage() {
     return <LoadError status={failed.status} />;
   }
   if (!flags.ok || !jobs.ok) return <LoadError status={502} />;
-  return <div className="ap-stack"><PageHead title="Platform operations" intro="Global feature controls and notification-delivery operations. Access is restricted to configured platform administrators." zone={me.timeZoneId}><a className="ap-btn ap-btn-quiet" href="/platform-admin/plans">Platform plans</a><a className="ap-btn ap-btn-quiet" href="/platform-admin/email-suppressions">Email suppressions</a></PageHead><PlatformOperations initialFlags={flags.data.items} initialJobs={jobs.data.items} /></div>;
+  return <div className="ap-stack"><PageHead title="Platform operations" intro="Global feature controls and notification-delivery operations. Access is restricted to configured platform administrators." zone={me.timeZoneId}></PageHead><PlatformAdminNav current="/platform-admin/operations" /><PlatformOperations initialFlags={flags.data.items} initialJobs={jobs.data.items} /></div>;
 }

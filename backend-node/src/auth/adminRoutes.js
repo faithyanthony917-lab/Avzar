@@ -4,6 +4,8 @@ import { AppError } from '../http/errors.js';
 import { requireBearerAuth } from '../security/bearerAuth.js';
 import { requirePermission } from '../security/permissions.js';
 import { confirmOwnershipTransfer, getPublicPlans, getTenantEntitlements, listEmailSuppressions, listPlatformPlans, requestOwnershipTransfer, updatePlatformPlan } from './adminService.js';
+import { getPlatformBusiness, getPlatformHealth, listPlatformAuditLogs, listPlatformBusinesses, lookupPlatformUser } from './platformAdminService.js';
+import { platformEmails } from './platformAccess.js';
 import { listPlatformBackgroundJobs, listPlatformFeatureFlags, retryPlatformNotification, updatePlatformFeatureFlag } from './platformOperationsService.js';
 
 function parse(schema, body) {
@@ -28,11 +30,14 @@ const planUpdateSchema = z.object({
 const emailSuppressionQuerySchema = z.object({ q: z.string().optional(), limit: z.coerce.number().int().optional() });
 const jobQuerySchema = z.object({ status: z.enum(['Pending','Leased','Sent','Failed','Accepted','Skipped']).optional(), limit: z.coerce.number().int().min(1).max(250).optional() });
 const featureFlagSchema = z.object({ enabled: z.boolean() });
+const businessListQuerySchema = z.object({ q: z.string().max(100).optional(), limit: z.coerce.number().int().min(1).max(100).optional(), before: z.string().max(300).optional() });
+const userLookupQuerySchema = z.object({ email: z.string().min(3).max(254) });
+const auditQuerySchema = z.object({
+  action: z.string().max(100).optional(), actor: z.string().max(256).optional(),
+  from: z.string().datetime({ offset: true }).optional(), to: z.string().datetime({ offset: true }).optional(),
+  limit: z.coerce.number().int().min(1).max(100).optional(), before: z.string().max(300).optional(),
+});
 const jobRetrySchema = z.object({ kind: z.enum(['notification','push']) });
-
-function platformEmails(env) {
-  return String(env.PLATFORM_ADMIN_EMAILS ?? '').split(',').map((value) => value.trim()).filter(Boolean);
-}
 
 export function createAdminRouter({ env, pool }) {
   const router = Router();
@@ -71,6 +76,21 @@ export function createAdminRouter({ env, pool }) {
     const payload = parse(featureFlagSchema, req.body);
     return res.status(200).json(await updatePlatformFeatureFlag(pool, req.currentUser.email, platformEmails(env), req.params.key, payload.enabled));
   });
+
+  router.get('/platform-admin/businesses', auth, async (req, res) =>
+    res.status(200).json(await listPlatformBusinesses(pool, req.currentUser.email, platformEmails(env), parse(businessListQuerySchema, req.query))));
+
+  router.get('/platform-admin/businesses/:id', auth, async (req, res) =>
+    res.status(200).json(await getPlatformBusiness(pool, req.currentUser.email, platformEmails(env), req.params.id)));
+
+  router.get('/platform-admin/users', auth, async (req, res) =>
+    res.status(200).json(await lookupPlatformUser(pool, req.currentUser.email, platformEmails(env), parse(userLookupQuerySchema, req.query).email)));
+
+  router.get('/platform-admin/audit-logs', auth, async (req, res) =>
+    res.status(200).json(await listPlatformAuditLogs(pool, req.currentUser.email, platformEmails(env), parse(auditQuerySchema, req.query))));
+
+  router.get('/platform-admin/health', auth, async (req, res) =>
+    res.status(200).json(await getPlatformHealth(pool, env, req.currentUser.email, platformEmails(env))));
 
   router.get('/platform-admin/background-jobs', auth, async (req, res) => {
     const query = parse(jobQuerySchema, req.query);

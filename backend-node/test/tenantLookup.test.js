@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   adoptTenant, currentTenantRlsBusinessId, installTenantRlsContext, LOOKUP_KINDS, runWithTenantPlatformScope,
-  runWithTenantRlsContext, setTenantLookup,
+  runWithPlatformAdminRead, runWithTenantRlsContext, setTenantLookup,
 } from '../src/db/tenantRlsContext.js';
 import { bindTenantByLookup, TENANT_LOOKUPS } from '../src/db/tenantLookup.js';
 
@@ -164,4 +164,21 @@ test('bindTenantByLookup on a checked-out client binds the rest of that transact
   const business = pool.calls.findIndex((c) => c.sql.includes("'app.business_id'") && c.values?.[0] === BUSINESS_A);
   assert.ok(key >= 0 && select > key && business > select, 'key set, then lookup read, then business set');
   assert.ok(pool.calls.some((c) => c.values?.[0] === 'app.lookup_portal_token_hash' && c.values?.[1] === ''), 'a miss clears the key');
+});
+
+test('platform-admin read is its own setting, per request, and is not platform scope', async () => {
+  const pool = installTenantRlsContext(fakePool());
+  await runWithPlatformAdminRead(async () => { await pool.query('SELECT 1'); });
+  const set = pool.calls.find(isLookupSet);
+  assert.deepEqual(set.values, [['app.platform_admin_read'], ['on']]);
+  await runWithTenantRlsContext(async () => { await pool.query('SELECT 2'); });
+  assert.equal(pool.calls.filter(isLookupSet).length, 1, 'the next request does not inherit it');
+});
+
+test('migration 0043 opens SELECT only, on exactly the five queue tables, behind the platform-admin setting', () => {
+  const sql = readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../migrations/0043_platform_admin_read.sql'), 'utf8');
+  for (const table of ['NotificationOutbox', 'PushDeliveries', 'WorkerSummaryJobs', 'AppointmentReminders', 'EmailOutbox']) assert.ok(sql.includes(`'${table}'`), table);
+  assert.ok(sql.includes('FOR SELECT'));
+  assert.ok(sql.includes("current_setting('app.platform_admin_read', true) = 'on'"));
+  assert.doesNotMatch(sql, /FOR (ALL|INSERT|UPDATE|DELETE)/);
 });

@@ -1,11 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { AppError } from '../http/errors.js';
 import { withTransaction } from './accountService.js';
-
-function requirePlatformAdmin(email, configuredEmails) {
-  const allowed = new Set(configuredEmails.map((value) => value.trim().toLowerCase()).filter(Boolean));
-  if (!email || !allowed.has(email.trim().toLowerCase())) throw AppError.forbidden('platform_admin_required', 'Platform administrator access is required.');
-}
+import { requirePlatformAdmin } from './platformAccess.js';
+import { runWithPlatformAdminRead, runWithTenantRlsContext, setTenantRlsContext } from '../db/tenantRlsContext.js';
 
 export async function listPlatformFeatureFlags(pool, userEmail, configuredEmails) {
   requirePlatformAdmin(userEmail, configuredEmails);
@@ -31,7 +28,8 @@ export async function updatePlatformFeatureFlag(pool, userEmail, configuredEmail
 export async function listPlatformBackgroundJobs(pool, userEmail, configuredEmails, { limit = 100, status } = {}) {
   requirePlatformAdmin(userEmail, configuredEmails);
   const take = Math.min(250, Math.max(1, Number(limit) || 100));
-  const { rows } = await pool.query(`
+  // Read across every business (migration 0043 policies, SELECT only).
+  const { rows } = await runWithPlatformAdminRead(() => pool.query(`
     (SELECT 'notification'::text AS "kind", o."Id"::text AS "id", o."BusinessId"::text AS "businessId",
       o."EventType" AS "eventType", o."Status" AS "status", o."Attempts" AS "attempts",
       o."NextAttemptUtc" AS "nextAttemptUtc", o."CreatedAtUtc" AS "createdAtUtc", o."LastError" AS "lastError"
@@ -53,7 +51,7 @@ export async function listPlatformBackgroundJobs(pool, userEmail, configuredEmai
     (SELECT 'email'::text, e."Id"::text, COALESCE(e."BusinessId"::text,'platform'), COALESCE(e."TemplateKey",'email'), e."Status", e."Attempts",
       e."NextAttemptUtc", e."CreatedAtUtc", e."LastError"
      FROM "EmailOutbox" e WHERE ($1::text IS NULL OR e."Status"=$1))
-    ORDER BY "createdAtUtc" DESC LIMIT $2`, [status ?? null, take]);
+    ORDER BY "createdAtUtc" DESC LIMIT $2`, [status ?? null, take]));
   return { items: rows.map((r) => ({ kind: r.kind, id: r.id, businessId: r.businessId, eventType: r.eventType,
     status: r.status, attempts: Number(r.attempts), nextAttemptUtc: r.nextAttemptUtc, createdAtUtc: r.createdAtUtc,
     lastError: r.lastError ? String(r.lastError).slice(0, 100) : null })), limit: take };
@@ -61,23 +59,29 @@ export async function listPlatformBackgroundJobs(pool, userEmail, configuredEmai
 
 export async function retryPlatformNotification(pool, userEmail, configuredEmails, kind, id) {
   requirePlatformAdmin(userEmail, configuredEmails);
-  return withTransaction(pool, async (db) => {
-    const table = kind === 'push' ? 'PushDeliveries' : kind === 'notification' ? 'NotificationOutbox' : null;
-    if (!table) throw AppError.badRequest('invalid_job_kind', 'Choose notification or push.');
-    const { rows } = await db.query(`SELECT "Id","BusinessId","Status" FROM "${table}" WHERE "Id"=$1 FOR UPDATE`, [id]);
-    if (!rows.length) throw AppError.notFound('job_not_found', 'Background job was not found.');
-    if (rows[0].Status !== 'Failed') throw AppError.conflict('job_not_failed', 'Only failed jobs can be retried.');
-    if (kind === 'notification') {
-      await db.query(`UPDATE "NotificationOutbox" SET "Status"='Pending',"Attempts"=0,"NextAttemptUtc"=now(),
-        "LeaseUntilUtc"=NULL,"LastError"=NULL WHERE "Id"=$1 AND "Status"='Failed'`, [id]);
-    } else {
-      await db.query(`UPDATE "PushDeliveries" SET "Status"='Pending',"Attempts"=0,"NextAttemptUtc"=now(),
-        "LeaseUntilUtc"=NULL,"ErrorCode"=NULL,"ProviderStatus"=NULL,"ProviderTicketId"=NULL,"AcceptedAtUtc"=NULL,"UpdatedAtUtc"=now()
-        WHERE "Id"=$1 AND "Status"='Failed'`, [id]);
-    }
-    await db.query(`INSERT INTO "PlatformAuditLogs" ("Id","ActorEmail","Action","EntityType","EntityId","DetailsJson")
-      VALUES ($1,$2,'platform.notification.retry','BackgroundJob',$3,$4::jsonb)`,
-    [randomUUID(), userEmail.trim().toLowerCase(), `${kind}:${id}`, JSON.stringify({ kind, businessId: rows[0].BusinessId })]);
-    return { id, kind, status: 'Pending' };
+  const table = kind === 'push' ? 'PushDeliveries' : kind === 'notification' ? 'NotificationOutbox' : null;
+  if (!table) throw AppError.badRequest('invalid_job_kind', 'Choose notification or push.');
+  // Step 1: find the row (and so its business) with read-only platform access. Step 2: change it inside that business's own context.
+  const found = await runWithPlatformAdminRead(async () => (await pool.query(`SELECT "Id","BusinessId","Status" FROM "${table}" WHERE "Id"=$1`, [id])).rows[0]);
+  if (!found) throw AppError.notFound('job_not_found', 'Background job was not found.');
+  return runWithTenantRlsContext(async () => {
+    setTenantRlsContext(found.BusinessId);
+    return withTransaction(pool, async (db) => {
+      const { rows } = await db.query(`SELECT "Id","BusinessId","Status" FROM "${table}" WHERE "Id"=$1 FOR UPDATE`, [id]);
+      if (!rows.length) throw AppError.notFound('job_not_found', 'Background job was not found.');
+      if (rows[0].Status !== 'Failed') throw AppError.conflict('job_not_failed', 'Only failed jobs can be retried.');
+      if (kind === 'notification') {
+        await db.query(`UPDATE "NotificationOutbox" SET "Status"='Pending',"Attempts"=0,"NextAttemptUtc"=now(),
+          "LeaseUntilUtc"=NULL,"LastError"=NULL WHERE "Id"=$1 AND "Status"='Failed'`, [id]);
+      } else {
+        await db.query(`UPDATE "PushDeliveries" SET "Status"='Pending',"Attempts"=0,"NextAttemptUtc"=now(),
+          "LeaseUntilUtc"=NULL,"ErrorCode"=NULL,"ProviderStatus"=NULL,"ProviderTicketId"=NULL,"AcceptedAtUtc"=NULL,"UpdatedAtUtc"=now()
+          WHERE "Id"=$1 AND "Status"='Failed'`, [id]);
+      }
+      await db.query(`INSERT INTO "PlatformAuditLogs" ("Id","ActorEmail","Action","EntityType","EntityId","DetailsJson")
+        VALUES ($1,$2,'platform.notification.retry','BackgroundJob',$3,$4::jsonb)`,
+      [randomUUID(), userEmail.trim().toLowerCase(), `${kind}:${id}`, JSON.stringify({ kind, businessId: rows[0].BusinessId })]);
+      return { id, kind, status: 'Pending' };
+    });
   });
 }

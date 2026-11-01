@@ -328,7 +328,7 @@ The two paragraphs above say "not run in CI"; that was true when they were writt
 - Web: an Export CSV button on orders, finance (invoices and all payments), appointments and requests. Errors show next to the button.
 - Not verified: PostgreSQL test `exports.integration.test.js` and the web tests had not run when this was written; no staging or phone check.
 
-## Step-17d-2 (list limits, optional paging, OpenAPI skeleton): CI green at HASH-17D2-TBD
+## Step-17d-2 (list limits, optional paging, OpenAPI skeleton): CI green at `9cec985`
 
 - No migration. `src/auth/listWindow.js`: no paging parameters gives a plain array of at most 1000 rows with `X-Total-Count`, `X-Result-Limit` and `X-Truncated`; `page` and/or `pageSize` (1 to 100) gives `{ items, page, pageSize, totalCount }`; bad paging is 400 `invalid_paging`.
 - Applies to suppliers, purchase orders, worker requests, inventory, customer measurements and storefront versions. The old purchase-order (500) and worker-request (250) limits are gone. Sorts end in `Id`, so pages do not skip or repeat rows.

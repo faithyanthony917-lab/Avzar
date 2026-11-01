@@ -75,7 +75,7 @@ describe('list limits and paging on PostgreSQL (restricted role)', { skip: !url 
     for (let index = 0; index < 5; index += 1) suppliers.push(await post(owner, '/api/suppliers', { name: `Supplier ${index}` }));
     const foreignSupplier = await post(other, '/api/suppliers', { name: 'Foreign supplier' });
     const po = (who, supplier, locationId, orderNumber) => post(who, '/api/purchase-orders', {
-      supplierId: supplier.id, locationId, orderNumber, items: [{ description: 'Thread', quantityOrdered: 1, unitCost: 10 }] });
+      supplierId: supplier.Id, locationId, orderNumber, items: [{ description: 'Thread', quantityOrdered: 1, unitCost: 10 }] });
     for (let index = 0; index < 3; index += 1) await po(owner, suppliers[0], mainLocation, `PO-MAIN-${index}`);
     await po(owner, suppliers[1], branchLocation, 'PO-BRANCH-0');
     await po(other, foreignSupplier, otherLocation, 'PO-FOREIGN-0');

@@ -13,6 +13,15 @@
 - **CSRF:** unsafe requests without a bearer token need the double-submit CSRF cookie and header, except the paths listed in `src/http/app.js` (token and refresh routes, portal, privacy, webhooks, analytics).
 - Health checks, outside the table: `GET /health/live`, `GET /health/ready`, `GET /health` (database check), `GET /api/v1`.
 
+## Lists and limits
+
+- **Paged lists** (orders, invoices, payments, appointments, inquiries, customers, designs, tasks, media, documents, audit and others) take `page` and `pageSize` (1 to 100) and return `{ items, page, pageSize, totalCount }`.
+- **Whole-list screens and pickers** (inventory, suppliers, purchase orders, worker requests, a customer's measurement sets, a storefront's versions, the ready-to-wear variants) return a plain array. With no parameters they return at most 1000 rows (storefront versions: the newest 100) and send `X-Total-Count`, `X-Result-Limit` and `X-Truncated` headers, so a screen can say it shows part of the list. With `page` and/or `pageSize` (1 to 100) they return the paged envelope instead. The ready-to-wear variants list returns `{ items, totalCount, truncated }` instead of headers.
+- **Public storefront product list:** at most 500 variants.
+- **Intentional "recent N" lists:** a customer's communications (200), a task's events (100), shop schedule versions (25), calendar links (20) and the workload member list (200) show only the latest rows by design.
+- **Short by nature:** staff, roles, locations, storefronts, domains, sessions, workflows, categories and platform plans are bounded by plan limits or are small by definition and are not limited.
+- **CSV exports** (`.../export`) read every matching row up to 50,000 and refuse a larger result with 413 `export_too_large`.
+
 ## auth/accountRoutes.js
 
 | Method | Path | Access | Limiters |

@@ -1,11 +1,12 @@
 import { Router } from 'express';
+import { LIST_CAP, optionalPaging } from './listWindow.js';
 import { rateLimit } from 'express-rate-limit';
 import { z } from 'zod';
 import { AppError } from '../http/errors.js';
 import { requireBearerAuth } from '../security/bearerAuth.js';
 import { requirePermission } from '../security/permissions.js';
 import { createBillingProvider } from './billingProvider.js';
-import { cancelReadyToWearOrder, createReadyToWearCheckout, handleReadyToWearWebhook, listBusinessReadyToWearVariants, listReadyToWearProducts, upsertReadyToWearVariant } from './readyToWearService.js';
+import { cancelReadyToWearOrder, createReadyToWearCheckout, handleReadyToWearWebhook, listBusinessReadyToWearVariantsWindow, listReadyToWearProducts, upsertReadyToWearVariant } from './readyToWearService.js';
 
 export const READY_TO_WEAR_WEBHOOK_PATH = '/api/ready-to-wear/payment-webhook';
 const checkoutSchema = z.object({
@@ -35,8 +36,15 @@ export function createReadyToWearRouter({ env, pool, billingProvider = createBil
     const status = await handleReadyToWearWebhook(pool, billingProvider, req.rawBody, req.get('x-paystack-signature') ?? '');
     return res.status(status).end();
   });
-  router.get('/ready-to-wear/variants', auth, write, async (req, res) =>
-    res.status(200).json({ items: await listBusinessReadyToWearVariants(pool, req.currentUser) }));
+  router.get('/ready-to-wear/variants', auth, write, async (req, res) => {
+    const paging = optionalPaging(req.query);
+    const window = paging ? { limit: paging.pageSize, offset: (paging.page - 1) * paging.pageSize } : { limit: LIST_CAP, offset: 0 };
+    const { rows, totalCount } = await listBusinessReadyToWearVariantsWindow(pool, req.currentUser, window);
+    // Without paging parameters the first LIST_CAP variants come back, with the total so a screen can say it is showing part of them.
+    return res.status(200).json(paging
+      ? { items: rows, page: paging.page, pageSize: paging.pageSize, totalCount }
+      : { items: rows, totalCount, truncated: totalCount > LIST_CAP });
+  });
   router.post('/ready-to-wear/variants', auth, write, async (req, res) => {
     const parsed = variantSchema.safeParse(req.body);
     if (!parsed.success) throw new AppError(400, 'validation_failed', 'Enter valid product stock details.');

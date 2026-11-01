@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { api } from '@/lib/client';
+import { api, apiList } from '@/lib/client';
+import { ListCapNotice } from './ListCapNotice';
 import { plannedActualDifference } from '@/lib/production-workflows';
 import { Pager, usePaged } from './Pager';
 import { toast } from '@/lib/toast';
@@ -22,9 +23,13 @@ export function TaskWorkerRequests({ initial }: { initial: WorkerRequest[] }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [total, setTotal] = useState(0);
   async function reload(next: string) {
     setFilter(next); setError(''); setLoading(true);
-    try { setItems(await api<WorkerRequest[]>(`/api/tasks/worker-requests?status=${encodeURIComponent(next === 'all' ? 'all' : next)}`)); }
+    try {
+      const list = await apiList<WorkerRequest>(`/api/tasks/worker-requests?status=${encodeURIComponent(next === 'all' ? 'all' : next)}`);
+      setItems(list.items); setTotal(list.truncated ? list.totalCount : 0);
+    }
     catch (e) { setError(e instanceof Error ? e.message : 'Could not load worker requests.'); }
     finally { setLoading(false); }
   }
@@ -39,6 +44,7 @@ export function TaskWorkerRequests({ initial }: { initial: WorkerRequest[] }) {
   }
   return <section className="ap-panel ap-stack" aria-labelledby="worker-requests-title">
     <div className="ap-row"><h2 id="worker-requests-title" className="ap-h2">Worker requests</h2><label className="ap-field"><span>Filter</span><select className="ap-input" value={filter} onChange={(e) => void reload(e.target.value)}><option value="Pending">Pending</option><option value="Accepted">Accepted</option><option value="Declined">Declined</option><option value="all">All requests</option></select></label></div>
+    <ListCapNotice shown={items.length} total={total} hint="Pending requests are listed first." />
     {error && <p className="ap-alert" role="alert">{error}</p>}{loading && <p className="ap-foot" role="status">Loading worker requests…</p>}
     {items.length === 0 ? <p>No {filter === 'all' ? '' : filter.toLowerCase() + ' '}worker requests.</p> : paged.slice.map((item) => <article className="ap-panel ap-stack" key={item.id}>
       <div className="ap-row"><div><h3 className="ap-h3">{labels[item.type]}</h3><p className="ap-foot">{item.requestedByName} · Order {item.orderNumber} · {item.taskTitle}</p></div><span className="ap-badge">{item.status}</span></div>

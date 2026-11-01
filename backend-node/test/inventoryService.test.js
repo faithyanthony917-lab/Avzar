@@ -83,7 +83,7 @@ describe('inventory service', () => {
     assert.equal(result.length, 1);
     assert.equal(result[0].available, 1);
     const listQuery = pool.calls.find((call) => call.sql.includes('FROM "Materials" m'));
-    assert.deepEqual(listQuery.values, [businessId, [locationId]]);
+    assert.deepEqual(listQuery.values.slice(0, 2), [businessId, [locationId]]);
   });
 
   it('creates opening stock and records a receive movement transactionally', async () => {

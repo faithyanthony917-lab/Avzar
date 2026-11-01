@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { respondList } from './listWindow.js';
 import { TextDecoder } from 'node:util';
 import Busboy from 'busboy';
 import { Router } from 'express';
@@ -19,7 +20,7 @@ import { commitDesignCsv, previewDesignCsv } from './designCsvService.js';
 import { commitCollectionCsv, previewCollectionCsv } from './collectionCsvService.js';
 import { calculatePricing, getPricingProfile, savePricingProfile } from './pricingService.js';
 import { applyStructuredTextDraft } from './structuredDraftApplyService.js';
-import { bulkAdjustStock, bulkMoveMaterials, bulkSetMaterialActive, bulkSetReorderLevel, changeStock, commitInventoryCsv, createMaterial, inventoryHistory, listInventory, listInventoryLocations, previewInventoryCsv, taskMaterialBatch } from './inventoryService.js';
+import { bulkAdjustStock, bulkMoveMaterials, bulkSetMaterialActive, bulkSetReorderLevel, changeStock, commitInventoryCsv, createMaterial, listInventoryAll, listInventoryWindow, inventoryHistory, listInventoryLocations, previewInventoryCsv, taskMaterialBatch } from './inventoryService.js';
 
 const designSchema = z.object({
   name: z.string().min(2).max(120), description: z.string().max(4000).nullish(),
@@ -279,7 +280,7 @@ export function createCatalogRouter({ env, pool }) {
   });
 
   router.get('/inventory/export', ...requireInventoryView, async (req, res) => {
-    const rows = await listInventory(pool, req.currentUser);
+    const rows = await listInventoryAll(pool, req.currentUser);
     const csvCell = (value) => {
       if (value == null || value === '') return '';
       let text = String(value).replaceAll('\0', '');
@@ -329,7 +330,7 @@ export function createCatalogRouter({ env, pool }) {
   });
 
   router.get('/inventory', ...requireInventoryView, async (req, res) =>
-    res.status(200).json(await listInventory(pool, req.currentUser)));
+    respondList(res, req.query, (window) => listInventoryWindow(pool, req.currentUser, window)));
 
   router.get('/inventory/locations', ...requireInventoryView, async (req, res) =>
     res.status(200).json(await listInventoryLocations(pool, req.currentUser)));

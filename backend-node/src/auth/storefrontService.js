@@ -10,6 +10,7 @@ import { missingWorkflowEntryPoints, parseStorefrontDocument, validateStorefront
 import { storefrontDocumentCatalog } from './storefrontDocument.js';
 import { sampleTemplateKeys, starterDocument } from './storefrontStarters.js';
 import { structureChanges } from './storefrontContentOnly.js';
+import { windowedRows } from './listWindow.js';
 
 const templateTiers = new Map([
   ['standard', 'standard'], ['bespoke', 'basic'], ['ready-to-wear', 'basic'], ['luxury', 'advanced'],
@@ -521,15 +522,16 @@ export async function unpublishStorefront(pool, user, storefrontId) {
   });
 }
 
-export async function listStorefrontVersions(pool, user, storefrontId) {
+/** One window of a storefront's version history (newest first): { rows, totalCount }. */
+export async function listStorefrontVersionsWindow(pool, user, storefrontId, window) {
   const site = await loadDraft(pool, user, storefrontId);
-  const { rows } = await pool.query(
+  const { rows, totalCount } = await windowedRows((sql, params) => pool.query(sql, params),
     `SELECT "VersionNumber", "TemplateKey", "Note", "CreatedAtUtc", "PublishedByUserId", "RolledBackFromVersion", "Id"
-     FROM "StorefrontVersions" WHERE "StorefrontId" = $1 AND "BusinessId" = $2 ORDER BY "VersionNumber" DESC`, [storefrontId, user.businessId]);
-  return rows.map((version) => ({ versionNumber: version.VersionNumber, templateKey: version.TemplateKey, note: version.Note,
+     FROM "StorefrontVersions" WHERE "StorefrontId" = $1 AND "BusinessId" = $2 ORDER BY "VersionNumber" DESC, "Id"`, [storefrontId, user.businessId], window);
+  return { totalCount, rows: rows.map((version) => ({ versionNumber: version.VersionNumber, templateKey: version.TemplateKey, note: version.Note,
     publishedAtUtc: version.CreatedAtUtc, publishedByUserId: version.PublishedByUserId,
     rolledBackFromVersion: version.RolledBackFromVersion,
-    isLive: site.Status === 'Published' && site.PublishedVersionId === version.Id }));
+    isLive: site.Status === 'Published' && site.PublishedVersionId === version.Id })) };
 }
 
 export async function getStorefrontVersion(pool, user, storefrontId, number) {

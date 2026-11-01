@@ -7,6 +7,7 @@ import { AppError } from '../http/errors.js';
 import { requireBearerAuth } from '../security/bearerAuth.js';
 import { requirePermission } from '../security/permissions.js';
 import { hasAtMostPlaces } from '../money.js';
+import { respondList, windowedRows } from './listWindow.js';
 
 const customerSchema = z.object({
   fullName: z.string().trim().min(2).max(120),
@@ -504,18 +505,20 @@ export function createCustomerRouter({ env, pool }) {
       [req.currentUser.businessId, req.params.id]);
     if (!customer.rows.length) throw AppError.notFound('customer_not_found', 'Customer not found.');
     if (customer.rows[0].Status === 'Merged') throw AppError.conflict('customer_not_active', 'This customer profile is not active.');
-    const { rows } = await pool.query(`
+    await respondList(res, req.query, async (window) => {
+      const { rows, totalCount } = await windowedRows((sql, params) => pool.query(sql, params), `
       SELECT s."Id", s."CustomerId", s."TemplateId", t."Name" AS "TemplateName", s."Label",
         s."CurrentRevision", r."ValuesJson", COALESCE(s."UpdatedAtUtc", s."CreatedAtUtc") AS "UpdatedAtUtc"
       FROM "MeasurementSets" s
       JOIN "MeasurementTemplates" t ON t."Id" = s."TemplateId" AND t."BusinessId" = s."BusinessId"
       JOIN "MeasurementRevisions" r ON r."SetId" = s."Id" AND r."RevisionNumber" = s."CurrentRevision" AND r."BusinessId" = s."BusinessId"
-      WHERE s."BusinessId" = $1 AND s."CustomerId" = $2 ORDER BY s."Label"`, [req.currentUser.businessId, req.params.id]);
-    return res.status(200).json(rows.map((row) => ({
-      id: row.Id, customerId: row.CustomerId, templateId: row.TemplateId, templateName: row.TemplateName,
-      label: row.Label, currentRevision: Number(row.CurrentRevision), values: parseJson(row.ValuesJson),
-      updatedAtUtc: row.UpdatedAtUtc,
-    })));
+      WHERE s."BusinessId" = $1 AND s."CustomerId" = $2 ORDER BY s."Label", s."Id"`, [req.currentUser.businessId, req.params.id], window);
+      return { totalCount, rows: rows.map((row) => ({
+        id: row.Id, customerId: row.CustomerId, templateId: row.TemplateId, templateName: row.TemplateName,
+        label: row.Label, currentRevision: Number(row.CurrentRevision), values: parseJson(row.ValuesJson),
+        updatedAtUtc: row.UpdatedAtUtc,
+      })) };
+    });
   });
 
   router.post('/customers/:id/measurements', ...requireMeasurementsRecord, async (req, res) => {

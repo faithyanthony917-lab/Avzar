@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { api } from '@/lib/client';
+import { apiList } from '@/lib/client';
+import { ListCapNotice } from './ListCapNotice';
 import { money } from '@/lib/format';
 import { messageFor } from '@/lib/problem';
 import { Pager, usePaged } from './Pager';
@@ -19,10 +20,11 @@ export function PurchaseOrderList({ canManage }: { canManage: boolean }) {
   const [rows, setRows] = useState<PurchaseOrderRow[] | null>(null);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
+  const [total, setTotal] = useState(0);
 
   const load = useCallback(async () => {
     setError('');
-    try { setRows(await api<PurchaseOrderRow[]>('/api/purchase-orders')); }
+    try { const list = await apiList<PurchaseOrderRow>('/api/purchase-orders'); setRows(list.items); setTotal(list.truncated ? list.totalCount : 0); }
     catch (err) { setError(messageFor(err)); }
   }, []);
   useEffect(() => { void load(); }, [load]);
@@ -37,6 +39,7 @@ export function PurchaseOrderList({ canManage }: { canManage: boolean }) {
       {canManage && <Link href="/inventory/purchase-orders/new" className="ap-btn" style={{ textDecoration: 'none' }}>New purchase order</Link>}
     </div>
     {error && <div role="alert" className="ap-alert"><p>{error}</p><button type="button" className="ap-btn ap-btn-quiet" onClick={() => void load()}>Retry loading purchase orders</button></div>}
+    {rows && <ListCapNotice shown={rows.length} total={total} hint="Older purchase orders are not listed here." />}
     {rows === null && !error && <p className="ap-foot" aria-live="polite">Loading purchase orders…</p>}
     {rows && visible.length === 0 && <p className="ap-hint">{rows.length === 0 ? 'No purchase orders yet.' : 'No purchase orders with that status.'}</p>}
     {paged.slice.map((row) => <Link key={row.Id} href={`/inventory/purchase-orders/${row.Id}`} className="ap-panel ap-stack" style={{ textDecoration: 'none', color: 'inherit' }}>

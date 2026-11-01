@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { AppError } from '../http/errors.js';
 import { requireBearerAuth } from '../security/bearerAuth.js';
 import { requirePermission } from '../security/permissions.js';
+import { respondList, windowedRows } from './listWindow.js';
 import { CUSTOMER_LINK_SOURCE } from '../messaging/publicMessagingRoutes.js';
 import { isMessagingSuppressed } from '../messaging/suppressions.js';
 import { maskPhone } from '../messaging/optOut.js';
@@ -70,8 +71,10 @@ export function createSupplyRouter({ env, pool }) {
   });
 
   router.get('/suppliers', ...view, async (req, res) => {
-    const { rows } = await tenantQuery(pool, req.currentUser.businessId, 'SELECT "Id","Name","ContactName","Email","Phone","Address","Notes","IsActive","CreatedAtUtc","UpdatedAtUtc" FROM "Suppliers" WHERE "BusinessId"=$1 ORDER BY lower("Name")', [req.currentUser.businessId]);
-    res.json(rows);
+    const businessId = req.currentUser.businessId;
+    await respondList(res, req.query, (window) => windowedRows((sql, params) => tenantQuery(pool, businessId, sql, params),
+      'SELECT "Id","Name","ContactName","Email","Phone","Address","Notes","IsActive","CreatedAtUtc","UpdatedAtUtc" FROM "Suppliers" WHERE "BusinessId"=$1 ORDER BY lower("Name"), "Id"',
+      [businessId], window));
   });
   router.post('/suppliers', ...manage, async (req, res) => {
     const x = parse(supplierBody, req.body); const id = randomUUID();
@@ -90,7 +93,10 @@ export function createSupplyRouter({ env, pool }) {
   });
   router.get('/purchase-orders', ...view, async (req, res) => {
     const allowed = await locations(pool, req.currentUser);
-    const { rows } = await tenantQuery(pool, req.currentUser.businessId, `SELECT p.*,s."Name" AS "SupplierName",l."Name" AS "LocationName" FROM "PurchaseOrders" p JOIN "Suppliers" s ON s."Id"=p."SupplierId" AND s."BusinessId"=p."BusinessId" JOIN "Locations" l ON l."Id"=p."LocationId" AND l."BusinessId"=p."BusinessId" WHERE p."BusinessId"=$1 AND ($2::uuid[] IS NULL OR p."LocationId"=ANY($2::uuid[])) ORDER BY p."CreatedAtUtc" DESC LIMIT 500`, [req.currentUser.businessId, allowed]); res.json(rows);
+    const businessId = req.currentUser.businessId;
+    await respondList(res, req.query, (window) => windowedRows((sql, params) => tenantQuery(pool, businessId, sql, params),
+      `SELECT p.*,s."Name" AS "SupplierName",l."Name" AS "LocationName" FROM "PurchaseOrders" p JOIN "Suppliers" s ON s."Id"=p."SupplierId" AND s."BusinessId"=p."BusinessId" JOIN "Locations" l ON l."Id"=p."LocationId" AND l."BusinessId"=p."BusinessId" WHERE p."BusinessId"=$1 AND ($2::uuid[] IS NULL OR p."LocationId"=ANY($2::uuid[])) ORDER BY p."CreatedAtUtc" DESC, p."Id"`,
+      [businessId, allowed], window));
   });
   router.get('/purchase-orders/:id', ...view, async (req, res) => {
     if (!UUID.test(req.params.id)) throw AppError.badRequest('invalid_purchase_order_id', 'Purchase order ID is invalid.');

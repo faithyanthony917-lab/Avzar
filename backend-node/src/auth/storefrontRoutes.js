@@ -10,6 +10,7 @@ import * as storefronts from './storefrontService.js';
 import * as storefrontCatalog from './storefrontCatalogService.js';
 import { hasAtMostPlaces } from '../money.js';
 import { sendCsv } from './csvExport.js';
+import { respondList } from './listWindow.js';
 import { exportInquiries } from './exportService.js';
 
 const storefrontSchema = z.object({
@@ -179,8 +180,9 @@ export function createStorefrontRouter({ env, pool }) {
     await storefronts.unpublishStorefront(pool, req.currentUser, req.params.id);
     return res.status(204).end();
   });
+  // The newest 100 versions by default (the history grows with every publish); page for the rest.
   router.get('/storefronts/:id/versions', ...requireStorefrontView, async (req, res) =>
-    res.status(200).json(await storefronts.listStorefrontVersions(pool, req.currentUser, req.params.id)));
+    respondList(res, req.query, (window) => storefronts.listStorefrontVersionsWindow(pool, req.currentUser, req.params.id, window), { cap: 100 }));
   router.get('/storefronts/:id/versions/:number', ...requireStorefrontView, async (req, res) => {
     const number = Number.parseInt(req.params.number, 10);
     if (!Number.isSafeInteger(number) || number < 1) throw AppError.badRequest('invalid_version', 'The version number is invalid.');

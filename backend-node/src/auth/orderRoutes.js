@@ -31,6 +31,7 @@ import {
 } from './appointmentService.js';
 import { createFitting, listFittings, setFittingStatus } from './fittingService.js';
 import { sendCsv } from './csvExport.js';
+import { respondList, windowedRows } from './listWindow.js';
 import { exportAppointments, exportOrders } from './exportService.js';
 import { appointmentIcsEvent, renderIcs, taskIcsEvent } from './calendarIcs.js';
 import { openTaskPhoto, uploadMedia } from './mediaService.js';
@@ -2913,7 +2914,8 @@ export function createOrderRouter({ env, pool }) {
     const rawStatus = String(req.query.status ?? 'Pending');
     const status = rawStatus === 'all' ? null : parseEnum(rawStatus, ['Pending', 'Accepted', 'Declined'], 'status');
     const allowed = await allowedLocations(pool, req.currentUser);
-    const { rows } = await pool.query(`
+    await respondList(res, req.query, async (window) => {
+      const { rows, totalCount } = await windowedRows((sql, params) => pool.query(sql, params), `
       SELECT r."Id", r."TaskId", r."Type", r."Status", r."Message", r."PlannedMinutes", r."ActualMinutes",
         r."CreatedAtUtc", r."ReviewNote", r."ReviewedAtUtc", t."Title" AS "TaskTitle", t."Status" AS "TaskStatus",
         o."OrderNumber", m."DisplayName" AS "RequestedByName"
@@ -2923,12 +2925,13 @@ export function createOrderRouter({ env, pool }) {
       JOIN "Memberships" m ON m."BusinessId" = r."BusinessId" AND m."Id" = r."RequestedByMembershipId"
       WHERE r."BusinessId" = $1 AND ($2::text IS NULL OR r."Status" = $2)
         AND ($3::uuid[] IS NULL OR o."LocationId" = ANY($3::uuid[]))
-      ORDER BY CASE WHEN r."Status" = 'Pending' THEN 0 ELSE 1 END, r."CreatedAtUtc" DESC LIMIT 250`,
-    [req.currentUser.businessId, status, allowed]);
-    return res.status(200).json(rows.map((r) => ({ id: r.Id, taskId: r.TaskId, type: r.Type, status: r.Status,
-      message: r.Message, plannedMinutes: r.PlannedMinutes, actualMinutes: r.ActualMinutes, createdAtUtc: r.CreatedAtUtc,
-      reviewNote: r.ReviewNote, reviewedAtUtc: r.ReviewedAtUtc, taskTitle: r.TaskTitle, taskStatus: r.TaskStatus,
-      orderNumber: r.OrderNumber, requestedByName: r.RequestedByName })));
+      ORDER BY CASE WHEN r."Status" = 'Pending' THEN 0 ELSE 1 END, r."CreatedAtUtc" DESC, r."Id"`,
+      [req.currentUser.businessId, status, allowed], window);
+      return { totalCount, rows: rows.map((r) => ({ id: r.Id, taskId: r.TaskId, type: r.Type, status: r.Status,
+        message: r.Message, plannedMinutes: r.PlannedMinutes, actualMinutes: r.ActualMinutes, createdAtUtc: r.CreatedAtUtc,
+        reviewNote: r.ReviewNote, reviewedAtUtc: r.ReviewedAtUtc, taskTitle: r.TaskTitle, taskStatus: r.TaskStatus,
+        orderNumber: r.OrderNumber, requestedByName: r.RequestedByName })) };
+    });
   });
 
   router.post('/tasks/worker-requests/:id/review', ...requireTasksManage, async (req, res) => {

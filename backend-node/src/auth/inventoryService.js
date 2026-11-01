@@ -2,6 +2,7 @@ import { createHash, randomUUID, timingSafeEqual } from 'node:crypto';
 import { AppError } from '../http/errors.js';
 import { requireTier } from './entitlementService.js';
 import { notify } from '../notifications/notificationService.js';
+import { LIST_CAP, windowedRows } from './listWindow.js';
 
 const inventoryEntitlement = 'inventory.level';
 const materialDto = (row) => {
@@ -77,15 +78,32 @@ async function notifyLowStock(db, user, material, previousAvailable, available, 
   });
 }
 
-export async function listInventory(pool, user) {
+/** One window of the inventory list: { rows: DTOs, totalCount }. */
+export async function listInventoryWindow(pool, user, window) {
   await requireInventory(pool, user.businessId);
   const allowed = await allowedLocations(pool, user);
-  const { rows } = await pool.query(`
+  const { rows, totalCount } = await windowedRows((sql, params) => pool.query(sql, params), `
     SELECT m.*,m.xmin::text::bigint AS "Version", COALESCE(ms."IsActive", true) AS "IsActive" FROM "Materials" m
     LEFT JOIN "NodeMaterialStates" ms ON ms."BusinessId" = m."BusinessId" AND ms."MaterialId" = m."Id"
-    WHERE m."BusinessId" = $1 AND ($2::uuid[] IS NULL OR m."LocationId" = ANY($2::uuid[])) ORDER BY m."Name"`,
-  [user.businessId, allowed]);
-  return rows.map(materialDto);
+    WHERE m."BusinessId" = $1 AND ($2::uuid[] IS NULL OR m."LocationId" = ANY($2::uuid[])) ORDER BY m."Name", m."Id"`,
+  [user.businessId, allowed], window);
+  return { rows: rows.map(materialDto), totalCount };
+}
+
+/** Every material, read a window at a time, for the CSV export. More than maxRows is refused. */
+export async function listInventoryAll(pool, user, maxRows = 50_000) {
+  const items = [];
+  for (let offset = 0; ; offset += LIST_CAP) {
+    const { rows, totalCount } = await listInventoryWindow(pool, user, { limit: LIST_CAP, offset });
+    if (totalCount > maxRows) throw new AppError(413, 'export_too_large', `Exports are limited to ${maxRows} items. Narrow the list and try again.`);
+    items.push(...rows);
+    if (!rows.length || items.length >= totalCount) return items;
+  }
+}
+
+/** The first LIST_CAP materials (the bulk actions return this to refresh a screen). */
+export async function listInventory(pool, user) {
+  return (await listInventoryWindow(pool, user, { limit: LIST_CAP, offset: 0 })).rows;
 }
 
 export async function listInventoryLocations(pool, user) {

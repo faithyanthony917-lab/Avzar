@@ -63,4 +63,13 @@ describe('responseHeaders', () => {
     expect(out.get('server')).toBeNull();
     expect(out.get('content-type')).toBe('application/json');
   });
+
+  it('passes the list total headers through and nothing else the API adds', () => {
+    const up = new Headers({ 'x-total-count': '1350', 'x-result-limit': '1000', 'x-truncated': 'true', 'x-powered-by': 'Express' });
+    const out = responseHeaders(up);
+    expect(out.get('x-total-count')).toBe('1350');
+    expect(out.get('x-result-limit')).toBe('1000');
+    expect(out.get('x-truncated')).toBe('true');
+    expect(out.get('x-powered-by')).toBeNull();
+  });
 });

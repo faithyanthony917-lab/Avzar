@@ -46,7 +46,7 @@ export function upstreamHeaders(incoming: Headers, trustProxy: boolean): Headers
   return out;
 }
 
-const FORWARD_RESPONSE = ['content-type', 'content-disposition', 'retry-after', 'content-language'];
+const FORWARD_RESPONSE = ['content-type', 'content-disposition', 'retry-after', 'content-language', 'x-total-count', 'x-result-limit', 'x-truncated'];
 
 /** API responses are never cached by the browser or a CDN; every Set-Cookie is kept. */
 export function responseHeaders(upstream: Headers): Headers {

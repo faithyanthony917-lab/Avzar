@@ -37,7 +37,7 @@ export function startApp(pool, extraEnv = {}, dependencies = {}) {
       const text = await response.text();
       let json = null;
       try { json = JSON.parse(text); } catch { /* not JSON */ }
-      return { status: response.status, body: json, text, location: response.headers.get('location'), contentType: response.headers.get('content-type') };
+      return { status: response.status, body: json, text, location: response.headers.get('location'), contentType: response.headers.get('content-type'), headers: response.headers };
     };
     resolve({ call, close: () => new Promise((done) => { app.locals.objectStorage.close(); server.close(done); }) });
   }));

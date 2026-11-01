@@ -4,6 +4,10 @@ import { adoptTenant, setTenantLookup } from '../db/tenantRlsContext.js';
 import { bindTenantByLookup } from '../db/tenantLookup.js';
 import { withFreshTenantContext } from '../db/forEachBusiness.js';
 import { withTransaction } from './accountService.js';
+import { windowedRows } from './listWindow.js';
+
+/** The public storefront product list never returns more than this many variants. */
+export const PUBLIC_PRODUCT_LIMIT = 500;
 
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 const moneyMinor = (value) => {
@@ -36,7 +40,7 @@ export async function listReadyToWearProducts(pool, slug) {
       v."Id" AS "VariantId",v."SKU",v."Size",v."Colour",(v."OnHand"-v."Reserved") AS "Available"
     FROM "Designs" d JOIN "ReadyToWearVariants" v ON v."BusinessId"=d."BusinessId" AND v."DesignId"=d."Id"
     WHERE d."BusinessId"=$1 AND d."Status"='Active' AND d."Visibility"='Public' AND d."Kind"='ReadyMade' AND v."IsActive"=TRUE
-    ORDER BY d."Name",v."Size",v."Colour",v."SKU"`, [site.BusinessId]);
+    ORDER BY d."Name",v."Size",v."Colour",v."SKU",v."Id" LIMIT ${PUBLIC_PRODUCT_LIMIT}`, [site.BusinessId]);
   return { storefront: { slug, name: site.BusinessName }, items: rows.map((r) => ({
     designId: r.DesignId, name: r.Name, slug: r.Slug, description: r.Description,
     price: r.BasePrice == null ? null : Number(r.BasePrice), currencyCode: r.CurrencyCode,
@@ -44,14 +48,15 @@ export async function listReadyToWearProducts(pool, slug) {
   })) };
 }
 
-export async function listBusinessReadyToWearVariants(pool, user) {
-  const { rows } = await pool.query(`SELECT v."Id",v."DesignId",d."Name" AS "ProductName",v."SKU",v."Size",v."Colour",
+/** One window of the shop's ready-to-wear variants: { rows, totalCount }. */
+export async function listBusinessReadyToWearVariantsWindow(pool, user, window) {
+  const { rows, totalCount } = await windowedRows((sql, params) => pool.query(sql, params), `SELECT v."Id",v."DesignId",d."Name" AS "ProductName",v."SKU",v."Size",v."Colour",
     v."OnHand",v."Reserved",(v."OnHand"-v."Reserved") AS "Available",v."IsActive",d."BasePrice",d."CurrencyCode"
     FROM "ReadyToWearVariants" v JOIN "Designs" d ON d."BusinessId"=v."BusinessId" AND d."Id"=v."DesignId"
-    WHERE v."BusinessId"=$1 ORDER BY d."Name",v."SKU"`, [user.businessId]);
-  return rows.map((r) => ({ id:r.Id, designId:r.DesignId, productName:r.ProductName, sku:r.SKU, size:r.Size, colour:r.Colour,
+    WHERE v."BusinessId"=$1 ORDER BY d."Name",v."SKU",v."Id"`, [user.businessId], window);
+  return { totalCount, rows: rows.map((r) => ({ id:r.Id, designId:r.DesignId, productName:r.ProductName, sku:r.SKU, size:r.Size, colour:r.Colour,
     onHand:Number(r.OnHand), reserved:Number(r.Reserved), available:Number(r.Available), isActive:r.IsActive,
-    price:r.BasePrice == null ? null : Number(r.BasePrice), currencyCode:r.CurrencyCode }));
+    price:r.BasePrice == null ? null : Number(r.BasePrice), currencyCode:r.CurrencyCode })) };
 }
 
 export async function upsertReadyToWearVariant(pool, user, input) {

@@ -42,6 +42,23 @@ export async function api<T = void>(path: string, init: { method?: 'GET' | 'POST
 }
 
 
+/** A list the API may cut at its limit: the rows, and (from the X-Total-Count and X-Truncated headers) how many exist. */
+export type ListResult<T> = { items: T[]; totalCount: number; truncated: boolean };
+
+/** GET a list that returns a plain array with total headers. Same errors as api(). */
+export async function apiList<T>(path: string): Promise<ListResult<T>> {
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, { method: 'GET', headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' });
+  } catch {
+    throw new ApiError(0, 'Could not reach the server. Check your connection and try again.');
+  }
+  if (!res.ok) throw await readProblem(res);
+  const items = (await res.json()) as T[];
+  const header = Number(res.headers.get('x-total-count'));
+  return { items, totalCount: Number.isFinite(header) && res.headers.has('x-total-count') ? header : items.length, truncated: res.headers.get('x-truncated') === 'true' };
+}
+
 /** Multipart upload through the same-origin proxy. The browser supplies the multipart boundary. */
 export async function apiUpload<T>(path: string, file: File, fields: Record<string, string> = {}): Promise<T> {
   const form = new FormData();

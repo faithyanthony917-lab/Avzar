@@ -160,7 +160,7 @@ CI green at `58c6710` (node-api 583 of 583; node-db 199 of 199; web 510 of 510).
 - **Run here (no database, no express, no zod, no browser):** `node --check` on every changed file; `platformAdminService`, `platformOperations`, `tenantLookup`, `forEachBusiness`, `workerTenantContext` unit tests; `npm run docs:api`. **Not run here:** the DB suite, every web test, the web typecheck.
 - **Open:** CI; no staging or phone check; worker last-run times and a plan column in the list not built; the platform audit viewer shows platform entries only (a business's own audit log is not shown).
 
-## Step-17c (business suspension and retention): written 2026-10-31, CI not yet seen
+## Step-17c (business suspension and retention): written 2026-10-31, CI green at `40e4855`
 
 - **Base:** the `6929351` tree (CI green on all three jobs). Defaults taken on your "go": a reason is required; webhooks keep running during a suspension; reminders count as customer messages for the 180 days.
 - **Correction to the design report:** I said an already signed-in session would keep working. It would not: `currentUser` checks `Businesses.IsActive` on every request, at sign-in, at refresh and at the realtime stream. So no session revocation was added. What was missing was a clear reason (now `business_suspended`) and the public pages.
@@ -319,3 +319,11 @@ The two paragraphs above say "not run in CI"; that was true when they were writt
 - **Tests added:** `test/unit/whatsappTemplates.test.js` (also checks `docs/WHATSAPP_SETUP.md` against the code), `test/unit/whatsappInbound.test.js`, three tests in `test/messagingProvider.test.js`, a WhatsApp webhook suite in `test/messagingPublicRoutes.test.js`, additions to both worker tests and `test/messageTemplateRoutes.test.js`, `test/db/whatsappStop.integration.test.js` (restricted role: handshake, bad signature, sender-wide stop across two businesses, SMS untouched, queue and dispatcher, START, migration check), web panel tests. **Updated:** `customerEvents.test.js` (new return shape, WhatsApp ignores saved wording).
 - **Run here (no database, no express, no zod, no browser):** `node --check` on every new and changed file; the unit tests that load here (`whatsappTemplates`, `whatsappInbound`, `messagingProvider`, `customerEvents`, both worker tests); `npm run docs:api`. **Not run here:** the route tests, the PostgreSQL test, every web test and the web typecheck.
 - **Open:** the route, PostgreSQL and web tests ran for the first time in CI at `a8cf53c` and passed (individual subtest lines not read); template approval, the Meta handshake and signature, sending and the Meta error codes are unverified with live credentials (step 20); Meta must approve four templates before any WhatsApp message can be sent; no confirmation reply to STOP; delivery statuses ignored; English only; a WhatsApp wording saved before 16d stays in the table but is never used.
+
+## Step-17d-1 (CSV exports): written 2026-11-01, CI not yet seen
+- No migration. New routes: `GET /api/orders/export`, `/api/invoices/export`, `/api/payments/export`, `/api/appointments/export`, `/api/inquiries/export` (370 routes in `docs/API.md`).
+- Each export reads through the list query of its screen: same permission, filters, tenant and location scope. More than 50,000 rows is refused with 413 `export_too_large`. Each export writes one audit entry `export.<kind>` (row count and filter names only).
+- Text cells are guarded against spreadsheet formulas (a phone starting with `+` is written with a leading apostrophe, as in the customer export); number cells are not, so negative amounts stay numbers.
+- List sorts gained `Id` tie-breakers so paging is stable.
+- Web: an Export CSV button on orders, finance (invoices and all payments), appointments and requests. Errors show next to the button.
+- Not verified: PostgreSQL test `exports.integration.test.js` and the web tests had not run when this was written; no staging or phone check.

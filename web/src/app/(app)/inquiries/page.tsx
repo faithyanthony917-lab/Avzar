@@ -1,4 +1,5 @@
 import { PageHead } from '@/components/app/PageHead';
+import { ExportCsvButton } from '@/components/app/ExportCsvButton';
 import Link from 'next/link';
 import { InquiryActions, type InquiryFormData } from '@/components/app/InquiryActions';
 import { LoadError, NoAccess } from '@/components/app/Notices';
@@ -47,7 +48,9 @@ export default async function InquiriesPage({ searchParams }: { searchParams: Pr
 
   return (
     <div className="ap-stack">
-      <PageHead title="Requests" intro={`Messages, booking requests and order requests that customers send through your storefront. Times are shown in ${me.timeZoneId}.`} zone={me.timeZoneId} />
+      <PageHead title="Requests" intro={`Messages, booking requests and order requests that customers send through your storefront. Times are shown in ${me.timeZoneId}.`} zone={me.timeZoneId}>
+        <ExportCsvButton path="/api/inquiries/export" query={inquiriesApiQuery(q)} fileName="requests.csv" />
+      </PageHead>
       {canManage && !form && <p className="ap-hint">{canLocations ? 'The scheduling and order forms could not be loaded. Reload to try again.' : 'Scheduling an appointment or creating an order also needs permission to view staff and locations. Ask the business owner to change your role.'}</p>}
 
       <form className="ap-row" method="get" aria-label="Filter requests">

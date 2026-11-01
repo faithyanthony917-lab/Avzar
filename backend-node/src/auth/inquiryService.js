@@ -263,19 +263,19 @@ export async function submitInquiry(pool, env, slug, request, clientIp) {
   return accepted;
 }
 
-function parseListQuery(query) {
+function parseListQuery(query, maxPageSize = 100) {
   const page = Number.parseInt(query.page ?? '1', 10);
   const pageSize = Number.parseInt(query.pageSize ?? '25', 10);
-  if (!Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 100) {
-    throw AppError.badRequest('invalid_paging', 'Page must be positive and pageSize must be between 1 and 100.');
+  if (!Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > maxPageSize) {
+    throw AppError.badRequest('invalid_paging', `Page must be positive and pageSize must be between 1 and ${maxPageSize}.`);
   }
   const status = isBlank(query.status) ? null : parseEnum(String(query.status), STATUSES, 'status');
   const kind = isBlank(query.kind) ? null : parseEnum(String(query.kind), KINDS, 'kind');
   return { page, pageSize, status, kind, search: query.search === undefined ? null : String(query.search).trim().slice(0, 200) };
 }
 
-export async function listInquiries(pool, user, query) {
-  const filter = parseListQuery(query);
+export async function listInquiries(pool, user, query, { maxPageSize = 100 } = {}) {
+  const filter = parseListQuery(query, maxPageSize);
   const params = [user.businessId];
   const conditions = ['"BusinessId" = $1'];
   for (const [column, value] of [['Status', filter.status], ['Kind', filter.kind]]) {
@@ -295,7 +295,7 @@ export async function listInquiries(pool, user, query) {
   const offset = (filter.page - 1) * filter.pageSize;
   const { rows } = await pool.query(
     `SELECT "Id", "Kind", "Status", "Name", "Email", "Phone", "Message", "DesignId", "DesignNameSnapshot", "GarmentType", "Budget", "PreferredDate", "EventDate", "ConvertedOrderId", "AppointmentId", "InternalNote", "CreatedAtUtc", "HandledAtUtc"
-     FROM "Inquiries" WHERE ${where} ORDER BY "CreatedAtUtc" DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+     FROM "Inquiries" WHERE ${where} ORDER BY "CreatedAtUtc" DESC, "Id" DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
     [...params, filter.pageSize, offset]);
   return { items: rows.map(dto), page: filter.page, pageSize: filter.pageSize, totalCount: counts[0]?.TotalCount ?? 0 };
 }

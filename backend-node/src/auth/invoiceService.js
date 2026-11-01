@@ -405,7 +405,7 @@ export async function listInvoices(pool, user, query, allowed) {
         AND cn."InvoiceId" = i."Id"), 0) AS "AmountCredited"
     FROM "Invoices" i LEFT JOIN "Customers" c ON c."BusinessId" = i."BusinessId" AND c."Id" = i."CustomerId"
     WHERE ${where}
-    ORDER BY COALESCE(i."IssuedAtUtc", i."CreatedAtUtc") DESC
+    ORDER BY COALESCE(i."IssuedAtUtc", i."CreatedAtUtc") DESC, i."Id"
     LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
   [...params, query.pageSize, (query.page - 1) * query.pageSize]);
   const items = rows.map((row) => ({

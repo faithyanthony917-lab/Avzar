@@ -30,6 +30,8 @@ import {
   setAppointmentStatus,
 } from './appointmentService.js';
 import { createFitting, listFittings, setFittingStatus } from './fittingService.js';
+import { sendCsv } from './csvExport.js';
+import { exportAppointments, exportOrders } from './exportService.js';
 import { appointmentIcsEvent, renderIcs, taskIcsEvent } from './calendarIcs.js';
 import { openTaskPhoto, uploadMedia } from './mediaService.js';
 import { addMoney, hasAtMostPlaces, mulMoney, subtractMoney } from '../money.js';
@@ -315,6 +317,84 @@ async function transaction(pool, callback) {
   } finally {
     client.release();
   }
+}
+
+function parseAppointmentListQuery(query) {
+  const payload = parse(appointmentListSchema, query);
+  if (payload.from && payload.to && new Date(payload.to) <= new Date(payload.from)) {
+    throw AppError.badRequest('invalid_date_range', 'The to date must be later than the from date.');
+  }
+  return {
+    page: payload.page,
+    pageSize: payload.pageSize,
+    type: payload.type,
+    status: payload.status,
+    customerId: payload.customerId,
+    orderId: payload.orderId,
+    locationId: payload.locationId,
+    assignedMembershipId: payload.assignedMembershipId,
+    fromUtc: payload.from ? new Date(payload.from) : null,
+    toUtc: payload.to ? new Date(payload.to) : null,
+  };
+}
+
+/** The order list query: one page of orders with the screen's filters, inside the person's locations. Also feeds the CSV export. */
+async function listOrdersPage(pool, user, allowed, query, page, pageSize) {
+  const filters = ['o."BusinessId" = $1', '($2::uuid[] IS NULL OR o."LocationId" = ANY($2::uuid[]))'];
+  const values = [user.businessId, allowed];
+  if (!isBlank(query.status)) {
+    values.push(parseEnum(String(query.status), [...ORDER_STATUSES], 'status'));
+    filters.push(`o."Status" = $${values.length}`);
+  }
+  for (const [name, column] of [['customerId', 'CustomerId'], ['locationId', 'LocationId']]) {
+    if (query[name]) {
+      if (!isUuid(String(query[name]))) throw AppError.badRequest(`invalid_${name}`, `The ${name} is invalid.`);
+      values.push(String(query[name]));
+      filters.push(`o."${column}" = $${values.length}`);
+    }
+  }
+  for (const [name, operator] of [['dueFrom', '>='], ['dueTo', '<=']]) {
+    if (query[name]) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(query[name]))) throw AppError.badRequest('invalid_due_date', 'The due date is invalid.');
+      values.push(String(query[name]));
+      filters.push(`o."PromisedDate" ${operator} $${values.length}::date`);
+    }
+  }
+  if (query.search) {
+    const search = `%${String(query.search).trim().slice(0, 100).replace(/[\\%_]/g, '\\$&')}%`;
+    values.push(search);
+    filters.push(`(o."OrderNumber" ILIKE $${values.length} ESCAPE E'\\\\' OR c."FullName" ILIKE $${values.length} ESCAPE E'\\\\')`);
+  }
+  const where = filters.join(' AND ');
+  const count = await pool.query(`
+    SELECT count(*)::int AS "TotalCount" FROM "Orders" o
+    JOIN "Customers" c ON c."BusinessId" = o."BusinessId" AND c."Id" = o."CustomerId"
+    WHERE ${where}`, values);
+  const { rows } = await pool.query(`
+    SELECT o."Id", o."OrderNumber", o."Status", o."CustomerId", c."FullName" AS "CustomerName",
+      o."PromisedDate", o."Priority", o."Total", o."CurrencyCode",
+      (SELECT count(*)::int FROM "OrderGarments" g WHERE g."BusinessId" = o."BusinessId" AND g."OrderId" = o."Id") AS "GarmentCount"
+    FROM "Orders" o JOIN "Customers" c ON c."BusinessId" = o."BusinessId" AND c."Id" = o."CustomerId"
+    WHERE ${where} ORDER BY o."PromisedDate", o."CreatedAtUtc" DESC, o."Id"
+    LIMIT $${values.length + 1} OFFSET $${values.length + 2}`,
+  [...values, pageSize, (page - 1) * pageSize]);
+  return {
+    items: rows.map((row) => ({
+      id: row.Id, orderNumber: row.OrderNumber, status: row.Status, customerId: row.CustomerId,
+      customerName: row.CustomerName, promisedDate: String(row.PromisedDate).slice(0, 10),
+      priority: row.Priority, total: Number(row.Total), currencyCode: row.CurrencyCode, garmentCount: row.GarmentCount,
+    })),
+    page, pageSize, totalCount: Number(count.rows[0]?.TotalCount ?? 0),
+  };
+}
+
+function orderListPaging(query) {
+  const page = Number.parseInt(query.page ?? '1', 10);
+  const pageSize = Number.parseInt(query.pageSize ?? '25', 10);
+  if (!Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 100) {
+    throw AppError.badRequest('invalid_paging', 'Page must be positive and pageSize must be between 1 and 100.');
+  }
+  return { page, pageSize };
 }
 
 export async function allowedLocations(pool, user) {
@@ -2068,58 +2148,19 @@ export function createOrderRouter({ env, pool }) {
   const requireWorkersManage = [requireBearerAuth(env, pool), requirePermission('workers.manage')];
 
   router.get('/orders', ...requireOrdersView, async (req, res) => {
-    const page = Number.parseInt(req.query.page ?? '1', 10);
-    const pageSize = Number.parseInt(req.query.pageSize ?? '25', 10);
-    if (!Number.isSafeInteger(page) || page < 1 || !Number.isSafeInteger(pageSize) || pageSize < 1 || pageSize > 100) {
-      throw AppError.badRequest('invalid_paging', 'Page must be positive and pageSize must be between 1 and 100.');
-    }
+    const { page, pageSize } = orderListPaging(req.query);
     const allowed = await allowedLocations(pool, req.currentUser);
-    const filters = ['o."BusinessId" = $1', '($2::uuid[] IS NULL OR o."LocationId" = ANY($2::uuid[]))'];
-    const values = [req.currentUser.businessId, allowed];
-    if (!isBlank(req.query.status)) {
-      values.push(parseEnum(String(req.query.status), [...ORDER_STATUSES], 'status'));
-      filters.push(`o."Status" = $${values.length}`);
-    }
-    for (const [name, column] of [['customerId', 'CustomerId'], ['locationId', 'LocationId']]) {
-      if (req.query[name]) {
-        if (!isUuid(String(req.query[name]))) throw AppError.badRequest(`invalid_${name}`, `The ${name} is invalid.`);
-        values.push(String(req.query[name]));
-        filters.push(`o."${column}" = $${values.length}`);
-      }
-    }
-    for (const [name, operator] of [['dueFrom', '>='], ['dueTo', '<=']]) {
-      if (req.query[name]) {
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(String(req.query[name]))) throw AppError.badRequest('invalid_due_date', 'The due date is invalid.');
-        values.push(String(req.query[name]));
-        filters.push(`o."PromisedDate" ${operator} $${values.length}::date`);
-      }
-    }
-    if (req.query.search) {
-      const search = `%${String(req.query.search).trim().slice(0, 100).replace(/[\\%_]/g, '\\$&')}%`;
-      values.push(search);
-      filters.push(`(o."OrderNumber" ILIKE $${values.length} ESCAPE E'\\\\' OR c."FullName" ILIKE $${values.length} ESCAPE E'\\\\')`);
-    }
-    const where = filters.join(' AND ');
-    const count = await pool.query(`
-      SELECT count(*)::int AS "TotalCount" FROM "Orders" o
-      JOIN "Customers" c ON c."BusinessId" = o."BusinessId" AND c."Id" = o."CustomerId"
-      WHERE ${where}`, values);
-    const { rows } = await pool.query(`
-      SELECT o."Id", o."OrderNumber", o."Status", o."CustomerId", c."FullName" AS "CustomerName",
-        o."PromisedDate", o."Priority", o."Total", o."CurrencyCode",
-        (SELECT count(*)::int FROM "OrderGarments" g WHERE g."BusinessId" = o."BusinessId" AND g."OrderId" = o."Id") AS "GarmentCount"
-      FROM "Orders" o JOIN "Customers" c ON c."BusinessId" = o."BusinessId" AND c."Id" = o."CustomerId"
-      WHERE ${where} ORDER BY o."PromisedDate", o."CreatedAtUtc" DESC
-      LIMIT $${values.length + 1} OFFSET $${values.length + 2}`,
-    [...values, pageSize, (page - 1) * pageSize]);
-    return res.status(200).json({
-      items: rows.map((row) => ({
-        id: row.Id, orderNumber: row.OrderNumber, status: row.Status, customerId: row.CustomerId,
-        customerName: row.CustomerName, promisedDate: String(row.PromisedDate).slice(0, 10),
-        priority: row.Priority, total: Number(row.Total), currencyCode: row.CurrencyCode, garmentCount: row.GarmentCount,
-      })),
-      page, pageSize, totalCount: Number(count.rows[0]?.TotalCount ?? 0),
-    });
+    return res.status(200).json(await listOrdersPage(pool, req.currentUser, allowed, req.query, page, pageSize));
+  });
+
+  router.get('/orders/export', ...requireOrdersView, async (req, res) => {
+    orderListPaging(req.query); // a bad page value is refused as on the list; the export itself reads every page
+    const allowed = await allowedLocations(pool, req.currentUser);
+    const { csv } = await exportOrders(pool, req.currentUser,
+      (page, pageSize) => listOrdersPage(pool, req.currentUser, allowed, req.query, page, pageSize),
+      { status: req.query.status, customerId: req.query.customerId, locationId: req.query.locationId,
+        dueFrom: req.query.dueFrom, dueTo: req.query.dueTo, search: req.query.search });
+    return sendCsv(res, 'orders', csv);
   });
 
   router.get('/orders/:id', ...requireOrdersView, async (req, res) => {
@@ -2360,22 +2401,19 @@ export function createOrderRouter({ env, pool }) {
   });
 
   router.get('/appointments', ...requireOrdersView, async (req, res) => {
-    const payload = parse(appointmentListSchema, req.query);
-    if (payload.from && payload.to && new Date(payload.to) <= new Date(payload.from)) {
-      throw AppError.badRequest('invalid_date_range', 'The to date must be later than the from date.');
-    }
-    return res.status(200).json(await listAppointments(pool, req.currentUser, {
-      page: payload.page,
-      pageSize: payload.pageSize,
-      type: payload.type,
-      status: payload.status,
-      customerId: payload.customerId,
-      orderId: payload.orderId,
-      locationId: payload.locationId,
-      assignedMembershipId: payload.assignedMembershipId,
-      fromUtc: payload.from ? new Date(payload.from) : null,
-      toUtc: payload.to ? new Date(payload.to) : null,
-    }, await allowedLocations(pool, req.currentUser)));
+    const filters = parseAppointmentListQuery(req.query);
+    return res.status(200).json(await listAppointments(pool, req.currentUser, filters, await allowedLocations(pool, req.currentUser)));
+  });
+
+  router.get('/appointments/export', ...requireOrdersView, async (req, res) => {
+    const filters = parseAppointmentListQuery(req.query); // page and pageSize are checked, then ignored: the export reads every page
+    const allowed = await allowedLocations(pool, req.currentUser);
+    const { csv } = await exportAppointments(pool, req.currentUser,
+      (page, pageSize) => listAppointments(pool, req.currentUser, { ...filters, page, pageSize }, allowed),
+      { type: filters.type, status: filters.status, customerId: filters.customerId, orderId: filters.orderId,
+        locationId: filters.locationId, assignedMembershipId: filters.assignedMembershipId,
+        from: filters.fromUtc?.toISOString(), to: filters.toUtc?.toISOString() });
+    return sendCsv(res, 'appointments', csv);
   });
 
   router.post('/appointments', ...requireFittingsManage, async (req, res) => {

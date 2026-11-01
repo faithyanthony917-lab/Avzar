@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { LoadError, NoAccess } from '@/components/app/Notices';
+import { ExportCsvButton } from '@/components/app/ExportCsvButton';
 import { money } from '@/lib/format';
 import { longDate } from '@/lib/home-view';
 import { ORDER_STATUSES, type OrderSummary } from '@/lib/order-types';
@@ -69,6 +70,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
           ))}
         </nav>
         <div className="ap-actions">
+          <ExportCsvButton path="/api/orders/export" query={orderApiQuery(q)} fileName="orders.csv" />
           {canCreate && (
             <Link href="/orders/new" className="ap-btn ap-new-btn" style={{ textDecoration: 'none' }}>
               <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M12 5v14M5 12h14" /></svg>New Order

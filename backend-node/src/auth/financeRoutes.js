@@ -14,6 +14,8 @@ import {
   updateExpense,
   voidExpense,
 } from './expenseService.js';
+import { sendCsv } from './csvExport.js';
+import { exportInvoices, exportPayments } from './exportService.js';
 import {
   createInvoice,
   createInvoiceFromOrder,
@@ -252,6 +254,16 @@ export function createFinanceRouter({ env, pool }) {
       await allowedLocations(pool, req.currentUser)));
   });
 
+  router.get('/invoices/export', ...requireInvoiceView, async (req, res) => {
+    const query = invoiceListQuery(req);
+    const allowed = await allowedLocations(pool, req.currentUser);
+    const { csv } = await exportInvoices(pool, req.currentUser,
+      (page, pageSize) => listInvoices(pool, req.currentUser, { ...query, page, pageSize }, allowed),
+      { status: query.status, customerId: query.customerId, orderId: query.orderId, from: query.from, to: query.to,
+        outstanding: query.outstanding || undefined, overdue: query.overdue || undefined, search: query.search });
+    return sendCsv(res, 'invoices', csv);
+  });
+
   router.get('/invoices/:id', ...requireInvoiceView, async (req, res) => {
     if (!isUuid(req.params.id)) throw AppError.badRequest('invalid_invoice_id', 'The invoice ID is invalid.');
     return res.status(200).json(await getInvoice(pool, req.currentUser, req.params.id,
@@ -318,6 +330,15 @@ export function createFinanceRouter({ env, pool }) {
   router.get('/payments', ...requirePaymentView, async (req, res) => {
     return res.status(200).json(await listPayments(pool, req.currentUser, paymentListQuery(req),
       await allowedLocations(pool, req.currentUser)));
+  });
+
+  router.get('/payments/export', ...requirePaymentView, async (req, res) => {
+    const query = paymentListQuery(req);
+    const allowed = await allowedLocations(pool, req.currentUser);
+    const { csv } = await exportPayments(pool, req.currentUser,
+      (page, pageSize) => listPayments(pool, req.currentUser, { ...query, page, pageSize }, allowed),
+      { status: query.status, invoiceId: query.invoiceId, customerId: query.customerId, from: query.from, to: query.to });
+    return sendCsv(res, 'payments', csv);
   });
 
   router.get('/payments/:id', ...requirePaymentView, async (req, res) => {

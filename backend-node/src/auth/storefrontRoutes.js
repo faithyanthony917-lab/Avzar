@@ -9,6 +9,8 @@ import * as inquiries from './inquiryService.js';
 import * as storefronts from './storefrontService.js';
 import * as storefrontCatalog from './storefrontCatalogService.js';
 import { hasAtMostPlaces } from '../money.js';
+import { sendCsv } from './csvExport.js';
+import { exportInquiries } from './exportService.js';
 
 const storefrontSchema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -206,6 +208,13 @@ export function createStorefrontRouter({ env, pool }) {
 
   router.get('/inquiries', ...requireInquiriesView, async (req, res) =>
     res.status(200).json(await inquiries.listInquiries(pool, req.currentUser, req.query)));
+  router.get('/inquiries/export', ...requireInquiriesView, async (req, res) => {
+    const query = req.query;
+    const { csv } = await exportInquiries(pool, req.currentUser,
+      (page, pageSize) => inquiries.listInquiries(pool, req.currentUser, { ...query, page, pageSize }, { maxPageSize: pageSize }),
+      { status: query.status, kind: query.kind, search: query.search });
+    return sendCsv(res, 'requests', csv);
+  });
   router.get('/inquiries/summary', ...requireInquiriesView, async (req, res) =>
     res.status(200).json(await inquiries.summarizeInquiries(pool, req.currentUser)));
   router.get('/inquiries/:id', ...requireInquiriesView, async (req, res) => {

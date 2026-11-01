@@ -1,4 +1,5 @@
 import { PageHead } from '@/components/app/PageHead';
+import { ExportCsvButton } from '@/components/app/ExportCsvButton';
 import Link from 'next/link';
 import { FittingForm } from '@/components/app/FittingForm';
 import { AppointmentActions } from '@/components/app/FittingStatusControl';
@@ -50,7 +51,9 @@ export default async function FittingsPage({ searchParams }: { searchParams: Pro
 
   return (
     <div className="ap-stack">
-      <PageHead title="Appointments" intro={`Schedule and manage customer appointments. Times are shown in ${me.timeZoneId}.`} zone={me.timeZoneId} />
+      <PageHead title="Appointments" intro={`Schedule and manage customer appointments. Times are shown in ${me.timeZoneId}.`} zone={me.timeZoneId}>
+        <ExportCsvButton path="/api/appointments/export" query={fittingsApiQuery(q, me.timeZoneId)} fileName="appointments.csv" />
+      </PageHead>
 
       {formReady && formCustomers.length > 0 && formLocations.length > 0 && formStaff.length > 0 && <FittingForm customers={formCustomers} locations={formLocations} staff={formStaff} currentMembershipId={currentMembershipId} canAssignAllLocations={me.isOwner || can(me, 'locations.all')} timeZone={me.timeZoneId} />}
       {formReady && (formCustomers.length === 0 || formLocations.length === 0) && (

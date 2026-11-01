@@ -339,7 +339,7 @@ export async function listPayments(pool, user, query, allowed) {
     JOIN "Invoices" i ON i."BusinessId" = p."BusinessId" AND i."Id" = p."InvoiceId"
     LEFT JOIN "Receipts" r ON r."BusinessId" = p."BusinessId" AND r."PaymentId" = p."Id"
     WHERE ${where}
-    ORDER BY p."ReceivedOn" DESC, p."CreatedAtUtc" DESC
+    ORDER BY p."ReceivedOn" DESC, p."CreatedAtUtc" DESC, p."Id"
     LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
   [...params, query.pageSize, (query.page - 1) * query.pageSize]);
   return {

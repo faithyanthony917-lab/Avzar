@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { downloadExport, exportFileName, exportQuery } from '../csv-export';
 import { ApiError } from '../problem';
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 describe('exportQuery', () => {
   it('drops paging and keeps the filters', () => {

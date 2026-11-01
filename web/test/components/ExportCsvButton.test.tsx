@@ -33,7 +33,7 @@ describe('ExportCsvButton', () => {
   });
 
   it('shows the refusal message next to the button', async () => {
-    downloadMock.mockRejectedValue(new ApiError(413, 'There are too many rows to export at once. Narrow the filters and try again.', 'export_too_large'));
+    downloadMock.mockImplementation(() => Promise.reject(new ApiError(413, 'There are too many rows to export at once. Narrow the filters and try again.', 'export_too_large')));
     render(<ExportCsvButton path="/api/invoices/export" fileName="invoices.csv" />);
     fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
     expect((await screen.findByRole('alert')).textContent).toMatch(/too many rows/i);
@@ -41,7 +41,7 @@ describe('ExportCsvButton', () => {
   });
 
   it('shows a generic message for an unexpected error', async () => {
-    downloadMock.mockRejectedValue(new Error('boom'));
+    downloadMock.mockImplementation(() => Promise.reject(new Error('boom')));
     render(<ExportCsvButton path="/api/orders/export" fileName="orders.csv" />);
     fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
     expect((await screen.findByRole('alert')).textContent).toMatch(/could not reach the server/i);

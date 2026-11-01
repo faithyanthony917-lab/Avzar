@@ -84,12 +84,9 @@ describe('CSV exports on PostgreSQL (restricted role)', { skip: !url }, () => {
     const foreign = await confirmedOrder(api, db, other, otherLocation, 'exo');
     const foreignPaid = await paidInvoice(api, other, foreign.orderId);
 
-    ids.mainOrder = (await value('SELECT "OrderNumber" AS n FROM "Orders" WHERE "Id" = $1', [main.orderId])).n;
-    ids.branchOrder = (await value('SELECT "OrderNumber" AS n FROM "Orders" WHERE "Id" = $1', [branch.orderId])).n;
-    ids.foreignOrder = (await value('SELECT "OrderNumber" AS n FROM "Orders" WHERE "Id" = $1', [foreign.orderId])).n;
-    ids.mainInvoice = (await value('SELECT "Number" AS n FROM "Invoices" WHERE "Id" = $1', [mainPaid.invoiceId])).n;
-    ids.branchInvoice = (await value('SELECT "Number" AS n FROM "Invoices" WHERE "Id" = $1', [branchInvoiceId])).n;
-    ids.foreignInvoice = (await value('SELECT "Number" AS n FROM "Invoices" WHERE "Id" = $1', [foreignPaid.invoiceId])).n;
+    // Order and invoice numbers count up per business, so two businesses share them; the IDs are unique.
+    ids.mainOrder = main.orderId; ids.branchOrder = branch.orderId; ids.foreignOrder = foreign.orderId;
+    ids.mainInvoice = mainPaid.invoiceId; ids.branchInvoice = branchInvoiceId; ids.foreignInvoice = foreignPaid.invoiceId;
     ids.mainPayment = (await value('SELECT "Reference" AS n FROM "Payments" WHERE "Id" = $1', [mainPaid.paymentId])).n;
     ids.foreignPayment = (await value('SELECT "Reference" AS n FROM "Payments" WHERE "Id" = $1', [foreignPaid.paymentId])).n;
     ids.mainCustomer = main.customerId; ids.branchCustomer = branch.customerId; ids.foreignCustomer = foreign.customerId;
@@ -116,7 +113,8 @@ describe('CSV exports on PostgreSQL (restricted role)', { skip: !url }, () => {
     const result = await get(owner, '/api/orders/export');
     assert.equal(result.status, 200);
     assert.match(result.contentType, /^text\/csv/);
-    assert.ok(result.text.startsWith('\uFEFFOrder number,Status,Customer,'));
+    // fetch() strips the byte order mark when it decodes the body, so the header is checked without it.
+    assert.ok(result.text.startsWith('Order number,Status,Customer,'));
   });
 
   it('holds the whole of the caller\'s business and nothing of another business', async () => {

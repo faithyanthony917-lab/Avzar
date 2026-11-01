@@ -1,0 +1,65 @@
+diff --git a/backend-node/test/db/exports.integration.test.js b/backend-node/test/db/exports.integration.test.js
+index 77e29e7..bc48cf2 100644
+--- a/backend-node/test/db/exports.integration.test.js
++++ b/backend-node/test/db/exports.integration.test.js
+@@ -84,12 +84,9 @@ describe('CSV exports on PostgreSQL (restricted role)', { skip: !url }, () => {
+     const foreign = await confirmedOrder(api, db, other, otherLocation, 'exo');
+     const foreignPaid = await paidInvoice(api, other, foreign.orderId);
+ 
+-    ids.mainOrder = (await value('SELECT "OrderNumber" AS n FROM "Orders" WHERE "Id" = $1', [main.orderId])).n;
+-    ids.branchOrder = (await value('SELECT "OrderNumber" AS n FROM "Orders" WHERE "Id" = $1', [branch.orderId])).n;
+-    ids.foreignOrder = (await value('SELECT "OrderNumber" AS n FROM "Orders" WHERE "Id" = $1', [foreign.orderId])).n;
+-    ids.mainInvoice = (await value('SELECT "Number" AS n FROM "Invoices" WHERE "Id" = $1', [mainPaid.invoiceId])).n;
+-    ids.branchInvoice = (await value('SELECT "Number" AS n FROM "Invoices" WHERE "Id" = $1', [branchInvoiceId])).n;
+-    ids.foreignInvoice = (await value('SELECT "Number" AS n FROM "Invoices" WHERE "Id" = $1', [foreignPaid.invoiceId])).n;
++    // Order and invoice numbers count up per business, so two businesses share them; the IDs are unique.
++    ids.mainOrder = main.orderId; ids.branchOrder = branch.orderId; ids.foreignOrder = foreign.orderId;
++    ids.mainInvoice = mainPaid.invoiceId; ids.branchInvoice = branchInvoiceId; ids.foreignInvoice = foreignPaid.invoiceId;
+     ids.mainPayment = (await value('SELECT "Reference" AS n FROM "Payments" WHERE "Id" = $1', [mainPaid.paymentId])).n;
+     ids.foreignPayment = (await value('SELECT "Reference" AS n FROM "Payments" WHERE "Id" = $1', [foreignPaid.paymentId])).n;
+     ids.mainCustomer = main.customerId; ids.branchCustomer = branch.customerId; ids.foreignCustomer = foreign.customerId;
+@@ -116,7 +113,8 @@ describe('CSV exports on PostgreSQL (restricted role)', { skip: !url }, () => {
+     const result = await get(owner, '/api/orders/export');
+     assert.equal(result.status, 200);
+     assert.match(result.contentType, /^text\/csv/);
+-    assert.ok(result.text.startsWith('\uFEFFOrder number,Status,Customer,'));
++    // fetch() strips the byte order mark when it decodes the body, so the header is checked without it.
++    assert.ok(result.text.startsWith('Order number,Status,Customer,'));
+   });
+ 
+   it('holds the whole of the caller\'s business and nothing of another business', async () => {
+diff --git a/web/src/lib/__tests__/csv-export.test.ts b/web/src/lib/__tests__/csv-export.test.ts
+index 0b6083c..ce694b2 100644
+--- a/web/src/lib/__tests__/csv-export.test.ts
++++ b/web/src/lib/__tests__/csv-export.test.ts
+@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
+ import { downloadExport, exportFileName, exportQuery } from '../csv-export';
+ import { ApiError } from '../problem';
+ 
+-afterEach(() => vi.unstubAllGlobals());
++afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+ 
+ describe('exportQuery', () => {
+   it('drops paging and keeps the filters', () => {
+diff --git a/web/test/components/ExportCsvButton.test.tsx b/web/test/components/ExportCsvButton.test.tsx
+index 1171559..a22598f 100644
+--- a/web/test/components/ExportCsvButton.test.tsx
++++ b/web/test/components/ExportCsvButton.test.tsx
+@@ -33,7 +33,7 @@ describe('ExportCsvButton', () => {
+   });
+ 
+   it('shows the refusal message next to the button', async () => {
+-    downloadMock.mockRejectedValue(new ApiError(413, 'There are too many rows to export at once. Narrow the filters and try again.', 'export_too_large'));
++    downloadMock.mockImplementation(() => Promise.reject(new ApiError(413, 'There are too many rows to export at once. Narrow the filters and try again.', 'export_too_large')));
+     render(<ExportCsvButton path="/api/invoices/export" fileName="invoices.csv" />);
+     fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+     expect((await screen.findByRole('alert')).textContent).toMatch(/too many rows/i);
+@@ -41,7 +41,7 @@ describe('ExportCsvButton', () => {
+   });
+ 
+   it('shows a generic message for an unexpected error', async () => {
+-    downloadMock.mockRejectedValue(new Error('boom'));
++    downloadMock.mockImplementation(() => Promise.reject(new Error('boom')));
+     render(<ExportCsvButton path="/api/orders/export" fileName="orders.csv" />);
+     fireEvent.click(screen.getByRole('button', { name: 'Export CSV' }));
+     expect((await screen.findByRole('alert')).textContent).toMatch(/could not reach the server/i);

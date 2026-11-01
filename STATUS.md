@@ -320,10 +320,18 @@ The two paragraphs above say "not run in CI"; that was true when they were writt
 - **Run here (no database, no express, no zod, no browser):** `node --check` on every new and changed file; the unit tests that load here (`whatsappTemplates`, `whatsappInbound`, `messagingProvider`, `customerEvents`, both worker tests); `npm run docs:api`. **Not run here:** the route tests, the PostgreSQL test, every web test and the web typecheck.
 - **Open:** the route, PostgreSQL and web tests ran for the first time in CI at `a8cf53c` and passed (individual subtest lines not read); template approval, the Meta handshake and signature, sending and the Meta error codes are unverified with live credentials (step 20); Meta must approve four templates before any WhatsApp message can be sent; no confirmation reply to STOP; delivery statuses ignored; English only; a WhatsApp wording saved before 16d stays in the table but is never used.
 
-## Step-17d-1 (CSV exports): written 2026-11-01, CI not yet seen
+## Step-17d-1 (CSV exports): written 2026-11-01, CI green at HASH-TBD
 - No migration. New routes: `GET /api/orders/export`, `/api/invoices/export`, `/api/payments/export`, `/api/appointments/export`, `/api/inquiries/export` (370 routes in `docs/API.md`).
 - Each export reads through the list query of its screen: same permission, filters, tenant and location scope. More than 50,000 rows is refused with 413 `export_too_large`. Each export writes one audit entry `export.<kind>` (row count and filter names only).
 - Text cells are guarded against spreadsheet formulas (a phone starting with `+` is written with a leading apostrophe, as in the customer export); number cells are not, so negative amounts stay numbers.
 - List sorts gained `Id` tie-breakers so paging is stable.
 - Web: an Export CSV button on orders, finance (invoices and all payments), appointments and requests. Errors show next to the button.
 - Not verified: PostgreSQL test `exports.integration.test.js` and the web tests had not run when this was written; no staging or phone check.
+
+## Step-17d-2 (list limits, optional paging, OpenAPI skeleton): CI green at HASH-17D2-TBD
+
+- No migration. `src/auth/listWindow.js`: no paging parameters gives a plain array of at most 1000 rows with `X-Total-Count`, `X-Result-Limit` and `X-Truncated`; `page` and/or `pageSize` (1 to 100) gives `{ items, page, pageSize, totalCount }`; bad paging is 400 `invalid_paging`.
+- Applies to suppliers, purchase orders, worker requests, inventory, customer measurements and storefront versions. The old purchase-order (500) and worker-request (250) limits are gone. Sorts end in `Id`, so pages do not skip or repeat rows.
+- `docs/openapi.json` is a generated route skeleton (no schemas); `npm run docs:api` writes it with `docs/API.md` (370 routes); `openApi.test.js` fails on drift.
+- CI: node-api 1011 in 254 suites, node-db 363 in 54, web 915 in 96 files. One test-only fix: the `listLimits` fixture used `supplier.id` where the route returns `Id`.
+- Open: no "showing N of M" note on the supplier, measurement and storefront-version screens; not every one of the 370 routes was read for limits; no staging or phone check.

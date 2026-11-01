@@ -11,6 +11,8 @@ const fittingId = '00000000-0000-4000-8000-000000000070';
 const user = { businessId, userId };
 const allowedLocations = [locationId];
 const none = { rows: [] };
+// A start time that is always in the future, whatever day the suite runs on.
+const futureStart = `${new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10)}T10:00:00Z`;
 const tx = (db) => async (_pool, callback) => callback(db);
 
 describe('fitting persistence', () => {
@@ -64,7 +66,7 @@ describe('fitting persistence', () => {
     };
     const pool = {};
     const result = await createFitting(pool, tx(db), user, {
-      customerId, locationId, orderId, scheduledAt: '2026-11-01T10:00:00Z',
+      customerId, locationId, orderId, scheduledAt: futureStart,
       durationMinutes: 45, notes: 'Bring fabric',
     }, allowedLocations);
 
@@ -98,7 +100,7 @@ describe('fitting persistence', () => {
     };
     await assert.rejects(
       createFitting(pool, tx(db), user, {
-        customerId, locationId, scheduledAt: '2026-11-01T10:00:00Z', durationMinutes: 30,
+        customerId, locationId, scheduledAt: futureStart, durationMinutes: 30,
       }, allowedLocations),
       (error) => error.code === 'plan_limit_reached',
     );

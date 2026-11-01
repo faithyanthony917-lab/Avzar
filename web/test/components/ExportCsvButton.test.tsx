@@ -10,7 +10,8 @@ import { ApiError } from '@/lib/problem';
 import { ExportCsvButton } from '@/components/app/ExportCsvButton';
 
 const downloadMock = vi.mocked(downloadExport) as unknown as ReturnType<typeof vi.fn>;
-beforeEach(() => downloadMock.mockReset());
+// Braces matter: a beforeEach that returns the mock would be run again as a clean-up function.
+beforeEach(() => { downloadMock.mockReset(); });
 
 describe('ExportCsvButton', () => {
   it('asks for the export with the screen filters and the file name', async () => {

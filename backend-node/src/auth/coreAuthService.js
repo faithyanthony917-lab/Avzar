@@ -156,8 +156,8 @@ export async function registerBusiness(pool, request, env) {
       const stageId = randomUUID();
       stageIds.set(stage.key, stageId);
       await db.query(
-        `INSERT INTO "Stages" ("Id","BusinessId","WorkflowId","Key","Name","SortOrder","DefaultMinutes","RequiredSkill","CompletionChecks","IsConditional","Instructions","CreatedAtUtc")
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::text[],$10,$11,now())`,
+        `INSERT INTO "Stages" ("Id","BusinessId","WorkflowId","Key","Name","SortOrder","DefaultMinutes","RequiredSkill","CompletionChecks","IsConditional","Instructions","RequiresApproval","CreatedAtUtc")
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::text[],$10,$11,FALSE,now())`,
         [stageId, businessId, workflowId, stage.key, stage.name, sortOrder, stage.minutes, stage.skill ?? null, stage.checks, stage.conditional ?? false, stage.instructions ?? null]);
     }
     for (const [stageKey, dependencyKey] of stageDependencies) {

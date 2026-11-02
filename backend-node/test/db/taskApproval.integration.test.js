@@ -133,6 +133,30 @@ describe('task approval on PostgreSQL (restricted role)', { skip: !url }, () => 
     assert.equal(again.ApprovalNote, null, 'a new submission clears the old rejection note');
   });
 
+  it('lets a worker start, pause and resume a task, and one task at a time (real PostgreSQL)', async () => {
+    const mover = await addStaff(api, db, owner, 'ap-mover', ['tasks.work']);
+    const moverMember = await membershipOf(mover);
+    const order = await insertOrder(owner.businessId, mainLocation);
+    const first = await insertTask(owner.businessId, order, moverMember, { status: 'Pending', title: 'Move one' });
+    const second = await insertTask(owner.businessId, order, moverMember, { status: 'Pending', stageOrder: 2, title: 'Move two' });
+    const act = (task, verb, body = {}) => api.call('POST', `/api/my/tasks/${task}/${verb}`, { token: mover.token, body });
+
+    const started = await act(first, 'start');
+    assert.equal(started.status, 200, started.text);
+    assert.equal((await statusOf(first)).Status, 'InProgress');
+    const refused = await act(second, 'start');
+    assert.equal(refused.status, 409, 'only one task in progress at a time');
+    assert.equal((await statusOf(second)).Status, 'Pending');
+    const paused = await act(first, 'pause', { note: 'Lunch break' });
+    assert.equal(paused.status, 200, paused.text);
+    assert.equal((await statusOf(first)).Status, 'Paused');
+    const resumed = await act(first, 'resume');
+    assert.equal(resumed.status, 200, resumed.text);
+    assert.equal((await statusOf(first)).Status, 'InProgress');
+    const events = await db.pool.query(`SELECT \"Type\" FROM \"TaskEvents\" WHERE \"TaskId\" = $1 ORDER BY \"CreatedAtUtc\"`, [first]);
+    assert.deepEqual(events.rows.map((r) => r.Type), ['started', 'paused', 'resumed']);
+  });
+
   it('does not let the assignee decide their own task, or a user without tasks.manage decide any', async () => {
     const order = await insertOrder(owner.businessId, mainLocation);
     const stage = await insertStage(owner.businessId, true, 1);

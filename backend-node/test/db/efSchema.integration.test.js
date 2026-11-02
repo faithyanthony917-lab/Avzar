@@ -496,7 +496,7 @@ describe(
       assert.deepEqual(problems, []);
     });
 
-    it('has no column defaults except the ten array defaults the Node migrations add (the EF model defines none)', async () => {
+    it('has no column defaults except the ten array defaults and Stages.RequiresApproval that the Node migrations add (the EF model defines none)', async () => {
       const { rows } = await db.pool.query(`
         SELECT c.relname AS tbl, a.attname::text AS col
         FROM pg_attrdef d
@@ -544,7 +544,7 @@ describe(
   }
 );
 
-// EF created the ten array columns as NOT NULL with no default, so a production database adopted from EF has none. Any INSERT that
+// EF created the ten array columns as NOT NULL with no default (and Stages.RequiresApproval, 0046, has a Node-only default), so a database without them has none. Any INSERT that
 // leaves one of them out works on a database built from the Node migrations (which add a default) and fails in production.
 // Register-business creates the default workflow and its stages; it used to leave "GarmentCategories" out.
 describe(

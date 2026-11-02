@@ -29,11 +29,12 @@ export async function createTempDatabase(baseUrl, prefix = 'avzar_t') {
   };
 }
 
-// Array columns that only the Node migrations give a DEFAULT (EF created them NOT NULL with no default). Code that omits one of
-// them works on a database built from the Node migrations but fails on a database EF created, so tests can drop the defaults.
+// Columns that only the Node migrations give a DEFAULT (EF created the ten array columns NOT NULL with no default; 0046 added
+// Stages.RequiresApproval NOT NULL DEFAULT false). Code that omits one of them works on a database built from the Node migrations
+// but fails on a database without the default, so tests can drop the defaults. Code that inserts a Stage writes RequiresApproval.
 export const NODE_ONLY_ARRAY_DEFAULTS = [
   ['Designs', 'Tags'], ['Designs', 'Fabrics'], ['Designs', 'Colours'], ['Designs', 'Sizes'],
-  ['Workflows', 'GarmentCategories'], ['Stages', 'CompletionChecks'],
+  ['Workflows', 'GarmentCategories'], ['Stages', 'CompletionChecks'], ['Stages', 'RequiresApproval'],
   ['ProductionTasks', 'RequiredChecks'], ['ProductionTasks', 'CompletedChecks'],
   ['Invitations', 'RoleIds'], ['Invitations', 'LocationIds'],
 ];

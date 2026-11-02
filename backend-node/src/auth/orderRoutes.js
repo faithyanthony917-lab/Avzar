@@ -1329,10 +1329,10 @@ async function workerTaskAction(db, req, taskId, action, payload = {}) {
 
   await db.query(`
     UPDATE "ProductionTasks" SET "Status" = $1,
-      "ActualStartUtc" = CASE WHEN $1 = 'InProgress' THEN COALESCE("ActualStartUtc", now()) ELSE "ActualStartUtc" END,
+      "ActualStartUtc" = CASE WHEN $5::text = 'InProgress' THEN COALESCE("ActualStartUtc", now()) ELSE "ActualStartUtc" END,
       "UpdatedByUserId" = $2, "UpdatedAtUtc" = now()
     WHERE "BusinessId" = $3 AND "Id" = $4`,
-  [nextStatus, req.currentUser.userId, businessId, taskId]);
+  [nextStatus, req.currentUser.userId, businessId, taskId, nextStatus]);
   await recordTaskEvent(db, businessId, taskId, eventType, task.Status, nextStatus,
     req.currentUser.userId, note);
   await syncOrderFromTasks(db, businessId, task.OrderId);

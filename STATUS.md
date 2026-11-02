@@ -335,3 +335,13 @@ The two paragraphs above say "not run in CI"; that was true when they were writt
 - `docs/openapi.json` is a generated route skeleton (no schemas); `npm run docs:api` writes it with `docs/API.md` (370 routes); `openApi.test.js` fails on drift.
 - CI: node-api 1011 in 254 suites, node-db 363 in 54, web 915 in 96 files. One test-only fix: the `listLimits` fixture used `supplier.id` where the route returns `Id`.
 - Open: no "showing N of M" note on the supplier, measurement and storefront-version screens; not every one of the 370 routes was read for limits; no staging or phone check.
+
+## Step-18a (reference images on an order): CI green at `92e9484`
+
+- Migration `0045_order_reference_images.sql`: table `OrderReferenceImages` (forced row-level security, `BusinessId`-matched foreign keys to `Orders` and `MediaAssets`, one index). Migrations now end at `0045`; next free number `0046`.
+- Six routes (`docs/API.md` at 376): list and add `GET`/`POST /api/orders/:id/reference-images` (`orders.view` / `orders.manage`), `DELETE .../:imageId`, file `GET .../:imageId/file/:variant` (`orig`, `md`, `sm`; `private, no-store`, `nosniff`), and for a worker `GET /api/my/tasks/:id/reference-images` and its file route (only a task assigned to them).
+- Upload uses `uploadMedia` with purpose `OrderReferenceImage`: storage quota, stored files, media row, link row and audit entry in one transaction; the order row is locked so the limit of 10 holds; a cancelled order takes no new image; the generic upload cannot create an unlinked one. Delete removes link and media row in one transaction with an audit entry, then the stored files.
+- The purpose is excluded from the media library, public media, the PDF logo check and the settings logo check; the media delete guard counts the link as in use.
+- Web: gallery on the order page (add, remove with confirmation, count of 10), worker gallery on the task page.
+- CI: node-api 1011 in 255 suites, node-db 372 in 55, web 926 in 97 files.
+- Open: not shown to customers (quotation, PDF, portal); no mobile screen; no test that an amendment keeps the images; orphan sweep not read for this purpose; no staging or phone check.

@@ -64,7 +64,7 @@ What exists, how far it goes, and what has been checked. Built from the code and
 
 | Feature | Status | Where | Gap |
 |---|---|---|---|
-| Designs, collections, categories, CSV import, visibility | Done | web `catalog` | No reference images, no cropping |
+| Designs, collections, categories, CSV import, visibility | Done | web `catalog` | No cropping (reference images on orders: step 18a) |
 | Storefront builder, publish, preview, slug redirects, custom hostnames | Partial | web `storefront`, `/sites/<slug>`, `publicSiteRoutes.js` | Raw JSON editors, no media picker, plan limits shown only after Save (step-13); no wildcard DNS yet |
 | Storefront address unique across businesses | Done | `storefrontSlugCheck.js` | Staging needs the redeploy |
 | Analytics with consent | Done | `storefrontAnalyticsRoutes.js`, web `settings/analytics` | |

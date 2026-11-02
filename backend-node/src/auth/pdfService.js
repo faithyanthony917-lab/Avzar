@@ -147,7 +147,7 @@ async function businessBranding(pool, user, storage) {
   let logo = null;
   if (business.LogoMediaId) {
     try {
-      const media = await pool.query(`SELECT "Id", "BusinessId" FROM "MediaAssets" a WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`, [user.businessId, business.LogoMediaId]);
+      const media = await pool.query(`SELECT "Id", "BusinessId" FROM "MediaAssets" a WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND a."Purpose" <> 'OrderReferenceImage' AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`, [user.businessId, business.LogoMediaId]);
       if (media.rows[0]) {
         const key = `${user.businessId.replaceAll('-', '')}/${business.LogoMediaId.replaceAll('-', '')}/md.webp`;
         const stream = await storage.openRead(key);

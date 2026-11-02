@@ -34,7 +34,8 @@ import { sendCsv } from './csvExport.js';
 import { respondList, windowedRows } from './listWindow.js';
 import { exportAppointments, exportOrders } from './exportService.js';
 import { appointmentIcsEvent, renderIcs, taskIcsEvent } from './calendarIcs.js';
-import { openTaskPhoto, uploadMedia } from './mediaService.js';
+import { openTaskPhoto, uploadMedia, MAX_REFERENCE_IMAGES } from './mediaService.js';
+import { deleteOrderReferenceImage, listOrderReferenceImages, listTaskReferenceImages, openOrderReferenceImage, openTaskReferenceImage } from './orderReferenceImages.js';
 import { addMoney, hasAtMostPlaces, mulMoney, subtractMoney } from '../money.js';
 import { ciEnum } from '../http/ciEnum.js';
 import { calculatePricing } from './pricingService.js';
@@ -3211,6 +3212,73 @@ export function createOrderRouter({ env, pool }) {
     file.content.on('error', (error) => res.destroy(error));
     return file.content.pipe(res);
   }
+
+  // Step 18a: reference images on an order (private to the business; never in the media library or on the storefront).
+  const referenceDto = (asset) => ({
+    id: asset.reference.Id, orderId: asset.reference.OrderId, mediaId: asset.reference.MediaAssetId, caption: asset.reference.Caption,
+    fileName: asset.fileName, width: asset.width, height: asset.height, sizeBytes: asset.sizeBytes, createdAtUtc: asset.reference.CreatedAtUtc,
+  });
+
+  async function assertOrderVisible(req) {
+    if (!isUuid(req.params.id)) throw AppError.notFound('order_not_found', 'Order not found.');
+    const allowed = await allowedLocations(pool, req.currentUser);
+    const { rows } = await pool.query(`
+      SELECT 1 FROM "Orders" WHERE "BusinessId" = $1 AND "Id" = $2 AND ($3::uuid[] IS NULL OR "LocationId" = ANY($3::uuid[]))`,
+    [req.currentUser.businessId, req.params.id, allowed]);
+    if (!rows.length) throw AppError.notFound('order_not_found', 'Order not found.');
+    return allowed;
+  }
+
+  function streamReferenceImage(file, res) {
+    res.set('cache-control', 'private, no-store').set('x-content-type-options', 'nosniff');
+    res.status(200).type(file.contentType);
+    file.content.on('error', (error) => res.destroy(error));
+    return file.content.pipe(res);
+  }
+
+  router.get('/orders/:id/reference-images', ...requireOrdersView, async (req, res) => {
+    const allowed = await assertOrderVisible(req);
+    const items = await listOrderReferenceImages(pool, req.currentUser, req.params.id, allowed);
+    return res.status(200).json({ items, maxImages: MAX_REFERENCE_IMAGES });
+  });
+
+  router.post('/orders/:id/reference-images', ...requireOrdersManage, async (req, res) => {
+    const allowed = await assertOrderVisible(req);
+    const { file, fields } = await readMultipart(req, { maxBytes: env.MEDIA_MAX_UPLOAD_BYTES, maxFields: 1, maxParts: 2, allowedFields: ['caption'] });
+    const payload = parse(taskProgressPhotoSchema, { caption: fields.caption ?? null });
+    const asset = await uploadMedia(pool, env, req.app.locals.objectStorage, req.currentUser, file.bytes, file.fileName, 'OrderReferenceImage', null,
+      { orderId: req.params.id, caption: payload.caption ?? null, allowedLocations: allowed });
+    return res.status(201).json(referenceDto(asset));
+  });
+
+  router.delete('/orders/:id/reference-images/:imageId', ...requireOrdersManage, async (req, res) => {
+    const allowed = await assertOrderVisible(req);
+    if (!isUuid(req.params.imageId)) throw AppError.notFound('reference_image_not_found', 'Image not found.');
+    await deleteOrderReferenceImage(pool, req.app.locals.objectStorage, req.currentUser, req.params.id, req.params.imageId, allowed);
+    return res.status(204).end();
+  });
+
+  router.get('/orders/:id/reference-images/:imageId/file/:variant', ...requireOrdersView, async (req, res) => {
+    const allowed = await assertOrderVisible(req);
+    if (!isUuid(req.params.imageId)) throw AppError.notFound('reference_image_not_found', 'Image not found.');
+    const file = await openOrderReferenceImage(pool, req.app.locals.objectStorage, req.currentUser, req.params.id, req.params.imageId, req.params.variant, allowed);
+    return streamReferenceImage(file, res);
+  });
+
+  // A worker sees the reference images of the order behind a task assigned to them, and nothing else.
+  router.get('/my/tasks/:id/reference-images', ...requireTasksWork, async (req, res) => {
+    if (!isUuid(req.params.id)) throw AppError.badRequest('invalid_task_id', 'The task ID is invalid.');
+    const membershipId = await getActiveMembershipId(pool, req.currentUser);
+    const items = await listTaskReferenceImages(pool, req.currentUser, req.params.id, membershipId);
+    return res.status(200).json({ items });
+  });
+
+  router.get('/my/tasks/:id/reference-images/:imageId/file/:variant', ...requireTasksWork, async (req, res) => {
+    if (!isUuid(req.params.id) || !isUuid(req.params.imageId)) throw AppError.notFound('reference_image_not_found', 'Image not found.');
+    const membershipId = await getActiveMembershipId(pool, req.currentUser);
+    const file = await openTaskReferenceImage(pool, req.app.locals.objectStorage, req.currentUser, req.params.id, req.params.imageId, req.params.variant, membershipId);
+    return streamReferenceImage(file, res);
+  });
 
   router.get('/tasks/:id/photos/:photoId/file/:variant', ...requireTasksView, async (req, res) => streamTaskPhoto(req, res, false));
   router.get('/my/tasks/:id/photos/:photoId/file/:variant', ...requireTasksWork, async (req, res) => streamTaskPhoto(req, res, true));

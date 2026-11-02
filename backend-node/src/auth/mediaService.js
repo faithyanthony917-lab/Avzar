@@ -6,7 +6,8 @@ import { isBlank, matchEnum } from '../http/enums.js';
 import { entitlementValue } from './entitlementService.js';
 
 const variants = new Set(['orig', 'md', 'sm']);
-const PURPOSES = ['DesignImage', 'SiteImage', 'TaskProgressPhoto'];
+const PURPOSES = ['DesignImage', 'SiteImage', 'TaskProgressPhoto', 'OrderReferenceImage'];
+export const MAX_REFERENCE_IMAGES = 10;
 const gbBytes = 1_073_741_824n;
 const clean = (value) => typeof value === 'string' && value.trim() ? value.trim() : null;
 
@@ -79,11 +80,13 @@ function mediaDto(row, inUse = false) {
     sizeBytes: Number(row.SizeBytes), createdAtUtc: row.CreatedAtUtc, inUse };
 }
 
-export async function uploadMedia(pool, env, storage, user, bytes, fileName, rawPurpose = 'DesignImage', taskPhoto = null) {
+export async function uploadMedia(pool, env, storage, user, bytes, fileName, rawPurpose = 'DesignImage', taskPhoto = null, orderReference = null) {
   if (!bytes?.length) throw AppError.badRequest('empty_file', 'The uploaded file is empty.');
   if (bytes.length > env.MEDIA_MAX_UPLOAD_BYTES) throw new AppError(413, 'file_too_large', `Images can be at most ${Math.floor(env.MEDIA_MAX_UPLOAD_BYTES / 1_048_576)} MB.`);
   const purpose = matchEnum(rawPurpose, PURPOSES);
   if (purpose === undefined) throw AppError.badRequest('invalid_purpose', `'${rawPurpose}' is not a valid purpose.`);
+  // A reference image exists only as part of an order; the generic upload must not create one that nothing links to.
+  if (purpose === 'OrderReferenceImage' && !orderReference) throw AppError.badRequest('invalid_purpose', `'${rawPurpose}' is not a valid purpose.`);
   const processed = await processImage(bytes, env);
   const id = randomUUID();
   const businessId = user.businessId;
@@ -121,9 +124,32 @@ export async function uploadMedia(pool, env, storage, user, bytes, fileName, raw
         [randomUUID(), businessId, taskPhoto.taskId, id, taskPhoto.membershipId, taskPhoto.caption ?? null]);
         photo = photos[0];
       }
-      return { ...rows[0], photo };
+      let reference = null;
+      if (orderReference) {
+        // The order row is locked, so two uploads cannot both pass the limit. A cancelled order takes no new images.
+        const { rows: orders } = await client.query(`
+          SELECT "Status" FROM "Orders"
+          WHERE "BusinessId" = $1 AND "Id" = $2 AND ($3::uuid[] IS NULL OR "LocationId" = ANY($3::uuid[]))
+          FOR UPDATE`, [businessId, orderReference.orderId, orderReference.allowedLocations ?? null]);
+        if (!orders.length) throw AppError.notFound('order_not_found', 'Order not found.');
+        if (orders[0].Status === 'Cancelled') throw AppError.conflict('order_not_editable', 'A cancelled order cannot take new reference images.');
+        const { rows: counted } = await client.query(`SELECT count(*)::int AS "Count" FROM "OrderReferenceImages" WHERE "BusinessId" = $1 AND "OrderId" = $2`, [businessId, orderReference.orderId]);
+        if ((counted[0]?.Count ?? 0) >= MAX_REFERENCE_IMAGES) throw AppError.conflict('reference_image_limit', `An order can have at most ${MAX_REFERENCE_IMAGES} reference images. Remove one first.`);
+        const { rows: links } = await client.query(`
+          INSERT INTO "OrderReferenceImages" ("Id", "BusinessId", "OrderId", "MediaAssetId", "UploadedByUserId", "Caption", "CreatedAtUtc")
+          VALUES ($1, $2, $3, $4, $5, $6, now())
+          RETURNING "Id", "OrderId", "MediaAssetId", "Caption", "CreatedAtUtc"`,
+        [randomUUID(), businessId, orderReference.orderId, id, user.userId, orderReference.caption ?? null]);
+        reference = links[0];
+        await client.query(`
+          INSERT INTO "AuditLogs" ("Id", "Action", "ActorUserId", "BusinessId", "CreatedAtUtc", "DetailsJson", "EntityId", "EntityType")
+          VALUES ($1, 'order.reference_image.added', $2, $3, now(), $4::jsonb, $5, 'Order')`,
+        [randomUUID(), user.userId, businessId, JSON.stringify({ mediaId: id }), orderReference.orderId]);
+      }
+      return { ...rows[0], photo, reference };
     });
     const asset = mediaDto(created);
+    if (created.reference) return { ...asset, reference: created.reference };
     return created.photo ? { ...asset, photo: created.photo } : asset;
   } catch (error) {
     await Promise.all(written.map((key) => storage.delete(key).catch(() => {})));
@@ -145,7 +171,7 @@ function parseMediaQuery(query) {
 export async function listMedia(pool, user, query) {
   const filter = parseMediaQuery(query);
   const params = [user.businessId];
-  const clauses = ['a."BusinessId" = $1', `a."Purpose" <> 'TaskProgressPhoto'`, `NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`];
+  const clauses = ['a."BusinessId" = $1', `a."Purpose" <> 'TaskProgressPhoto' AND a."Purpose" <> 'OrderReferenceImage'`, `NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`];
   if (filter.purpose) { params.push(filter.purpose); clauses.push(`a."Purpose" = $${params.length}`); }
   const where = clauses.join(' AND ');
   const { rows: counts } = await pool.query(`SELECT count(*)::int AS "TotalCount" FROM "MediaAssets" a WHERE ${where}`, params);
@@ -165,7 +191,7 @@ export async function getMedia(pool, user, id) {
     SELECT a."Id", a."Purpose", a."OriginalFileName", a."Width", a."Height", a."SizeBytes", a."CreatedAtUtc",
       (EXISTS (SELECT 1 FROM "DesignImages" i WHERE i."BusinessId" = a."BusinessId" AND i."MediaAssetId" = a."Id")
        OR EXISTS (SELECT 1 FROM "TaskProgressPhotos" p WHERE p."BusinessId" = a."BusinessId" AND p."MediaAssetId" = a."Id")) AS "InUse"
-    FROM "MediaAssets" a WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`, [user.businessId, id]);
+    FROM "MediaAssets" a WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND a."Purpose" <> 'OrderReferenceImage' AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`, [user.businessId, id]);
   if (!rows[0]) throw AppError.notFound('media_not_found', 'Image not found.');
   return mediaDto(rows[0], rows[0].InUse);
 }
@@ -185,14 +211,14 @@ export async function openMedia(pool, storage, user, id, variant, isPublic = fal
   if (isPublic) await bindTenantByLookup(pool, 'media_asset_id', id);
   const { rows } = isPublic ? await pool.query(`
     SELECT a."Id", a."BusinessId", a."ContentType" FROM "MediaAssets" a
-    WHERE a."Id" = $1 AND a."Purpose" <> 'TaskProgressPhoto'
+    WHERE a."Id" = $1 AND a."Purpose" <> 'TaskProgressPhoto' AND a."Purpose" <> 'OrderReferenceImage'
       AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")
       AND (
       EXISTS (SELECT 1 FROM "DesignImages" i JOIN "Designs" d ON d."Id" = i."DesignId" AND d."BusinessId" = i."BusinessId"
         WHERE i."BusinessId" = a."BusinessId" AND i."MediaAssetId" = a."Id" AND d."Status" = 'Active' AND d."Visibility" = 'Public')
       OR EXISTS (SELECT 1 FROM "StorefrontVersionMedia" m JOIN "Storefronts" s ON s."PublishedVersionId" = m."VersionId" AND s."BusinessId" = m."BusinessId"
         WHERE m."BusinessId" = a."BusinessId" AND m."MediaAssetId" = a."Id" AND s."Status" = 'Published'))`, [id]) : await pool.query(
-    `SELECT a."Id", a."BusinessId", a."ContentType" FROM "MediaAssets" a WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`, [user.businessId, id]);
+    `SELECT a."Id", a."BusinessId", a."ContentType" FROM "MediaAssets" a WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND a."Purpose" <> 'OrderReferenceImage' AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`, [user.businessId, id]);
   const asset = rows[0];
   if (!asset) throw AppError.notFound('media_not_found', 'Image not found.');
   const key = `${asset.BusinessId.replaceAll('-', '')}/${asset.Id.replaceAll('-', '')}/${variant}.webp`;
@@ -230,6 +256,7 @@ export async function deleteMedia(pool, storage, user, id) {
       SELECT EXISTS (SELECT 1 FROM "DesignImages" WHERE "BusinessId" = $1 AND "MediaAssetId" = $2)
           OR EXISTS (SELECT 1 FROM "StorefrontVersionMedia" WHERE "BusinessId" = $1 AND "MediaAssetId" = $2)
           OR EXISTS (SELECT 1 FROM "TaskProgressPhotos" WHERE "BusinessId" = $1 AND "MediaAssetId" = $2)
+          OR EXISTS (SELECT 1 FROM "OrderReferenceImages" WHERE "BusinessId" = $1 AND "MediaAssetId" = $2)
           OR EXISTS (SELECT 1 FROM "Storefronts" WHERE "BusinessId" = $1 AND "DraftJson"::text ILIKE $3) AS "InUse"`,
     [user.businessId, id, `%${id}%`]);
     if (references[0]?.InUse) throw AppError.conflict('media_in_use', 'This image is still in use (design, website draft or version, or task photo). Remove the reference first.');

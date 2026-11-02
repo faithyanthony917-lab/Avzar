@@ -31,8 +31,8 @@ export function startApp(pool, extraEnv = {}, dependencies = {}) {
       const response = await fetch(base + pathname, {
         method,
         redirect,
-        headers: { ...(body === undefined || typeof body === 'string' ? {} : { 'content-type': 'application/json' }), ...(token ? { authorization: `Bearer ${token}` } : {}), ...csrf, ...headers },
-        body: body === undefined || typeof body === 'string' ? body : JSON.stringify(body), // a string body is sent as is (form posts); the caller sets content-type
+        headers: { ...(body === undefined || typeof body === 'string' || Buffer.isBuffer(body) ? {} : { 'content-type': 'application/json' }), ...(token ? { authorization: `Bearer ${token}` } : {}), ...csrf, ...headers },
+        body: body === undefined || typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body), // a string or Buffer body is sent as is (form posts, uploads); the caller sets content-type
       });
       const text = await response.text();
       let json = null;

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { PageHead } from '@/components/app/PageHead';
 import { LoadError, NoAccess } from '@/components/app/Notices';
 import { OrderActions } from '@/components/app/OrderActions';
+import { OrderReferenceImages } from '@/components/app/OrderReferenceImages';
 import { OrderInvoiceAction } from '@/components/app/OrderInvoiceAction';
 import { QuotationPanel } from '@/components/app/QuotationPanel';
 import { formatDateTime } from '@/lib/dates';
@@ -98,6 +99,8 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
             <dt>Total</dt><dd><strong>{money(o.total, o.currencyCode)}</strong></dd>
           </dl>
         </section>
+
+        <OrderReferenceImages orderId={o.id} canManage={can(me, 'orders.manage')} orderCancelled={o.status === 'Cancelled'} />
 
         <section className="ap-panel" aria-labelledby="prog-h">
           <h2 id="prog-h" className="ap-h2">Production</h2>

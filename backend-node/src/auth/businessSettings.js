@@ -108,7 +108,7 @@ function defaultSchedule(timeZoneId = 'UTC') {
 export async function assertLogoMedia(db, businessId, mediaId) {
   const media = await db.query(`
     SELECT 1 FROM "MediaAssets" a
-    WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto'
+    WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND a."Purpose" <> 'OrderReferenceImage'
       AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`,
   [businessId, mediaId]);
   if (!media.rows.length) throw AppError.notFound('media_not_found', 'That image was not found. Upload it first, then choose it as the logo.');

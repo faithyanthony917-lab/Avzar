@@ -68,6 +68,7 @@ const NODE_ONLY_TABLES = new Set([
   'InvoiceInstallments', // 0038
   'CustomerEventOutbox', // 0040
   'NotificationTemplates', // 0041
+  'OrderReferenceImages', // 0045
 ]);
 
 // Unique keys the Node migrations add to tables that EF created, so other tables can reference them as (Id, BusinessId).

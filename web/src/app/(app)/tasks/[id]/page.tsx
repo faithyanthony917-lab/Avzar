@@ -5,6 +5,7 @@ import { LoadError, NoAccess } from '@/components/app/Notices';
 import { TaskActions } from '@/components/app/TaskActions';
 import { TaskMaterials } from '@/components/app/TaskMaterials';
 import { TaskProgressPhotos } from '@/components/app/TaskProgressPhotos';
+import { TaskReferenceImages } from '@/components/app/OrderReferenceImages';
 import { formatDateTime } from '@/lib/dates';
 import type { TaskDetail, WorkerOption } from '@/lib/production-types';
 import { getSession, serverGet } from '@/lib/session';
@@ -66,6 +67,7 @@ export default async function TaskDetailPage({ params }: { params: Promise<{ id:
       {detail.dependsOn.length > 0 && <section className="ap-panel" aria-labelledby="task-deps"><h2 id="task-deps" className="ap-h2">Prerequisites</h2><ul>{detail.dependsOn.map((d) => <li key={d.taskId}>{d.title} — {d.status}</li>)}</ul></section>}
       {(detail.requiredChecks.length > 0 || detail.requiredMaterials.length > 0) && <section className="ap-panel" aria-labelledby="task-requirements"><h2 id="task-requirements" className="ap-h2">Requirements</h2>{detail.requiredChecks.length > 0 && <><h3 className="ap-h3">Completion checklist</h3><ul>{detail.requiredChecks.map((c) => <li key={c}>{c}{detail.completedChecks.includes(c) ? ' ✓' : ''}</li>)}</ul></>}{detail.requiredMaterials.length > 0 && <><h3 className="ap-h3">Materials</h3><ul>{detail.requiredMaterials.map((m, i) => <li key={`${m.name}-${i}`}>{m.name}: {m.quantity} {m.unit}</li>)}</ul></>}</section>}
       <TaskActions detail={detail} isWorker={worker} canAssign={manager && can(me, 'tasks.assign')} canManage={manager && can(me, 'tasks.manage')} canOverride={manager && can(me, 'tasks.override')} workers={workers} />
+      {worker && <TaskReferenceImages taskId={t.id} />}
       <TaskProgressPhotos taskId={t.id} workerOnly={worker} />
       {canManageTaskMaterials(t.status, can(me, 'inventory.manage'), can(me, 'inventory.view')) && <TaskMaterials taskId={t.id} />}
       <section className="ap-panel" aria-labelledby="task-events"><h2 id="task-events" className="ap-h2">Task history</h2>{detail.events.length === 0 ? <p style={{ margin: 0 }}>No history entries.</p> : <ol className="ap-log">{detail.events.map((event, i) => <li key={`${event.atUtc}-${event.type}-${i}`}><strong>{event.type}</strong>{event.fromStatus || event.toStatus ? <div className="ap-small">{event.fromStatus ?? '—'} → {event.toStatus ?? '—'}</div> : null}{event.note && <p className="ap-pre" style={{ margin: '.25rem 0' }}>{event.note}</p>}<div className="ap-small ap-dim">{formatDateTime(event.atUtc, me.timeZoneId)}</div></li>)}</ol>}</section>

@@ -1,0 +1,1287 @@
+diff -ruN a/backend-node/migrations/0045_order_reference_images.sql b/backend-node/migrations/0045_order_reference_images.sql
+--- a/backend-node/migrations/0045_order_reference_images.sql	1970-01-01 00:00:00.000000000 +0000
++++ b/backend-node/migrations/0045_order_reference_images.sql	2026-11-02 10:30:13.444523713 +0000
+@@ -0,0 +1,27 @@
++-- Step 18a: reference images on an order (a customer's inspiration photos, a sketch, a fabric swatch).
++-- One row links an order to an image in MediaAssets (Purpose 'OrderReferenceImage'). The image belongs to the order, not to a line:
++-- an order amendment can delete and re-create lines, and the images must survive that. They are private to the business: they never
++-- appear in the media library, on the public storefront, or as a logo (the media queries exclude the purpose, as for task photos).
++-- At most 10 images per order (enforced in the service under a row lock on the order).
++CREATE TABLE "OrderReferenceImages" (
++  "Id" uuid NOT NULL,
++  "BusinessId" uuid NOT NULL,
++  "OrderId" uuid NOT NULL,
++  "MediaAssetId" uuid NOT NULL,
++  "UploadedByUserId" uuid,
++  "Caption" character varying(500),
++  "CreatedAtUtc" timestamptz NOT NULL DEFAULT now(),
++  CONSTRAINT "PK_OrderReferenceImages" PRIMARY KEY ("Id"),
++  CONSTRAINT "AK_OrderReferenceImages_Business_Media" UNIQUE ("BusinessId", "MediaAssetId"),
++  CONSTRAINT "FK_OrderReferenceImages_Businesses_BusinessId" FOREIGN KEY ("BusinessId") REFERENCES "Businesses" ("Id") ON DELETE RESTRICT,
++  CONSTRAINT "FK_OrderReferenceImages_Orders_OrderId_BusinessId" FOREIGN KEY ("OrderId", "BusinessId") REFERENCES "Orders" ("Id", "BusinessId") ON DELETE RESTRICT,
++  CONSTRAINT "FK_OrderReferenceImages_MediaAssets_MediaAssetId_BusinessId" FOREIGN KEY ("MediaAssetId", "BusinessId") REFERENCES "MediaAssets" ("Id", "BusinessId") ON DELETE RESTRICT
++);
++CREATE INDEX "IX_OrderReferenceImages_BusinessId_OrderId_CreatedAtUtc" ON "OrderReferenceImages" ("BusinessId", "OrderId", "CreatedAtUtc");
++
++ALTER TABLE "OrderReferenceImages" ENABLE ROW LEVEL SECURITY;
++ALTER TABLE "OrderReferenceImages" FORCE ROW LEVEL SECURITY;
++DROP POLICY IF EXISTS avzar_business_isolation ON "OrderReferenceImages";
++CREATE POLICY avzar_business_isolation ON "OrderReferenceImages"
++  USING ("BusinessId" = NULLIF(current_setting('app.business_id', true), '')::uuid)
++  WITH CHECK ("BusinessId" = NULLIF(current_setting('app.business_id', true), '')::uuid);
+diff -ruN a/backend-node/src/auth/businessSettings.js b/backend-node/src/auth/businessSettings.js
+--- a/backend-node/src/auth/businessSettings.js	2026-11-02 10:30:13.359704704 +0000
++++ b/backend-node/src/auth/businessSettings.js	2026-11-02 10:30:13.507571420 +0000
+@@ -108,7 +108,7 @@
+ export async function assertLogoMedia(db, businessId, mediaId) {
+   const media = await db.query(`
+     SELECT 1 FROM "MediaAssets" a
+-    WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto'
++    WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND a."Purpose" <> 'OrderReferenceImage'
+       AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`,
+   [businessId, mediaId]);
+   if (!media.rows.length) throw AppError.notFound('media_not_found', 'That image was not found. Upload it first, then choose it as the logo.');
+diff -ruN a/backend-node/src/auth/mediaService.js b/backend-node/src/auth/mediaService.js
+--- a/backend-node/src/auth/mediaService.js	2026-11-02 10:30:13.362285650 +0000
++++ b/backend-node/src/auth/mediaService.js	2026-11-02 10:33:43.618162515 +0000
+@@ -6,7 +6,8 @@
+ import { entitlementValue } from './entitlementService.js';
+ 
+ const variants = new Set(['orig', 'md', 'sm']);
+-const PURPOSES = ['DesignImage', 'SiteImage', 'TaskProgressPhoto'];
++const PURPOSES = ['DesignImage', 'SiteImage', 'TaskProgressPhoto', 'OrderReferenceImage'];
++export const MAX_REFERENCE_IMAGES = 10;
+ const gbBytes = 1_073_741_824n;
+ const clean = (value) => typeof value === 'string' && value.trim() ? value.trim() : null;
+ 
+@@ -79,11 +80,13 @@
+     sizeBytes: Number(row.SizeBytes), createdAtUtc: row.CreatedAtUtc, inUse };
+ }
+ 
+-export async function uploadMedia(pool, env, storage, user, bytes, fileName, rawPurpose = 'DesignImage', taskPhoto = null) {
++export async function uploadMedia(pool, env, storage, user, bytes, fileName, rawPurpose = 'DesignImage', taskPhoto = null, orderReference = null) {
+   if (!bytes?.length) throw AppError.badRequest('empty_file', 'The uploaded file is empty.');
+   if (bytes.length > env.MEDIA_MAX_UPLOAD_BYTES) throw new AppError(413, 'file_too_large', `Images can be at most ${Math.floor(env.MEDIA_MAX_UPLOAD_BYTES / 1_048_576)} MB.`);
+   const purpose = matchEnum(rawPurpose, PURPOSES);
+   if (purpose === undefined) throw AppError.badRequest('invalid_purpose', `'${rawPurpose}' is not a valid purpose.`);
++  // A reference image exists only as part of an order; the generic upload must not create one that nothing links to.
++  if (purpose === 'OrderReferenceImage' && !orderReference) throw AppError.badRequest('invalid_purpose', `'${rawPurpose}' is not a valid purpose.`);
+   const processed = await processImage(bytes, env);
+   const id = randomUUID();
+   const businessId = user.businessId;
+@@ -121,9 +124,32 @@
+         [randomUUID(), businessId, taskPhoto.taskId, id, taskPhoto.membershipId, taskPhoto.caption ?? null]);
+         photo = photos[0];
+       }
+-      return { ...rows[0], photo };
++      let reference = null;
++      if (orderReference) {
++        // The order row is locked, so two uploads cannot both pass the limit. A cancelled order takes no new images.
++        const { rows: orders } = await client.query(`
++          SELECT "Status" FROM "Orders"
++          WHERE "BusinessId" = $1 AND "Id" = $2 AND ($3::uuid[] IS NULL OR "LocationId" = ANY($3::uuid[]))
++          FOR UPDATE`, [businessId, orderReference.orderId, orderReference.allowedLocations ?? null]);
++        if (!orders.length) throw AppError.notFound('order_not_found', 'Order not found.');
++        if (orders[0].Status === 'Cancelled') throw AppError.conflict('order_not_editable', 'A cancelled order cannot take new reference images.');
++        const { rows: counted } = await client.query(`SELECT count(*)::int AS "Count" FROM "OrderReferenceImages" WHERE "BusinessId" = $1 AND "OrderId" = $2`, [businessId, orderReference.orderId]);
++        if ((counted[0]?.Count ?? 0) >= MAX_REFERENCE_IMAGES) throw AppError.conflict('reference_image_limit', `An order can have at most ${MAX_REFERENCE_IMAGES} reference images. Remove one first.`);
++        const { rows: links } = await client.query(`
++          INSERT INTO "OrderReferenceImages" ("Id", "BusinessId", "OrderId", "MediaAssetId", "UploadedByUserId", "Caption", "CreatedAtUtc")
++          VALUES ($1, $2, $3, $4, $5, $6, now())
++          RETURNING "Id", "OrderId", "MediaAssetId", "Caption", "CreatedAtUtc"`,
++        [randomUUID(), businessId, orderReference.orderId, id, user.userId, orderReference.caption ?? null]);
++        reference = links[0];
++        await client.query(`
++          INSERT INTO "AuditLogs" ("Id", "Action", "ActorUserId", "BusinessId", "CreatedAtUtc", "DetailsJson", "EntityId", "EntityType")
++          VALUES ($1, 'order.reference_image.added', $2, $3, now(), $4::jsonb, $5, 'Order')`,
++        [randomUUID(), user.userId, businessId, JSON.stringify({ mediaId: id }), orderReference.orderId]);
++      }
++      return { ...rows[0], photo, reference };
+     });
+     const asset = mediaDto(created);
++    if (created.reference) return { ...asset, reference: created.reference };
+     return created.photo ? { ...asset, photo: created.photo } : asset;
+   } catch (error) {
+     await Promise.all(written.map((key) => storage.delete(key).catch(() => {})));
+@@ -145,7 +171,7 @@
+ export async function listMedia(pool, user, query) {
+   const filter = parseMediaQuery(query);
+   const params = [user.businessId];
+-  const clauses = ['a."BusinessId" = $1', `a."Purpose" <> 'TaskProgressPhoto'`, `NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`];
++  const clauses = ['a."BusinessId" = $1', `a."Purpose" <> 'TaskProgressPhoto' AND a."Purpose" <> 'OrderReferenceImage'`, `NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`];
+   if (filter.purpose) { params.push(filter.purpose); clauses.push(`a."Purpose" = $${params.length}`); }
+   const where = clauses.join(' AND ');
+   const { rows: counts } = await pool.query(`SELECT count(*)::int AS "TotalCount" FROM "MediaAssets" a WHERE ${where}`, params);
+@@ -165,7 +191,7 @@
+     SELECT a."Id", a."Purpose", a."OriginalFileName", a."Width", a."Height", a."SizeBytes", a."CreatedAtUtc",
+       (EXISTS (SELECT 1 FROM "DesignImages" i WHERE i."BusinessId" = a."BusinessId" AND i."MediaAssetId" = a."Id")
+        OR EXISTS (SELECT 1 FROM "TaskProgressPhotos" p WHERE p."BusinessId" = a."BusinessId" AND p."MediaAssetId" = a."Id")) AS "InUse"
+-    FROM "MediaAssets" a WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`, [user.businessId, id]);
++    FROM "MediaAssets" a WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND a."Purpose" <> 'OrderReferenceImage' AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`, [user.businessId, id]);
+   if (!rows[0]) throw AppError.notFound('media_not_found', 'Image not found.');
+   return mediaDto(rows[0], rows[0].InUse);
+ }
+@@ -185,14 +211,14 @@
+   if (isPublic) await bindTenantByLookup(pool, 'media_asset_id', id);
+   const { rows } = isPublic ? await pool.query(`
+     SELECT a."Id", a."BusinessId", a."ContentType" FROM "MediaAssets" a
+-    WHERE a."Id" = $1 AND a."Purpose" <> 'TaskProgressPhoto'
++    WHERE a."Id" = $1 AND a."Purpose" <> 'TaskProgressPhoto' AND a."Purpose" <> 'OrderReferenceImage'
+       AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")
+       AND (
+       EXISTS (SELECT 1 FROM "DesignImages" i JOIN "Designs" d ON d."Id" = i."DesignId" AND d."BusinessId" = i."BusinessId"
+         WHERE i."BusinessId" = a."BusinessId" AND i."MediaAssetId" = a."Id" AND d."Status" = 'Active' AND d."Visibility" = 'Public')
+       OR EXISTS (SELECT 1 FROM "StorefrontVersionMedia" m JOIN "Storefronts" s ON s."PublishedVersionId" = m."VersionId" AND s."BusinessId" = m."BusinessId"
+         WHERE m."BusinessId" = a."BusinessId" AND m."MediaAssetId" = a."Id" AND s."Status" = 'Published'))`, [id]) : await pool.query(
+-    `SELECT a."Id", a."BusinessId", a."ContentType" FROM "MediaAssets" a WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`, [user.businessId, id]);
++    `SELECT a."Id", a."BusinessId", a."ContentType" FROM "MediaAssets" a WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND a."Purpose" <> 'OrderReferenceImage' AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`, [user.businessId, id]);
+   const asset = rows[0];
+   if (!asset) throw AppError.notFound('media_not_found', 'Image not found.');
+   const key = `${asset.BusinessId.replaceAll('-', '')}/${asset.Id.replaceAll('-', '')}/${variant}.webp`;
+@@ -230,6 +256,7 @@
+       SELECT EXISTS (SELECT 1 FROM "DesignImages" WHERE "BusinessId" = $1 AND "MediaAssetId" = $2)
+           OR EXISTS (SELECT 1 FROM "StorefrontVersionMedia" WHERE "BusinessId" = $1 AND "MediaAssetId" = $2)
+           OR EXISTS (SELECT 1 FROM "TaskProgressPhotos" WHERE "BusinessId" = $1 AND "MediaAssetId" = $2)
++          OR EXISTS (SELECT 1 FROM "OrderReferenceImages" WHERE "BusinessId" = $1 AND "MediaAssetId" = $2)
+           OR EXISTS (SELECT 1 FROM "Storefronts" WHERE "BusinessId" = $1 AND "DraftJson"::text ILIKE $3) AS "InUse"`,
+     [user.businessId, id, `%${id}%`]);
+     if (references[0]?.InUse) throw AppError.conflict('media_in_use', 'This image is still in use (design, website draft or version, or task photo). Remove the reference first.');
+diff -ruN a/backend-node/src/auth/orderReferenceImages.js b/backend-node/src/auth/orderReferenceImages.js
+--- a/backend-node/src/auth/orderReferenceImages.js	1970-01-01 00:00:00.000000000 +0000
++++ b/backend-node/src/auth/orderReferenceImages.js	2026-11-02 10:30:30.501209098 +0000
+@@ -0,0 +1,101 @@
++// Step 18a: reference images on an order. The upload itself goes through uploadMedia (mediaService.js) so that the image, its quota check,
++// its storage objects and its link row are written in one transaction. This file reads, streams and removes them.
++// Every query is scoped by business, and by the order's location for a location-limited user. A worker (tasks.work only) reaches the
++// images of an order only through a task assigned to them.
++import { randomUUID } from 'node:crypto';
++import { AppError } from '../http/errors.js';
++
++const variants = new Set(['orig', 'md', 'sm']);
++const keyOf = (businessId, mediaId, variant) => `${String(businessId).replaceAll('-', '')}/${String(mediaId).replaceAll('-', '')}/${variant}.webp`;
++
++const toDto = (row) => ({
++  id: row.Id, orderId: row.OrderId, mediaId: row.MediaAssetId, caption: row.Caption, fileName: row.OriginalFileName,
++  width: row.Width, height: row.Height, sizeBytes: Number(row.SizeBytes), createdAtUtc: row.CreatedAtUtc,
++});
++
++const columns = `r."Id", r."OrderId", r."MediaAssetId", r."Caption", r."CreatedAtUtc", m."OriginalFileName", m."Width", m."Height", m."SizeBytes", m."BusinessId", m."ContentType"`;
++
++export async function listOrderReferenceImages(pool, user, orderId, allowedLocations) {
++  const { rows } = await pool.query(`
++    SELECT ${columns}
++    FROM "OrderReferenceImages" r
++    JOIN "MediaAssets" m ON m."BusinessId" = r."BusinessId" AND m."Id" = r."MediaAssetId"
++    JOIN "Orders" o ON o."BusinessId" = r."BusinessId" AND o."Id" = r."OrderId"
++    WHERE r."BusinessId" = $1 AND r."OrderId" = $2 AND ($3::uuid[] IS NULL OR o."LocationId" = ANY($3::uuid[]))
++    ORDER BY r."CreatedAtUtc", r."Id"`, [user.businessId, orderId, allowedLocations ?? null]);
++  return rows.map(toDto);
++}
++
++// The images of the order a task belongs to, for the worker the task is assigned to.
++export async function listTaskReferenceImages(pool, user, taskId, membershipId) {
++  const { rows } = await pool.query(`
++    SELECT ${columns}
++    FROM "ProductionTasks" t
++    JOIN "OrderReferenceImages" r ON r."BusinessId" = t."BusinessId" AND r."OrderId" = t."OrderId"
++    JOIN "MediaAssets" m ON m."BusinessId" = r."BusinessId" AND m."Id" = r."MediaAssetId"
++    WHERE t."BusinessId" = $1 AND t."Id" = $2 AND t."AssignedMembershipId" = $3
++    ORDER BY r."CreatedAtUtc", r."Id"`, [user.businessId, taskId, membershipId]);
++  return rows.map(toDto);
++}
++
++async function openStored(storage, row, variant) {
++  const content = await storage.openRead(keyOf(row.BusinessId, row.MediaAssetId, variant));
++  if (!content) throw AppError.notFound('reference_image_not_found', 'Image not found.');
++  return { content, contentType: row.ContentType };
++}
++
++export async function openOrderReferenceImage(pool, storage, user, orderId, imageId, variant, allowedLocations) {
++  if (!variants.has(variant)) throw AppError.notFound('reference_image_not_found', 'Image not found.');
++  const { rows } = await pool.query(`
++    SELECT r."MediaAssetId", m."BusinessId", m."ContentType"
++    FROM "OrderReferenceImages" r
++    JOIN "MediaAssets" m ON m."BusinessId" = r."BusinessId" AND m."Id" = r."MediaAssetId"
++    JOIN "Orders" o ON o."BusinessId" = r."BusinessId" AND o."Id" = r."OrderId"
++    WHERE r."BusinessId" = $1 AND r."OrderId" = $2 AND r."Id" = $3 AND ($4::uuid[] IS NULL OR o."LocationId" = ANY($4::uuid[]))`,
++  [user.businessId, orderId, imageId, allowedLocations ?? null]);
++  if (!rows[0]) throw AppError.notFound('reference_image_not_found', 'Image not found.');
++  return openStored(storage, rows[0], variant);
++}
++
++export async function openTaskReferenceImage(pool, storage, user, taskId, imageId, variant, membershipId) {
++  if (!variants.has(variant)) throw AppError.notFound('reference_image_not_found', 'Image not found.');
++  const { rows } = await pool.query(`
++    SELECT r."MediaAssetId", m."BusinessId", m."ContentType"
++    FROM "ProductionTasks" t
++    JOIN "OrderReferenceImages" r ON r."BusinessId" = t."BusinessId" AND r."OrderId" = t."OrderId"
++    JOIN "MediaAssets" m ON m."BusinessId" = r."BusinessId" AND m."Id" = r."MediaAssetId"
++    WHERE t."BusinessId" = $1 AND t."Id" = $2 AND r."Id" = $3 AND t."AssignedMembershipId" = $4`,
++  [user.businessId, taskId, imageId, membershipId]);
++  if (!rows[0]) throw AppError.notFound('reference_image_not_found', 'Image not found.');
++  return openStored(storage, rows[0], variant);
++}
++
++export async function deleteOrderReferenceImage(pool, storage, user, orderId, imageId, allowedLocations) {
++  const client = await pool.connect();
++  let removed;
++  try {
++    await client.query('BEGIN');
++    const { rows } = await client.query(`
++      SELECT r."MediaAssetId", m."BusinessId", m."SizeBytes"
++      FROM "OrderReferenceImages" r
++      JOIN "MediaAssets" m ON m."BusinessId" = r."BusinessId" AND m."Id" = r."MediaAssetId"
++      JOIN "Orders" o ON o."BusinessId" = r."BusinessId" AND o."Id" = r."OrderId"
++      WHERE r."BusinessId" = $1 AND r."OrderId" = $2 AND r."Id" = $3 AND ($4::uuid[] IS NULL OR o."LocationId" = ANY($4::uuid[]))
++      FOR UPDATE OF r`, [user.businessId, orderId, imageId, allowedLocations ?? null]);
++    removed = rows[0];
++    if (!removed) throw AppError.notFound('reference_image_not_found', 'Image not found.');
++    await client.query('DELETE FROM "OrderReferenceImages" WHERE "BusinessId" = $1 AND "Id" = $2', [user.businessId, imageId]);
++    await client.query('DELETE FROM "MediaAssets" WHERE "BusinessId" = $1 AND "Id" = $2', [user.businessId, removed.MediaAssetId]);
++    await client.query(`
++      INSERT INTO "AuditLogs" ("Id", "Action", "ActorUserId", "BusinessId", "CreatedAtUtc", "DetailsJson", "EntityId", "EntityType")
++      VALUES ($1, 'order.reference_image.removed', $2, $3, now(), $4::jsonb, $5, 'Order')`,
++    [randomUUID(), user.userId, user.businessId, JSON.stringify({ mediaId: removed.MediaAssetId }), orderId]);
++    await client.query('COMMIT');
++  } catch (error) {
++    await client.query('ROLLBACK').catch(() => {});
++    throw error;
++  } finally {
++    client.release();
++  }
++  await Promise.all([...variants].map((variant) => storage.delete(keyOf(removed.BusinessId, removed.MediaAssetId, variant)).catch(() => {})));
++}
+diff -ruN a/backend-node/src/auth/orderRoutes.js b/backend-node/src/auth/orderRoutes.js
+--- a/backend-node/src/auth/orderRoutes.js	2026-11-02 10:30:13.362854018 +0000
++++ b/backend-node/src/auth/orderRoutes.js	2026-11-02 10:30:48.755176779 +0000
+@@ -34,7 +34,8 @@
+ import { respondList, windowedRows } from './listWindow.js';
+ import { exportAppointments, exportOrders } from './exportService.js';
+ import { appointmentIcsEvent, renderIcs, taskIcsEvent } from './calendarIcs.js';
+-import { openTaskPhoto, uploadMedia } from './mediaService.js';
++import { openTaskPhoto, uploadMedia, MAX_REFERENCE_IMAGES } from './mediaService.js';
++import { deleteOrderReferenceImage, listOrderReferenceImages, listTaskReferenceImages, openOrderReferenceImage, openTaskReferenceImage } from './orderReferenceImages.js';
+ import { addMoney, hasAtMostPlaces, mulMoney, subtractMoney } from '../money.js';
+ import { ciEnum } from '../http/ciEnum.js';
+ import { calculatePricing } from './pricingService.js';
+@@ -3212,6 +3213,73 @@
+     return file.content.pipe(res);
+   }
+ 
++  // Step 18a: reference images on an order (private to the business; never in the media library or on the storefront).
++  const referenceDto = (asset) => ({
++    id: asset.reference.Id, orderId: asset.reference.OrderId, mediaId: asset.reference.MediaAssetId, caption: asset.reference.Caption,
++    fileName: asset.fileName, width: asset.width, height: asset.height, sizeBytes: asset.sizeBytes, createdAtUtc: asset.reference.CreatedAtUtc,
++  });
++
++  async function assertOrderVisible(req) {
++    if (!isUuid(req.params.id)) throw AppError.notFound('order_not_found', 'Order not found.');
++    const allowed = await allowedLocations(pool, req.currentUser);
++    const { rows } = await pool.query(`
++      SELECT 1 FROM "Orders" WHERE "BusinessId" = $1 AND "Id" = $2 AND ($3::uuid[] IS NULL OR "LocationId" = ANY($3::uuid[]))`,
++    [req.currentUser.businessId, req.params.id, allowed]);
++    if (!rows.length) throw AppError.notFound('order_not_found', 'Order not found.');
++    return allowed;
++  }
++
++  function streamReferenceImage(file, res) {
++    res.set('cache-control', 'private, no-store').set('x-content-type-options', 'nosniff');
++    res.status(200).type(file.contentType);
++    file.content.on('error', (error) => res.destroy(error));
++    return file.content.pipe(res);
++  }
++
++  router.get('/orders/:id/reference-images', ...requireOrdersView, async (req, res) => {
++    const allowed = await assertOrderVisible(req);
++    const items = await listOrderReferenceImages(pool, req.currentUser, req.params.id, allowed);
++    return res.status(200).json({ items, maxImages: MAX_REFERENCE_IMAGES });
++  });
++
++  router.post('/orders/:id/reference-images', ...requireOrdersManage, async (req, res) => {
++    const allowed = await assertOrderVisible(req);
++    const { file, fields } = await readMultipart(req, { maxBytes: env.MEDIA_MAX_UPLOAD_BYTES, maxFields: 1, maxParts: 2, allowedFields: ['caption'] });
++    const payload = parse(taskProgressPhotoSchema, { caption: fields.caption ?? null });
++    const asset = await uploadMedia(pool, env, req.app.locals.objectStorage, req.currentUser, file.bytes, file.fileName, 'OrderReferenceImage', null,
++      { orderId: req.params.id, caption: payload.caption ?? null, allowedLocations: allowed });
++    return res.status(201).json(referenceDto(asset));
++  });
++
++  router.delete('/orders/:id/reference-images/:imageId', ...requireOrdersManage, async (req, res) => {
++    const allowed = await assertOrderVisible(req);
++    if (!isUuid(req.params.imageId)) throw AppError.notFound('reference_image_not_found', 'Image not found.');
++    await deleteOrderReferenceImage(pool, req.app.locals.objectStorage, req.currentUser, req.params.id, req.params.imageId, allowed);
++    return res.status(204).end();
++  });
++
++  router.get('/orders/:id/reference-images/:imageId/file/:variant', ...requireOrdersView, async (req, res) => {
++    const allowed = await assertOrderVisible(req);
++    if (!isUuid(req.params.imageId)) throw AppError.notFound('reference_image_not_found', 'Image not found.');
++    const file = await openOrderReferenceImage(pool, req.app.locals.objectStorage, req.currentUser, req.params.id, req.params.imageId, req.params.variant, allowed);
++    return streamReferenceImage(file, res);
++  });
++
++  // A worker sees the reference images of the order behind a task assigned to them, and nothing else.
++  router.get('/my/tasks/:id/reference-images', ...requireTasksWork, async (req, res) => {
++    if (!isUuid(req.params.id)) throw AppError.badRequest('invalid_task_id', 'The task ID is invalid.');
++    const membershipId = await getActiveMembershipId(pool, req.currentUser);
++    const items = await listTaskReferenceImages(pool, req.currentUser, req.params.id, membershipId);
++    return res.status(200).json({ items });
++  });
++
++  router.get('/my/tasks/:id/reference-images/:imageId/file/:variant', ...requireTasksWork, async (req, res) => {
++    if (!isUuid(req.params.id) || !isUuid(req.params.imageId)) throw AppError.notFound('reference_image_not_found', 'Image not found.');
++    const membershipId = await getActiveMembershipId(pool, req.currentUser);
++    const file = await openTaskReferenceImage(pool, req.app.locals.objectStorage, req.currentUser, req.params.id, req.params.imageId, req.params.variant, membershipId);
++    return streamReferenceImage(file, res);
++  });
++
+   router.get('/tasks/:id/photos/:photoId/file/:variant', ...requireTasksView, async (req, res) => streamTaskPhoto(req, res, false));
+   router.get('/my/tasks/:id/photos/:photoId/file/:variant', ...requireTasksWork, async (req, res) => streamTaskPhoto(req, res, true));
+ 
+diff -ruN a/backend-node/src/auth/pdfService.js b/backend-node/src/auth/pdfService.js
+--- a/backend-node/src/auth/pdfService.js	2026-11-02 10:30:13.363794122 +0000
++++ b/backend-node/src/auth/pdfService.js	2026-11-02 10:30:13.508091625 +0000
+@@ -147,7 +147,7 @@
+   let logo = null;
+   if (business.LogoMediaId) {
+     try {
+-      const media = await pool.query(`SELECT "Id", "BusinessId" FROM "MediaAssets" a WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`, [user.businessId, business.LogoMediaId]);
++      const media = await pool.query(`SELECT "Id", "BusinessId" FROM "MediaAssets" a WHERE a."BusinessId" = $1 AND a."Id" = $2 AND a."Purpose" <> 'TaskProgressPhoto' AND a."Purpose" <> 'OrderReferenceImage' AND NOT EXISTS (SELECT 1 FROM "TaskProgressPhotos" tp WHERE tp."BusinessId" = a."BusinessId" AND tp."MediaAssetId" = a."Id")`, [user.businessId, business.LogoMediaId]);
+       if (media.rows[0]) {
+         const key = `${user.businessId.replaceAll('-', '')}/${business.LogoMediaId.replaceAll('-', '')}/md.webp`;
+         const stream = await storage.openRead(key);
+diff -ruN a/backend-node/test/db/adoption.integration.test.js b/backend-node/test/db/adoption.integration.test.js
+--- a/backend-node/test/db/adoption.integration.test.js	2026-11-02 10:30:13.372561821 +0000
++++ b/backend-node/test/db/adoption.integration.test.js	2026-11-02 10:31:59.397399313 +0000
+@@ -74,13 +74,13 @@
+ 
+     assert.equal(
+   afterState.columns,
+-  before.columns + 13 + 14 + 5 + 6 + 25 + 23 + 24 + 9 + 7 + 10 + 4 + 16 + 15 + 22 + 57 + 36 + 10 + 9 + 9 + 18 + 1 + 7 + 2 + 1 + 18 + 18 + 17 + 8 + 2,
+-  'the Node-only migrations (0009 task requests  through 0044 business suspension, including the stock ledger extension) add their expected columns'
++  before.columns + 13 + 14 + 5 + 6 + 25 + 23 + 24 + 9 + 7 + 10 + 4 + 16 + 15 + 22 + 57 + 36 + 10 + 9 + 9 + 18 + 1 + 7 + 2 + 1 + 18 + 18 + 17 + 8 + 2 + 7,
++  'the Node-only migrations (0009 task requests  through 0045 order reference images, including the stock ledger extension) add their expected columns'
+ );
+     assert.equal(
+   afterState.fks,
+-  before.fks + 3 + 5 + 2 + 6 + 5 + 2 + 2 + 4 + 2 + 1 + 5 + 3 + 4 + 9 + 8 + 2 + 1 + 1 + 4 + 4 + 1 + 1,
+-  'the Node-only migrations add their expected foreign keys through 0044 business suspension (0042 to 0044 add none)'
++  before.fks + 3 + 5 + 2 + 6 + 5 + 2 + 2 + 4 + 2 + 1 + 5 + 3 + 4 + 9 + 8 + 2 + 1 + 1 + 4 + 4 + 1 + 1 + 3,
++  'the Node-only migrations add their expected foreign keys through 0045 order reference images (0042 to 0044 add none; 0045 adds 3)'
+ );
+     assert.equal(afterState.arrays, before.arrays + 1, 'the calendar-feed migration adds only AllowedLocationIds as a new array column');
+     assert.equal((await db.pool.query(`SELECT to_regclass('"TaskWorkerRequests"') IS NOT NULL AS present`)).rows[0].present, true);
+diff -ruN a/backend-node/test/db/efSchema.integration.test.js b/backend-node/test/db/efSchema.integration.test.js
+--- a/backend-node/test/db/efSchema.integration.test.js	2026-11-02 10:30:13.373128812 +0000
++++ b/backend-node/test/db/efSchema.integration.test.js	2026-11-02 10:31:59.397067141 +0000
+@@ -68,6 +68,7 @@
+   'InvoiceInstallments', // 0038
+   'CustomerEventOutbox', // 0040
+   'NotificationTemplates', // 0041
++  'OrderReferenceImages', // 0045
+ ]);
+ 
+ // Unique keys the Node migrations add to tables that EF created, so other tables can reference them as (Id, BusinessId).
+diff -ruN a/backend-node/test/db/httpHarness.js b/backend-node/test/db/httpHarness.js
+--- a/backend-node/test/db/httpHarness.js	2026-11-02 10:30:13.373493404 +0000
++++ b/backend-node/test/db/httpHarness.js	2026-11-02 10:31:59.396613775 +0000
+@@ -31,8 +31,8 @@
+       const response = await fetch(base + pathname, {
+         method,
+         redirect,
+-        headers: { ...(body === undefined || typeof body === 'string' ? {} : { 'content-type': 'application/json' }), ...(token ? { authorization: `Bearer ${token}` } : {}), ...csrf, ...headers },
+-        body: body === undefined || typeof body === 'string' ? body : JSON.stringify(body), // a string body is sent as is (form posts); the caller sets content-type
++        headers: { ...(body === undefined || typeof body === 'string' || Buffer.isBuffer(body) ? {} : { 'content-type': 'application/json' }), ...(token ? { authorization: `Bearer ${token}` } : {}), ...csrf, ...headers },
++        body: body === undefined || typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body), // a string or Buffer body is sent as is (form posts, uploads); the caller sets content-type
+       });
+       const text = await response.text();
+       let json = null;
+diff -ruN a/backend-node/test/db/orderReferenceImages.integration.test.js b/backend-node/test/db/orderReferenceImages.integration.test.js
+--- a/backend-node/test/db/orderReferenceImages.integration.test.js	1970-01-01 00:00:00.000000000 +0000
++++ b/backend-node/test/db/orderReferenceImages.integration.test.js	2026-11-02 10:33:43.618664037 +0000
+@@ -0,0 +1,220 @@
++// Step 18a: reference images on an order, over HTTP on real PostgreSQL, through a NOSUPERUSER, NOBYPASSRLS role.
++// Proves: upload, list and stream work and keep the caption; the images never appear in the media library, in public media or as a
++// logo; another business cannot list, stream, add or remove them; a location-limited user reaches only the orders of an assigned
++// location; a viewer cannot upload; a worker sees them only through a task assigned to them; the limit of 10 and the cancelled-order
++// rule hold; removing an image deletes its link, its media row and writes an audit entry; bad input is refused and leaves no row.
++// Skipped unless DATABASE_URL is set (CI job "node-db").
++import { after, before, describe, it } from 'node:test';
++import assert from 'node:assert/strict';
++import { randomUUID } from 'node:crypto';
++import sharp from 'sharp';
++import { migrate } from '../../src/db/migrate.js';
++import { syncPlans } from '../../src/db/planSeed.js';
++import { assertLogoMedia } from '../../src/auth/businessSettings.js';
++import { createTempDatabase, MIGRATIONS_DIR, quiet } from './helpers.js';
++import { addStaff, firstLocationId, signUp, startApp, upgradePlan } from './httpHarness.js';
++import { assertRestrictedRole, createRestrictedAppPool } from './restrictedRole.js';
++
++const url = process.env.DATABASE_URL;
++
++describe('order reference images on PostgreSQL (restricted role)', { skip: !url }, () => {
++  let db; let role; let api; let owner; let other; let limited; let viewer; let worker;
++  let mainLocation; let branchLocation; let otherLocation;
++  let mainOrder; let branchOrder; let otherOrder; let workerTask; let strangerTask;
++  let png;
++
++  const override = (businessId, key, value) => db.pool.query(`INSERT INTO "EntitlementOverrides" ("Id","BusinessId","CreatedAtUtc","Key","Reason","Value")
++    VALUES ($1,$2,now(),$3,'test fixture',$4)`, [randomUUID(), businessId, key, value]);
++  const membershipOf = async (who) => (await db.pool.query(`SELECT m."Id" FROM "Memberships" m JOIN "AspNetUsers" u ON u."Id" = m."UserId"
++    WHERE u."Email" = $1 AND m."BusinessId" = $2`, [who.email, who.businessId])).rows[0].Id;
++  const multipart = (bytes, caption, fileName = 'ref.png') => {
++    const boundary = `----avzar${randomUUID()}`;
++    const parts = [];
++    if (caption !== undefined) parts.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="caption"\r\n\r\n${caption}\r\n`));
++    parts.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${fileName}"\r\nContent-Type: image/png\r\n\r\n`), bytes, Buffer.from(`\r\n--${boundary}--\r\n`));
++    return { body: Buffer.concat(parts), headers: { 'content-type': `multipart/form-data; boundary=${boundary}` } };
++  };
++  const upload = (who, orderId, caption, bytes = png) => api.call('POST', `/api/orders/${orderId}/reference-images`, { token: who.token, ...multipart(bytes, caption) });
++  const list = (who, orderId) => api.call('GET', `/api/orders/${orderId}/reference-images`, { token: who.token });
++  const addImage = async (who, orderId, caption) => {
++    const result = await upload(who, orderId, caption);
++    assert.equal(result.status, 201, result.text);
++    return result.body;
++  };
++  const insertOrder = async (businessId, locationId, status = 'Confirmed') => {
++    const customerId = randomUUID(); const orderId = randomUUID();
++    await db.pool.query(`INSERT INTO "Customers" ("Id","BusinessId","CreatedAtUtc","FullName","Status") VALUES ($1,$2,now(),'Reference customer','Active')`, [customerId, businessId]);
++    await db.pool.query(`INSERT INTO "Orders" ("Id","BusinessId","CreatedAtUtc","CurrencyCode","CustomerId","DeliveryMethod","Discount","LocationId","OrderNumber","Priority","PromisedDate","Status","Subtotal","Total")
++      VALUES ($1,$2,now(),'NGN',$3,'Collection',0,$4,$5,'Normal',current_date,$6,1000,1000)`, [orderId, businessId, customerId, locationId, `REF-${orderId.replaceAll('-', '').slice(0, 20)}`, status]);
++    return orderId;
++  };
++  const insertTask = async (businessId, orderId, membershipId) => {
++    const garmentId = randomUUID(); const taskId = randomUUID();
++    await db.pool.query(`INSERT INTO "OrderGarments" ("Id","BusinessId","CreatedAtUtc","LineNumber","LineTotal","Name","OrderId","Quantity","UnitPrice") VALUES ($1,$2,now(),1,1000,'Reference garment',$3,1,1000)`, [garmentId, businessId, orderId]);
++    await db.pool.query(`INSERT INTO "ProductionTasks" ("Id","BusinessId","CreatedAtUtc","IsConditional","OrderGarmentId","OrderId","Priority","Quantity","RequiredMaterialsJson","StageName","StageOrder","Status","Title","AssignedMembershipId")
++      VALUES ($1,$2,now(),FALSE,$3,$4,'Normal',1,'[]'::jsonb,'Cutting',1,'Pending','Reference task',$5)`, [taskId, businessId, garmentId, orderId, membershipId]);
++    return taskId;
++  };
++
++  before(async () => {
++    db = await createTempDatabase(url, 'avzar_refimages');
++    await migrate(db.pool, MIGRATIONS_DIR, quiet);
++    await syncPlans(db.pool);
++    role = await createRestrictedAppPool(db);
++    await assertRestrictedRole(role.pool);
++    api = await startApp(role.pool);
++    png = await sharp({ create: { width: 40, height: 30, channels: 3, background: { r: 200, g: 60, b: 60 } } }).png().toBuffer();
++    owner = await signUp(api, 'ri-owner');
++    other = await signUp(api, 'ri-other');
++    for (const who of [owner, other]) {
++      await upgradePlan(db, who.businessId, 'starter');
++      await override(who.businessId, 'storage.gb.max', '1');
++    }
++    await override(owner.businessId, 'users.max', 'unlimited');
++    limited = await addStaff(api, db, owner, 'ri-limited', ['orders.view', 'orders.manage']);
++    viewer = await addStaff(api, db, owner, 'ri-viewer', ['orders.view', 'locations.all']);
++    worker = await addStaff(api, db, owner, 'ri-worker', ['tasks.work']);
++
++    mainLocation = await firstLocationId(db, owner.businessId);
++    branchLocation = randomUUID();
++    await db.pool.query(`INSERT INTO "Locations" ("Id","BusinessId","Name","IsActive","CreatedAtUtc") VALUES ($1,$2,'Branch',TRUE,now())`, [branchLocation, owner.businessId]);
++    await db.pool.query(`INSERT INTO "MembershipLocations" ("MembershipId","LocationId","BusinessId") VALUES ($1,$2,$3)`, [await membershipOf(limited), mainLocation, owner.businessId]);
++    otherLocation = await firstLocationId(db, other.businessId);
++
++    mainOrder = await insertOrder(owner.businessId, mainLocation);
++    branchOrder = await insertOrder(owner.businessId, branchLocation);
++    otherOrder = await insertOrder(other.businessId, otherLocation);
++    workerTask = await insertTask(owner.businessId, mainOrder, await membershipOf(worker));
++    const strangerOrder = await insertOrder(owner.businessId, mainLocation);
++    strangerTask = await insertTask(owner.businessId, strangerOrder, await membershipOf(worker));
++    await addImage(owner, strangerOrder, 'Belongs to the stranger order');
++  });
++  after(async () => { await api?.close(); await role?.close(); await db?.drop(); });
++
++  it('adds, lists and streams a reference image and keeps the caption', async () => {
++    const added = await addImage(owner, mainOrder, 'Front panel');
++    assert.equal(added.caption, 'Front panel');
++    assert.equal(added.orderId, mainOrder);
++    const listed = await list(owner, mainOrder);
++    assert.equal(listed.status, 200, listed.text);
++    assert.equal(listed.body.maxImages, 10);
++    assert.deepEqual(listed.body.items.map((item) => item.caption), ['Front panel']);
++    for (const variant of ['orig', 'md', 'sm']) {
++      const file = await api.call('GET', `/api/orders/${mainOrder}/reference-images/${added.id}/file/${variant}`, { token: owner.token });
++      assert.equal(file.status, 200, `${variant}: ${file.text.slice(0, 80)}`);
++      assert.equal(file.contentType, 'image/webp');
++      assert.match(file.headers.get('cache-control') ?? '', /private/);
++    }
++    assert.equal((await api.call('GET', `/api/orders/${mainOrder}/reference-images/${added.id}/file/huge`, { token: owner.token })).status, 404);
++  });
++
++  it('keeps the images out of the media library, public media and the logo', async () => {
++    const [image] = (await list(owner, mainOrder)).body.items;
++    const library = await api.call('GET', '/api/media', { token: owner.token });
++    assert.equal(library.status, 200, library.text);
++    assert.ok(!library.body.items.some((item) => item.id === image.mediaId), 'the library must not list a reference image');
++    assert.equal((await api.call('GET', `/api/media/${image.mediaId}`, { token: owner.token })).status, 404);
++    assert.equal((await api.call('GET', `/api/media/${image.mediaId}/file/md`, { token: owner.token })).status, 404);
++    assert.equal((await api.call('GET', `/api/public/media/${image.mediaId}/md`)).status, 404);
++    await assert.rejects(assertLogoMedia(db.pool, owner.businessId, image.mediaId), (error) => error.code === 'media_not_found' || error.status === 404);
++  });
++
++  it('never shows or changes another business', async () => {
++    const [image] = (await list(owner, mainOrder)).body.items;
++    assert.equal((await list(other, mainOrder)).status, 404);
++    assert.equal((await api.call('GET', `/api/orders/${mainOrder}/reference-images/${image.id}/file/md`, { token: other.token })).status, 404);
++    assert.equal((await upload(other, mainOrder, 'intruder')).status, 404);
++    assert.equal((await api.call('DELETE', `/api/orders/${mainOrder}/reference-images/${image.id}`, { token: other.token })).status, 404);
++    assert.equal((await api.call('GET', `/api/orders/${otherOrder}/reference-images/${image.id}/file/md`, { token: other.token })).status, 404, 'an image ID of another business under my own order');
++    assert.equal((await list(owner, mainOrder)).body.items.length, 1, 'the owner still has the image');
++    assert.equal((await list(other, otherOrder)).body.items.length, 0);
++  });
++
++  it('gives a location-limited user only the orders of an assigned location, and a viewer cannot upload', async () => {
++    assert.equal((await list(limited, mainOrder)).status, 200);
++    assert.equal((await upload(limited, mainOrder, 'from the limited user')).status, 201);
++    assert.equal((await list(limited, branchOrder)).status, 404);
++    assert.equal((await upload(limited, branchOrder, 'wrong location')).status, 404);
++    await addImage(owner, branchOrder, 'Branch image');
++    const [branchImage] = (await list(owner, branchOrder)).body.items;
++    assert.equal((await api.call('GET', `/api/orders/${branchOrder}/reference-images/${branchImage.id}/file/md`, { token: limited.token })).status, 404);
++    assert.equal((await api.call('DELETE', `/api/orders/${branchOrder}/reference-images/${branchImage.id}`, { token: limited.token })).status, 404);
++    assert.equal((await list(viewer, mainOrder)).status, 200);
++    assert.equal((await upload(viewer, mainOrder, 'no permission')).status, 403);
++  });
++
++  it('shows a worker the images only through a task assigned to them', async () => {
++    const mine = await api.call('GET', `/api/my/tasks/${workerTask}/reference-images`, { token: worker.token });
++    assert.equal(mine.status, 200, mine.text);
++    assert.ok(mine.body.items.length >= 1);
++    assert.ok(mine.body.items.every((item) => item.orderId === mainOrder));
++    const file = await api.call('GET', `/api/my/tasks/${workerTask}/reference-images/${mine.body.items[0].id}/file/md`, { token: worker.token });
++    assert.equal(file.status, 200);
++    // The stranger task is also assigned to this worker, but belongs to another order: its image must not open under the first task.
++    const strangerImages = await api.call('GET', `/api/my/tasks/${strangerTask}/reference-images`, { token: worker.token });
++    assert.deepEqual(strangerImages.body.items.map((item) => item.caption), ['Belongs to the stranger order']);
++    const crossed = await api.call('GET', `/api/my/tasks/${workerTask}/reference-images/${strangerImages.body.items[0].id}/file/md`, { token: worker.token });
++    assert.equal(crossed.status, 404);
++    // Not assigned to the owner's own membership: another user with tasks.work cannot read it.
++    const nobody = await addStaff(api, db, owner, 'ri-worker2', ['tasks.work']);
++    const notMine = await api.call('GET', `/api/my/tasks/${workerTask}/reference-images`, { token: nobody.token });
++    assert.equal(notMine.status, 200);
++    assert.equal(notMine.body.items.length, 0);
++    assert.equal((await api.call('GET', `/api/my/tasks/${workerTask}/reference-images/${mine.body.items[0].id}/file/md`, { token: nobody.token })).status, 404);
++    assert.equal((await list(worker, mainOrder)).status, 403, 'a worker without orders.view cannot use the order route');
++  });
++
++  it('allows at most 10 images per order and refuses a cancelled order', async () => {
++    const order = await insertOrder(owner.businessId, mainLocation);
++    for (let index = 0; index < 10; index += 1) await addImage(owner, order, `Image ${index}`);
++    const eleventh = await upload(owner, order, 'too many');
++    assert.equal(eleventh.status, 409, eleventh.text);
++    assert.equal(eleventh.body.code ?? eleventh.body.error?.code, 'reference_image_limit');
++    assert.equal((await list(owner, order)).body.items.length, 10);
++    const count = (await db.pool.query(`SELECT count(*)::int AS n FROM "MediaAssets" WHERE "BusinessId" = $1 AND "Purpose" = 'OrderReferenceImage'`, [owner.businessId])).rows[0].n;
++    const linked = (await db.pool.query(`SELECT count(*)::int AS n FROM "OrderReferenceImages" WHERE "BusinessId" = $1`, [owner.businessId])).rows[0].n;
++    assert.equal(count, linked, 'a refused upload must leave no media row behind');
++    const [first] = (await list(owner, order)).body.items;
++    assert.equal((await api.call('DELETE', `/api/orders/${order}/reference-images/${first.id}`, { token: owner.token })).status, 204);
++    assert.equal((await upload(owner, order, 'room again')).status, 201);
++    const cancelled = await insertOrder(owner.businessId, mainLocation, 'Cancelled');
++    const refused = await upload(owner, cancelled, 'cancelled');
++    assert.equal(refused.status, 409, refused.text);
++    assert.equal(refused.body.code ?? refused.body.error?.code, 'order_not_editable');
++  });
++
++  it('removes the link, the media row and the stored file, and writes an audit entry', async () => {
++    const order = await insertOrder(owner.businessId, mainLocation);
++    const added = await addImage(owner, order, 'To remove');
++    assert.equal((await api.call('DELETE', `/api/orders/${order}/reference-images/${added.id}`, { token: owner.token })).status, 204);
++    assert.equal((await list(owner, order)).body.items.length, 0);
++    assert.equal((await db.pool.query(`SELECT count(*)::int AS n FROM "MediaAssets" WHERE "Id" = $1`, [added.mediaId])).rows[0].n, 0);
++    assert.equal((await api.call('GET', `/api/orders/${order}/reference-images/${added.id}/file/md`, { token: owner.token })).status, 404);
++    assert.equal((await api.call('DELETE', `/api/orders/${order}/reference-images/${added.id}`, { token: owner.token })).status, 404);
++    const audit = await db.pool.query(`SELECT "Action" FROM "AuditLogs" WHERE "BusinessId" = $1 AND "EntityId" = $2 ORDER BY "CreatedAtUtc"`, [owner.businessId, order]);
++    assert.deepEqual(audit.rows.map((row) => row.Action), ['order.reference_image.added', 'order.reference_image.removed']);
++  });
++
++  it('refuses a file that is not an image and a caption that is too long, and leaves no row', async () => {
++    const order = await insertOrder(owner.businessId, mainLocation);
++    const notImage = await upload(owner, order, 'text', Buffer.from('this is not an image'));
++    assert.equal(notImage.status, 400, notImage.text);
++    const tooLong = await upload(owner, order, 'x'.repeat(501));
++    assert.equal(tooLong.status, 400, tooLong.text);
++    assert.equal((await list(owner, order)).body.items.length, 0);
++    assert.equal((await api.call('POST', `/api/orders/${order}/reference-images`, { token: owner.token, body: {} })).status, 400);
++  });
++
++  it('does not let the general media upload create a reference image that nothing links to', async () => {
++    const boundary = `----avzar${randomUUID()}`;
++    const body = Buffer.concat([
++      Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="purpose"\r\n\r\nOrderReferenceImage\r\n`),
++      Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="loose.png"\r\nContent-Type: image/png\r\n\r\n`), png, Buffer.from(`\r\n--${boundary}--\r\n`)]);
++    const before = (await db.pool.query(`SELECT count(*)::int AS n FROM "MediaAssets" WHERE "BusinessId" = $1`, [owner.businessId])).rows[0].n;
++    const result = await api.call('POST', '/api/media', { token: owner.token, body, headers: { 'content-type': `multipart/form-data; boundary=${boundary}` } });
++    assert.equal(result.status, 400, result.text);
++    assert.equal(result.body.code, 'invalid_purpose');
++    const after = (await db.pool.query(`SELECT count(*)::int AS n FROM "MediaAssets" WHERE "BusinessId" = $1`, [owner.businessId])).rows[0].n;
++    assert.equal(after, before, 'a refused upload must leave no media row behind');
++  });
++});
+diff -ruN a/docs/API.md b/docs/API.md
+--- a/docs/API.md	2026-11-02 10:30:13.382346721 +0000
++++ b/docs/API.md	2026-11-02 10:30:49.351355470 +0000
+@@ -2,7 +2,7 @@
+ 
+ <!-- Generated by backend-node/scripts/generate-api-doc.js. Do not edit by hand: run `npm run docs:api` and commit the result. A test fails when this file is out of date. -->
+ 
+-370 routes in 27 route files. This is a route list read from the source, **not an OpenAPI description**: it has no request or response schemas. A route skeleton in OpenAPI 3.1 form is generated beside it in docs/openapi.json.
++376 routes in 27 route files. This is a route list read from the source, **not an OpenAPI description**: it has no request or response schemas. A route skeleton in OpenAPI 3.1 form is generated beside it in docs/openapi.json.
+ 
+ ## What the table does and does not say
+ 
+@@ -309,6 +309,8 @@
+ | GET | `/api/my/tasks/:id/photos` | permission tasks.work |  |
+ | POST | `/api/my/tasks/:id/photos` | permission tasks.work |  |
+ | GET | `/api/my/tasks/:id/photos/:photoId/file/:variant` | permission tasks.work |  |
++| GET | `/api/my/tasks/:id/reference-images` | permission tasks.work |  |
++| GET | `/api/my/tasks/:id/reference-images/:imageId/file/:variant` | permission tasks.work |  |
+ | POST | `/api/my/tasks/:id/requests` | permission tasks.work |  |
+ | POST | `/api/my/tasks/:id/resume` | permission tasks.work |  |
+ | POST | `/api/my/tasks/:id/start` | permission tasks.work |  |
+@@ -323,6 +325,10 @@
+ | POST | `/api/orders/:id/confirm` | permission orders.confirm |  |
+ | GET | `/api/orders/:id/pricing` | permission pricing.view |  |
+ | POST | `/api/orders/:id/quote` | permission orders.manage |  |
++| GET | `/api/orders/:id/reference-images` | permission orders.view |  |
++| POST | `/api/orders/:id/reference-images` | permission orders.manage |  |
++| DELETE | `/api/orders/:id/reference-images/:imageId` | permission orders.manage |  |
++| GET | `/api/orders/:id/reference-images/:imageId/file/:variant` | permission orders.view |  |
+ | POST | `/api/orders/:orderId/deliver` | permission orders.manage |  |
+ | POST | `/api/orders/:orderId/generate-tasks` | permission tasks.manage |  |
+ | POST | `/api/orders/:orderId/tasks` | permission tasks.manage |  |
+diff -ruN a/docs/openapi.json b/docs/openapi.json
+--- a/docs/openapi.json	2026-11-02 10:30:13.383451880 +0000
++++ b/docs/openapi.json	2026-11-02 10:30:49.351355470 +0000
+@@ -7521,6 +7521,112 @@
+         }
+       ]
+     },
++    "/api/my/tasks/{id}/reference-images": {
++      "get": {
++        "operationId": "getApiMyTasksIdReferenceImages",
++        "summary": "GET /api/my/tasks/:id/reference-images",
++        "tags": [
++          "orderRoutes"
++        ],
++        "security": [
++          {
++            "bearerAuth": []
++          }
++        ],
++        "x-access": "permission tasks.work",
++        "responses": {
++          "200": {
++            "description": "Success."
++          },
++          "400": {
++            "$ref": "#/components/responses/BadRequest"
++          },
++          "401": {
++            "$ref": "#/components/responses/Unauthorized"
++          },
++          "403": {
++            "$ref": "#/components/responses/Forbidden"
++          },
++          "404": {
++            "$ref": "#/components/responses/NotFound"
++          }
++        },
++        "x-permissions": [
++          "tasks.work"
++        ]
++      },
++      "parameters": [
++        {
++          "name": "id",
++          "in": "path",
++          "required": true,
++          "schema": {
++            "type": "string"
++          }
++        }
++      ]
++    },
++    "/api/my/tasks/{id}/reference-images/{imageId}/file/{variant}": {
++      "get": {
++        "operationId": "getApiMyTasksIdReferenceImagesImageIdFileVariant",
++        "summary": "GET /api/my/tasks/:id/reference-images/:imageId/file/:variant",
++        "tags": [
++          "orderRoutes"
++        ],
++        "security": [
++          {
++            "bearerAuth": []
++          }
++        ],
++        "x-access": "permission tasks.work",
++        "responses": {
++          "200": {
++            "description": "Success."
++          },
++          "400": {
++            "$ref": "#/components/responses/BadRequest"
++          },
++          "401": {
++            "$ref": "#/components/responses/Unauthorized"
++          },
++          "403": {
++            "$ref": "#/components/responses/Forbidden"
++          },
++          "404": {
++            "$ref": "#/components/responses/NotFound"
++          }
++        },
++        "x-permissions": [
++          "tasks.work"
++        ]
++      },
++      "parameters": [
++        {
++          "name": "id",
++          "in": "path",
++          "required": true,
++          "schema": {
++            "type": "string"
++          }
++        },
++        {
++          "name": "imageId",
++          "in": "path",
++          "required": true,
++          "schema": {
++            "type": "string"
++          }
++        },
++        {
++          "name": "variant",
++          "in": "path",
++          "required": true,
++          "schema": {
++            "type": "string"
++          }
++        }
++      ]
++    },
+     "/api/my/tasks/{id}/requests": {
+       "post": {
+         "operationId": "postApiMyTasksIdRequests",
+@@ -8446,6 +8552,198 @@
+           "in": "path",
+           "required": true,
+           "schema": {
++            "type": "string"
++          }
++        }
++      ]
++    },
++    "/api/orders/{id}/reference-images": {
++      "get": {
++        "operationId": "getApiOrdersIdReferenceImages",
++        "summary": "GET /api/orders/:id/reference-images",
++        "tags": [
++          "orderRoutes"
++        ],
++        "security": [
++          {
++            "bearerAuth": []
++          }
++        ],
++        "x-access": "permission orders.view",
++        "responses": {
++          "200": {
++            "description": "Success."
++          },
++          "400": {
++            "$ref": "#/components/responses/BadRequest"
++          },
++          "401": {
++            "$ref": "#/components/responses/Unauthorized"
++          },
++          "403": {
++            "$ref": "#/components/responses/Forbidden"
++          },
++          "404": {
++            "$ref": "#/components/responses/NotFound"
++          }
++        },
++        "x-permissions": [
++          "orders.view"
++        ]
++      },
++      "post": {
++        "operationId": "postApiOrdersIdReferenceImages",
++        "summary": "POST /api/orders/:id/reference-images",
++        "tags": [
++          "orderRoutes"
++        ],
++        "security": [
++          {
++            "bearerAuth": []
++          }
++        ],
++        "x-access": "permission orders.manage",
++        "responses": {
++          "200": {
++            "description": "Success."
++          },
++          "400": {
++            "$ref": "#/components/responses/BadRequest"
++          },
++          "401": {
++            "$ref": "#/components/responses/Unauthorized"
++          },
++          "403": {
++            "$ref": "#/components/responses/Forbidden"
++          },
++          "404": {
++            "$ref": "#/components/responses/NotFound"
++          }
++        },
++        "x-permissions": [
++          "orders.manage"
++        ]
++      },
++      "parameters": [
++        {
++          "name": "id",
++          "in": "path",
++          "required": true,
++          "schema": {
++            "type": "string"
++          }
++        }
++      ]
++    },
++    "/api/orders/{id}/reference-images/{imageId}": {
++      "delete": {
++        "operationId": "deleteApiOrdersIdReferenceImagesImageId",
++        "summary": "DELETE /api/orders/:id/reference-images/:imageId",
++        "tags": [
++          "orderRoutes"
++        ],
++        "security": [
++          {
++            "bearerAuth": []
++          }
++        ],
++        "x-access": "permission orders.manage",
++        "responses": {
++          "200": {
++            "description": "Success."
++          },
++          "400": {
++            "$ref": "#/components/responses/BadRequest"
++          },
++          "401": {
++            "$ref": "#/components/responses/Unauthorized"
++          },
++          "403": {
++            "$ref": "#/components/responses/Forbidden"
++          },
++          "404": {
++            "$ref": "#/components/responses/NotFound"
++          }
++        },
++        "x-permissions": [
++          "orders.manage"
++        ]
++      },
++      "parameters": [
++        {
++          "name": "id",
++          "in": "path",
++          "required": true,
++          "schema": {
++            "type": "string"
++          }
++        },
++        {
++          "name": "imageId",
++          "in": "path",
++          "required": true,
++          "schema": {
++            "type": "string"
++          }
++        }
++      ]
++    },
++    "/api/orders/{id}/reference-images/{imageId}/file/{variant}": {
++      "get": {
++        "operationId": "getApiOrdersIdReferenceImagesImageIdFileVariant",
++        "summary": "GET /api/orders/:id/reference-images/:imageId/file/:variant",
++        "tags": [
++          "orderRoutes"
++        ],
++        "security": [
++          {
++            "bearerAuth": []
++          }
++        ],
++        "x-access": "permission orders.view",
++        "responses": {
++          "200": {
++            "description": "Success."
++          },
++          "400": {
++            "$ref": "#/components/responses/BadRequest"
++          },
++          "401": {
++            "$ref": "#/components/responses/Unauthorized"
++          },
++          "403": {
++            "$ref": "#/components/responses/Forbidden"
++          },
++          "404": {
++            "$ref": "#/components/responses/NotFound"
++          }
++        },
++        "x-permissions": [
++          "orders.view"
++        ]
++      },
++      "parameters": [
++        {
++          "name": "id",
++          "in": "path",
++          "required": true,
++          "schema": {
++            "type": "string"
++          }
++        },
++        {
++          "name": "imageId",
++          "in": "path",
++          "required": true,
++          "schema": {
++            "type": "string"
++          }
++        },
++        {
++          "name": "variant",
++          "in": "path",
++          "required": true,
++          "schema": {
+             "type": "string"
+           }
+         }
+diff -ruN a/web/src/app/(app)/orders/[id]/page.tsx b/web/src/app/(app)/orders/[id]/page.tsx
+--- a/web/src/app/(app)/orders/[id]/page.tsx	2026-11-02 10:30:13.391974805 +0000
++++ b/web/src/app/(app)/orders/[id]/page.tsx	2026-11-02 10:32:50.782808802 +0000
+@@ -4,6 +4,7 @@
+ import { PageHead } from '@/components/app/PageHead';
+ import { LoadError, NoAccess } from '@/components/app/Notices';
+ import { OrderActions } from '@/components/app/OrderActions';
++import { OrderReferenceImages } from '@/components/app/OrderReferenceImages';
+ import { OrderInvoiceAction } from '@/components/app/OrderInvoiceAction';
+ import { QuotationPanel } from '@/components/app/QuotationPanel';
+ import { formatDateTime } from '@/lib/dates';
+@@ -99,6 +100,8 @@
+           </dl>
+         </section>
+ 
++        <OrderReferenceImages orderId={o.id} canManage={can(me, 'orders.manage')} orderCancelled={o.status === 'Cancelled'} />
++
+         <section className="ap-panel" aria-labelledby="prog-h">
+           <h2 id="prog-h" className="ap-h2">Production</h2>
+           {p && p.totalTasks > 0 ? (
+diff -ruN a/web/src/app/(app)/tasks/[id]/page.tsx b/web/src/app/(app)/tasks/[id]/page.tsx
+--- a/web/src/app/(app)/tasks/[id]/page.tsx	2026-11-02 10:30:13.394252427 +0000
++++ b/web/src/app/(app)/tasks/[id]/page.tsx	2026-11-02 10:32:50.783128619 +0000
+@@ -5,6 +5,7 @@
+ import { TaskActions } from '@/components/app/TaskActions';
+ import { TaskMaterials } from '@/components/app/TaskMaterials';
+ import { TaskProgressPhotos } from '@/components/app/TaskProgressPhotos';
++import { TaskReferenceImages } from '@/components/app/OrderReferenceImages';
+ import { formatDateTime } from '@/lib/dates';
+ import type { TaskDetail, WorkerOption } from '@/lib/production-types';
+ import { getSession, serverGet } from '@/lib/session';
+@@ -66,6 +67,7 @@
+       {detail.dependsOn.length > 0 && <section className="ap-panel" aria-labelledby="task-deps"><h2 id="task-deps" className="ap-h2">Prerequisites</h2><ul>{detail.dependsOn.map((d) => <li key={d.taskId}>{d.title} — {d.status}</li>)}</ul></section>}
+       {(detail.requiredChecks.length > 0 || detail.requiredMaterials.length > 0) && <section className="ap-panel" aria-labelledby="task-requirements"><h2 id="task-requirements" className="ap-h2">Requirements</h2>{detail.requiredChecks.length > 0 && <><h3 className="ap-h3">Completion checklist</h3><ul>{detail.requiredChecks.map((c) => <li key={c}>{c}{detail.completedChecks.includes(c) ? ' ✓' : ''}</li>)}</ul></>}{detail.requiredMaterials.length > 0 && <><h3 className="ap-h3">Materials</h3><ul>{detail.requiredMaterials.map((m, i) => <li key={`${m.name}-${i}`}>{m.name}: {m.quantity} {m.unit}</li>)}</ul></>}</section>}
+       <TaskActions detail={detail} isWorker={worker} canAssign={manager && can(me, 'tasks.assign')} canManage={manager && can(me, 'tasks.manage')} canOverride={manager && can(me, 'tasks.override')} workers={workers} />
++      {worker && <TaskReferenceImages taskId={t.id} />}
+       <TaskProgressPhotos taskId={t.id} workerOnly={worker} />
+       {canManageTaskMaterials(t.status, can(me, 'inventory.manage'), can(me, 'inventory.view')) && <TaskMaterials taskId={t.id} />}
+       <section className="ap-panel" aria-labelledby="task-events"><h2 id="task-events" className="ap-h2">Task history</h2>{detail.events.length === 0 ? <p style={{ margin: 0 }}>No history entries.</p> : <ol className="ap-log">{detail.events.map((event, i) => <li key={`${event.atUtc}-${event.type}-${i}`}><strong>{event.type}</strong>{event.fromStatus || event.toStatus ? <div className="ap-small">{event.fromStatus ?? '—'} → {event.toStatus ?? '—'}</div> : null}{event.note && <p className="ap-pre" style={{ margin: '.25rem 0' }}>{event.note}</p>}<div className="ap-small ap-dim">{formatDateTime(event.atUtc, me.timeZoneId)}</div></li>)}</ol>}</section>
+diff -ruN a/web/src/components/app/OrderReferenceImages.tsx b/web/src/components/app/OrderReferenceImages.tsx
+--- a/web/src/components/app/OrderReferenceImages.tsx	1970-01-01 00:00:00.000000000 +0000
++++ b/web/src/components/app/OrderReferenceImages.tsx	2026-11-02 10:32:50.765613861 +0000
+@@ -0,0 +1,111 @@
++'use client';
++
++import { useCallback, useEffect, useState } from 'react';
++import { api, apiUpload } from '@/lib/client';
++import { messageFor } from '@/lib/problem';
++import { orderReferenceImageFilePath, orderReferenceImagesPath, taskReferenceImageFilePath, taskReferenceImagesPath } from '@/lib/order-reference-images';
++import { toast } from '@/lib/toast';
++
++type ReferenceImage = { id: string; orderId: string; mediaId: string; caption: string | null; fileName: string; width: number; height: number; sizeBytes: number; createdAtUtc: string };
++type ReferenceList = { items: ReferenceImage[]; maxImages?: number };
++
++function Gallery({ items, fileUrl, onRemove, busy }: { items: ReferenceImage[]; fileUrl: (image: ReferenceImage, variant: 'md' | 'orig') => string; onRemove?: (image: ReferenceImage) => void; busy?: boolean }) {
++  return <div className="ap-grid2" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 12rem), 1fr))' }}>
++    {items.map((image) => <figure key={image.id} style={{ margin: 0, minWidth: 0 }}>
++      <a href={fileUrl(image, 'orig')} target="_blank" rel="noreferrer" aria-label={`Open ${image.fileName}`}>
++        {/* The protected same-origin API proxy checks authorization before streaming the image. */}
++        <img src={fileUrl(image, 'md')} alt={image.caption || `Reference image ${image.fileName}`} loading="lazy" style={{ width: '100%', height: 'auto', display: 'block', borderRadius: '.5rem' }} />
++      </a>
++      <figcaption className="ap-small" style={{ marginTop: '.4rem', overflowWrap: 'anywhere' }}>
++        {image.caption || image.fileName}
++        {onRemove && <><br /><button className="ap-btn ap-btn-quiet" type="button" disabled={busy} onClick={() => onRemove(image)} aria-label={`Remove ${image.caption || image.fileName}`}>Remove</button></>}
++      </figcaption>
++    </figure>)}
++  </div>;
++}
++
++/** Reference images of an order (a customer's inspiration photos, a sketch, a swatch). Staff with orders.manage can add and remove. */
++export function OrderReferenceImages({ orderId, canManage, orderCancelled = false }: { orderId: string; canManage: boolean; orderCancelled?: boolean }) {
++  const base = orderReferenceImagesPath(orderId);
++  const [items, setItems] = useState<ReferenceImage[]>([]);
++  const [maxImages, setMaxImages] = useState(10);
++  const [loaded, setLoaded] = useState(false);
++  const [caption, setCaption] = useState('');
++  const [file, setFile] = useState<File | null>(null);
++  const [busy, setBusy] = useState(false);
++  const [error, setError] = useState('');
++
++  const load = useCallback(async () => {
++    const result = await api<ReferenceList>(base);
++    setItems(result.items ?? []);
++    if (typeof result.maxImages === 'number') setMaxImages(result.maxImages);
++    setLoaded(true);
++  }, [base]);
++
++  useEffect(() => { void load().catch((e) => { setError(messageFor(e)); setLoaded(true); }); }, [load]);
++
++  async function upload() {
++    if (!file || busy) return;
++    if (!file.type.startsWith('image/')) { setError('Choose an image file.'); return; }
++    setBusy(true); setError('');
++    try {
++      await apiUpload<ReferenceImage>(base, file, caption.trim() ? { caption: caption.trim() } : {});
++      setFile(null); setCaption('');
++      const input = document.getElementById(`ref-image-${orderId}`) as HTMLInputElement | null;
++      if (input) input.value = '';
++      await load();
++      toast.success('Reference image added.');
++    } catch (e) { toast.error(messageFor(e)); }
++    finally { setBusy(false); }
++  }
++
++  async function remove(image: ReferenceImage) {
++    if (busy) return;
++    if (!window.confirm('Remove this reference image? This cannot be undone.')) return;
++    setBusy(true); setError('');
++    try {
++      await api(`${base}/${encodeURIComponent(image.id)}`, { method: 'DELETE' });
++      await load();
++      toast.success('Reference image removed.');
++    } catch (e) { toast.error(messageFor(e)); }
++    finally { setBusy(false); }
++  }
++
++  const full = items.length >= maxImages;
++  return <section className="ap-panel ap-stack" aria-labelledby={`ref-images-title-${orderId}`}>
++    <h2 id={`ref-images-title-${orderId}`} className="ap-h2">Reference images</h2>
++    {error && <p className="ap-alert" role="alert">{error}</p>}
++    {canManage && !orderCancelled && <>
++      <div className="ap-field">
++        <label htmlFor={`ref-image-${orderId}`}>Choose image</label>
++        <input id={`ref-image-${orderId}`} className="ap-input" type="file" accept="image/jpeg,image/png,image/webp" disabled={busy || full} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
++      </div>
++      <div className="ap-field">
++        <label htmlFor={`ref-image-caption-${orderId}`}>Caption (optional)</label>
++        <input id={`ref-image-caption-${orderId}`} className="ap-input" maxLength={500} value={caption} disabled={busy || full} onChange={(e) => setCaption(e.target.value)} placeholder="e.g. Neckline the customer likes" />
++      </div>
++      <div className="ap-actions">
++        <button className="ap-btn" type="button" disabled={busy || !file || full} onClick={() => void upload()}>{busy ? 'Working…' : 'Add image'}</button>
++        <span className="ap-foot">{items.length} of {maxImages} images. JPEG, PNG or WebP. Only your team can see these.</span>
++      </div>
++    </>}
++    {!loaded ? <p className="ap-foot" style={{ margin: 0 }}>Loading…</p>
++      : items.length === 0 ? <p className="ap-foot" style={{ margin: 0 }}>No reference images yet.</p>
++        : <Gallery items={items} busy={busy} fileUrl={(image, variant) => `/backend${orderReferenceImageFilePath(orderId, image.id, variant)}`} onRemove={canManage && !orderCancelled ? (image) => void remove(image) : undefined} />}
++  </section>;
++}
++
++/** Read-only view for the worker a task is assigned to. */
++export function TaskReferenceImages({ taskId }: { taskId: string }) {
++  const [items, setItems] = useState<ReferenceImage[]>([]);
++  const [error, setError] = useState('');
++  useEffect(() => {
++    void api<ReferenceList>(taskReferenceImagesPath(taskId)).then((result) => setItems(result.items ?? [])).catch((e) => setError(messageFor(e)));
++  }, [taskId]);
++  if (!error && items.length === 0) return null;
++  return <section className="ap-panel ap-stack" aria-labelledby={`task-ref-images-title-${taskId}`}>
++    <h2 id={`task-ref-images-title-${taskId}`} className="ap-h2">Reference images</h2>
++    {error ? <p className="ap-alert" role="alert">{error}</p>
++      : <Gallery items={items} fileUrl={(image, variant) => `/backend${taskReferenceImageFilePath(taskId, image.id, variant)}`} />}
++  </section>;
++}
+diff -ruN a/web/src/lib/order-reference-images.ts b/web/src/lib/order-reference-images.ts
+--- a/web/src/lib/order-reference-images.ts	1970-01-01 00:00:00.000000000 +0000
++++ b/web/src/lib/order-reference-images.ts	2026-11-02 10:32:50.764456570 +0000
+@@ -0,0 +1,17 @@
++/** Same-origin paths for order reference images. Authorization is always enforced by the API. */
++export function orderReferenceImagesPath(orderId: string): string {
++  return `/api/orders/${encodeURIComponent(orderId)}/reference-images`;
++}
++
++export function orderReferenceImageFilePath(orderId: string, imageId: string, variant: 'md' | 'orig' = 'md'): string {
++  return `${orderReferenceImagesPath(orderId)}/${encodeURIComponent(imageId)}/file/${variant}`;
++}
++
++/** A worker reaches the images of an order only through a task assigned to them. */
++export function taskReferenceImagesPath(taskId: string): string {
++  return `/api/my/tasks/${encodeURIComponent(taskId)}/reference-images`;
++}
++
++export function taskReferenceImageFilePath(taskId: string, imageId: string, variant: 'md' | 'orig' = 'md'): string {
++  return `${taskReferenceImagesPath(taskId)}/${encodeURIComponent(imageId)}/file/${variant}`;
++}
+diff -ruN a/web/test/components/OrderReferenceImages.test.tsx b/web/test/components/OrderReferenceImages.test.tsx
+--- a/web/test/components/OrderReferenceImages.test.tsx	1970-01-01 00:00:00.000000000 +0000
++++ b/web/test/components/OrderReferenceImages.test.tsx	2026-11-02 10:33:24.986704326 +0000
+@@ -0,0 +1,139 @@
++// @vitest-environment jsdom
++import { fireEvent, render, screen, waitFor } from '@testing-library/react';
++import { beforeEach, describe, expect, it, vi } from 'vitest';
++import '../support/dom';
++
++vi.mock('@/lib/client', () => ({ api: vi.fn(), apiUpload: vi.fn() }));
++
++import { api, apiUpload } from '@/lib/client';
++import { ApiError } from '@/lib/problem';
++import { toast } from '@/lib/toast';
++import { OrderReferenceImages, TaskReferenceImages } from '@/components/app/OrderReferenceImages';
++
++const apiMock = vi.mocked(api) as unknown as ReturnType<typeof vi.fn>;
++const uploadMock = vi.mocked(apiUpload) as unknown as ReturnType<typeof vi.fn>;
++const successFn = vi.fn();
++const errorFn = vi.fn();
++
++const image = (id: string, caption: string | null) => ({ id, orderId: 'order-1', mediaId: `media-${id}`, caption, fileName: `${id}.png`, width: 40, height: 30, sizeBytes: 900, createdAtUtc: '2026-11-02T10:00:00Z' });
++
++// Braces matter: a beforeEach that returns the mock would be run again as a clean-up function.
++beforeEach(() => {
++  vi.restoreAllMocks();
++  apiMock.mockReset();
++  uploadMock.mockReset();
++  // The shared DOM setup clears the real toast after each test, so the real object is spied on, not replaced.
++  successFn.mockReset();
++  errorFn.mockReset();
++  vi.spyOn(toast, 'success').mockImplementation(successFn);
++  vi.spyOn(toast, 'error').mockImplementation(errorFn);
++});
++
++describe('OrderReferenceImages', () => {
++  it('lists the images with their captions and the count', async () => {
++    apiMock.mockResolvedValue({ items: [image('a', 'Neckline'), image('b', null)], maxImages: 10 });
++    render(<OrderReferenceImages orderId="order-1" canManage />);
++    expect(await screen.findByAltText('Neckline')).toBeTruthy();
++    expect(screen.getByAltText('Reference image b.png')).toBeTruthy();
++    expect(screen.getByText(/2 of 10 images/)).toBeTruthy();
++    expect(apiMock).toHaveBeenCalledWith('/api/orders/order-1/reference-images');
++    expect(screen.getByAltText('Neckline').getAttribute('src')).toBe('/backend/api/orders/order-1/reference-images/a/file/md');
++  });
++
++  it('says so when there are no images', async () => {
++    apiMock.mockResolvedValue({ items: [], maxImages: 10 });
++    render(<OrderReferenceImages orderId="order-1" canManage />);
++    expect(await screen.findByText('No reference images yet.')).toBeTruthy();
++  });
++
++  it('shows no upload or remove controls without orders.manage, or on a cancelled order', async () => {
++    apiMock.mockResolvedValue({ items: [image('a', 'Neckline')], maxImages: 10 });
++    const first = render(<OrderReferenceImages orderId="order-1" canManage={false} />);
++    await screen.findByAltText('Neckline');
++    expect(screen.queryByRole('button', { name: 'Add image' })).toBeNull();
++    expect(screen.queryByRole('button', { name: /^Remove/ })).toBeNull();
++    first.unmount();
++    render(<OrderReferenceImages orderId="order-1" canManage orderCancelled />);
++    await screen.findByAltText('Neckline');
++    expect(screen.queryByRole('button', { name: 'Add image' })).toBeNull();
++  });
++
++  it('uploads the chosen file with its caption and reloads the list', async () => {
++    apiMock.mockResolvedValueOnce({ items: [], maxImages: 10 }).mockResolvedValueOnce({ items: [image('a', 'Front')], maxImages: 10 });
++    uploadMock.mockResolvedValue(image('a', 'Front'));
++    render(<OrderReferenceImages orderId="order-1" canManage />);
++    await screen.findByText('No reference images yet.');
++    const file = new File(['x'], 'front.png', { type: 'image/png' });
++    fireEvent.change(screen.getByLabelText('Choose image'), { target: { files: [file] } });
++    fireEvent.change(screen.getByLabelText('Caption (optional)'), { target: { value: ' Front ' } });
++    fireEvent.click(screen.getByRole('button', { name: 'Add image' }));
++    await waitFor(() => expect(uploadMock).toHaveBeenCalledWith('/api/orders/order-1/reference-images', file, { caption: 'Front' }));
++    expect(await screen.findByAltText('Front')).toBeTruthy();
++    expect(successFn).toHaveBeenCalledWith('Reference image added.');
++  });
++
++  it('refuses a file that is not an image without calling the API', async () => {
++    apiMock.mockResolvedValue({ items: [], maxImages: 10 });
++    render(<OrderReferenceImages orderId="order-1" canManage />);
++    await screen.findByText('No reference images yet.');
++    fireEvent.change(screen.getByLabelText('Choose image'), { target: { files: [new File(['x'], 'notes.txt', { type: 'text/plain' })] } });
++    fireEvent.click(screen.getByRole('button', { name: 'Add image' }));
++    expect((await screen.findByRole('alert')).textContent).toMatch(/choose an image file/i);
++    expect(uploadMock).not.toHaveBeenCalled();
++  });
++
++  it('shows the refusal from the server as a message and keeps the list', async () => {
++    apiMock.mockResolvedValue({ items: [image('a', 'Neckline')], maxImages: 10 });
++    uploadMock.mockImplementation(() => Promise.reject(new ApiError(409, 'An order can have at most 10 reference images. Remove one first.', 'reference_image_limit')));
++    render(<OrderReferenceImages orderId="order-1" canManage />);
++    await screen.findByAltText('Neckline');
++    fireEvent.change(screen.getByLabelText('Choose image'), { target: { files: [new File(['x'], 'a.png', { type: 'image/png' })] } });
++    fireEvent.click(screen.getByRole('button', { name: 'Add image' }));
++    await waitFor(() => expect(errorFn).toHaveBeenCalledWith('An order can have at most 10 reference images. Remove one first.'));
++    expect(screen.getByAltText('Neckline')).toBeTruthy();
++  });
++
++  it('disables adding when the limit is reached', async () => {
++    apiMock.mockResolvedValue({ items: [image('a', null), image('b', null)], maxImages: 2 });
++    render(<OrderReferenceImages orderId="order-1" canManage />);
++    await screen.findByAltText('Reference image a.png');
++    expect(screen.getByRole('button', { name: 'Add image' })).toBeDisabled();
++  });
++
++  it('removes an image only after confirmation', async () => {
++    apiMock.mockResolvedValueOnce({ items: [image('a', 'Neckline')], maxImages: 10 }).mockResolvedValueOnce(undefined).mockResolvedValueOnce({ items: [], maxImages: 10 });
++    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true);
++    render(<OrderReferenceImages orderId="order-1" canManage />);
++    await screen.findByAltText('Neckline');
++    fireEvent.click(screen.getByRole('button', { name: 'Remove Neckline' }));
++    expect(apiMock).toHaveBeenCalledTimes(1);
++    fireEvent.click(screen.getByRole('button', { name: 'Remove Neckline' }));
++    await waitFor(() => expect(apiMock).toHaveBeenCalledWith('/api/orders/order-1/reference-images/a', { method: 'DELETE' }));
++    expect(await screen.findByText('No reference images yet.')).toBeTruthy();
++    expect(confirmSpy).toHaveBeenCalledTimes(2);
++  });
++
++  it('shows an error when the list cannot be loaded', async () => {
++    apiMock.mockImplementation(() => Promise.reject(new ApiError(404, 'Order not found.', 'order_not_found')));
++    render(<OrderReferenceImages orderId="order-1" canManage />);
++    expect((await screen.findByRole('alert')).textContent).toMatch(/order not found/i);
++  });
++});
++
++describe('TaskReferenceImages', () => {
++  it('shows the images of the order behind the task, read-only', async () => {
++    apiMock.mockResolvedValue({ items: [image('a', 'Neckline')] });
++    render(<TaskReferenceImages taskId="task-1" />);
++    const img = await screen.findByAltText('Neckline');
++    expect(apiMock).toHaveBeenCalledWith('/api/my/tasks/task-1/reference-images');
++    expect(img.getAttribute('src')).toBe('/backend/api/my/tasks/task-1/reference-images/a/file/md');
++    expect(screen.queryByRole('button')).toBeNull();
++  });
++
++  it('renders nothing when there are no images', async () => {
++    apiMock.mockResolvedValue({ items: [] });
++    const { container } = render(<TaskReferenceImages taskId="task-1" />);
++    await waitFor(() => expect(apiMock).toHaveBeenCalled());
++    expect(container.textContent).toBe('');
++  });
++});

@@ -74,8 +74,8 @@ describe('adopting an EF-created database', { skip: !url }, () => {
 
     assert.equal(
   afterState.columns,
-  before.columns + 13 + 14 + 5 + 6 + 25 + 23 + 24 + 9 + 7 + 10 + 4 + 16 + 15 + 22 + 57 + 36 + 10 + 9 + 9 + 18 + 1 + 7 + 2 + 1 + 18 + 18 + 17 + 8 + 2 + 7,
-  'the Node-only migrations (0009 task requests  through 0045 order reference images, including the stock ledger extension) add their expected columns'
+  before.columns + 13 + 14 + 5 + 6 + 25 + 23 + 24 + 9 + 7 + 10 + 4 + 16 + 15 + 22 + 57 + 36 + 10 + 9 + 9 + 18 + 1 + 7 + 2 + 1 + 18 + 18 + 17 + 8 + 2 + 7 + 4,
+  'the Node-only migrations (0009 task requests  through 0046 task approval, including the stock ledger extension) add their expected columns'
 );
     assert.equal(
   afterState.fks,

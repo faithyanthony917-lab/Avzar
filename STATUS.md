@@ -345,3 +345,13 @@ The two paragraphs above say "not run in CI"; that was true when they were writt
 - Web: gallery on the order page (add, remove with confirmation, count of 10), worker gallery on the task page.
 - CI: node-api 1011 in 255 suites, node-db 372 in 55, web 926 in 97 files.
 - Open: not shown to customers (quotation, PDF, portal); no mobile screen; no test that an amendment keeps the images; orphan sweep not read for this purpose; no staging or phone check.
+
+## Step-18b (task approval): written 2026-11-02, CI not yet seen
+
+- Migration `0046_task_approval.sql`: `Stages.RequiresApproval` (default false) and `ProductionTasks.ApprovalNote`, `ApprovalDecidedByUserId`, `ApprovalDecidedAtUtc`. Migrations now end at `0046`; next free number `0047`.
+- Flow: a worker completes a task of an approval stage and it becomes `AwaitingApproval` (no completion time). Dependents and the order keep waiting because they already wait for `Completed`. A manager (`tasks.manage`, location-scoped) approves (`Completed`, dependents released) or rejects with a note (`Paused`, note shown to the worker, who resumes and resubmits; a new submission clears the note). The assignee cannot decide their own task.
+- Routes: `POST /api/tasks/:id/approve` and `/reject`; `docs/API.md` and `docs/openapi.json` at 378 routes. Stage save and the stage DTO carry `requiresApproval`.
+- Rules: no alterations request from an approval stage; a workflow whose optional stage depends on an approval stage is refused; `AwaitingApproval` cannot be reassigned.
+- Web: stage checkbox, Approve and Reject on the task page, status label, filter and board column.
+- Not run: no database or `node_modules` in the sandbox. Ran: `node --check`, the route generator, `apiDoc` and `openApi` tests (11 of 11).
+- Open: no notices; awaiting tasks count in workload and overdue; no mobile screen; no staging or phone check.

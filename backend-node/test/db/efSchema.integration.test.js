@@ -109,6 +109,8 @@ const NODE_ONLY_INDEXES = {
 const NODE_ONLY_COLUMNS = {
   Businesses: new Set(['PaymentSubaccountCode', 'SuspendedAtUtc', 'SuspendedReason']), // 0037, 0044
   Inquiries: new Set(['AppointmentId']), // 0036
+  ProductionTasks: new Set(['ApprovalNote', 'ApprovalDecidedByUserId', 'ApprovalDecidedAtUtc']), // 0046
+  Stages: new Set(['RequiresApproval']), // 0046
   StockMovements: new Set([
     'LocationId', 'MovementType', 'QuantityDelta', 'UnitCost', 'ReferenceType',
     'ReferenceId', 'IdempotencyKey', 'Reason', 'CreatedByUserId',

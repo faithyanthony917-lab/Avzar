@@ -7,7 +7,7 @@ import { getSession, serverGet } from '@/lib/session';
 export const metadata = { title: 'Production templates · Avzar' };
 export const dynamic = 'force-dynamic';
 
-type Stage = { key: string; name: string; instructions: string | null; requiredSkill: string | null; defaultMinutes: number | null; isConditional: boolean; completionChecks: string[]; dependsOn: string[] };
+type Stage = { key: string; name: string; instructions: string | null; requiredSkill: string | null; defaultMinutes: number | null; isConditional: boolean; requiresApproval?: boolean; completionChecks: string[]; dependsOn: string[] };
 type Workflow = { id: string; name: string; description: string | null; isDefault: boolean; isActive: boolean; garmentCategories: string[]; stages: Stage[] };
 
 export default async function WorkflowsPage() {

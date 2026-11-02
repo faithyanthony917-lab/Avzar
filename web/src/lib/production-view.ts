@@ -110,7 +110,7 @@ export const CALENDAR_RANGES = [7, 14, 21] as const;
 export const DEFAULT_WORKLOAD_DAYS = 14;
 export const DEFAULT_CALENDAR_DAYS = 7;
 /** Board columns, in the order work normally moves. Completed and Cancelled work is not shown on the board. */
-export const BOARD_COLUMNS = ['Pending', 'Scheduled', 'InProgress', 'Paused', 'Blocked'] as const;
+export const BOARD_COLUMNS = ['Pending', 'Scheduled', 'InProgress', 'Paused', 'AwaitingApproval', 'Blocked'] as const;
 export const BOARD_COLUMN_SIZE = 25;
 
 export interface ViewQuery {

@@ -8,14 +8,14 @@ import { toast } from '@/lib/toast';
 
 type Stage = {
   key: string; name: string; instructions?: string | null; requiredSkill?: string | null;
-  defaultMinutes?: number | null; isConditional?: boolean; completionChecks?: string[]; dependsOn?: string[];
+  defaultMinutes?: number | null; isConditional?: boolean; requiresApproval?: boolean; completionChecks?: string[]; dependsOn?: string[];
 };
 type Workflow = {
   id: string; name: string; description: string | null; isDefault: boolean; isActive: boolean;
   garmentCategories: string[]; stages: Stage[];
 };
 type Draft = Omit<Workflow, 'id' | 'stages'> & { id?: string; stages: Stage[] };
-const starterStage: Stage = { key: 'sewing', name: 'Sewing', instructions: '', requiredSkill: 'sewing', defaultMinutes: 120, isConditional: false, completionChecks: ['Seams inspected'], dependsOn: [] };
+const starterStage: Stage = { key: 'sewing', name: 'Sewing', instructions: '', requiredSkill: 'sewing', defaultMinutes: 120, isConditional: false, requiresApproval: false, completionChecks: ['Seams inspected'], dependsOn: [] };
 const emptyDraft = (): Draft => ({ name: '', description: '', isDefault: false, isActive: true, garmentCategories: [], stages: [{ ...starterStage, completionChecks: [...(starterStage.completionChecks ?? [])] }] });
 
 export function WorkflowManager({ initial }: { initial: Workflow[] }) {
@@ -45,7 +45,7 @@ export function WorkflowManager({ initial }: { initial: Workflow[] }) {
     });
   }
   function addStage() {
-    setStages((old) => [...old, { key: `stage_${old.length + 1}`, name: '', instructions: '', requiredSkill: '', defaultMinutes: 60, isConditional: false, completionChecks: [], dependsOn: [] }]);
+    setStages((old) => [...old, { key: `stage_${old.length + 1}`, name: '', instructions: '', requiredSkill: '', defaultMinutes: 60, isConditional: false, requiresApproval: false, completionChecks: [], dependsOn: [] }]);
     pagedStages.setPage(Math.ceil((stages.length + 1) / 5));
   }
   function removeStage(index: number) {
@@ -72,7 +72,7 @@ export function WorkflowManager({ initial }: { initial: Workflow[] }) {
         garmentCategories: categories.split(',').map((s) => s.trim()).filter(Boolean), stages: checked };
       const saved = await api<Workflow>(draft.id ? `/api/workflows/${draft.id}` : '/api/workflows', { method: draft.id ? 'PUT' : 'POST', json: payload });
       setWorkflows((old) => [...old.filter((w) => w.id !== saved.id).map((w) => saved.isDefault ? { ...w, isDefault: false } : w), saved].sort((a, b) => a.name.localeCompare(b.name)));
-      setDraft(saved); setStages(saved.stages.map(({ key, name, instructions, requiredSkill, defaultMinutes, isConditional, completionChecks, dependsOn }) => ({ key, name, instructions, requiredSkill, defaultMinutes, isConditional, completionChecks, dependsOn })));
+      setDraft(saved); setStages(saved.stages.map(({ key, name, instructions, requiredSkill, defaultMinutes, isConditional, requiresApproval, completionChecks, dependsOn }) => ({ key, name, instructions, requiredSkill, defaultMinutes, isConditional, requiresApproval: !!requiresApproval, completionChecks, dependsOn })));
       setCategories(saved.garmentCategories.join(', ')); toast.success('Workflow saved. It will be used for future task generation; existing tasks are unchanged.');
     } catch (e) { toast.error(e instanceof Error ? e.message : 'Workflow could not be saved.'); }
     finally { setBusy(false); }
@@ -115,6 +115,7 @@ export function WorkflowManager({ initial }: { initial: Workflow[] }) {
             <div className="ap-field"><label htmlFor={`stage-checks-${index}`}>Checks before it can be marked done (one per line)</label><textarea id={`stage-checks-${index}`} className="ap-input" rows={2} value={(st.completionChecks ?? []).join('\n')} placeholder="e.g. Seams inspected" onChange={(e) => patchStage(index, { completionChecks: e.target.value.split('\n') })} onBlur={(e) => patchStage(index, { completionChecks: e.target.value.split('\n').map((c) => c.trim()).filter(Boolean) })} /></div>
             {others.length > 0 && <fieldset className="ap-fieldset"><legend>Needs first</legend>{others.map((o) => <label key={o.key} className="ap-check"><input type="checkbox" checked={(st.dependsOn ?? []).includes(o.key)} onChange={(e) => patchStage(index, { dependsOn: e.target.checked ? [...(st.dependsOn ?? []), o.key] : (st.dependsOn ?? []).filter((k) => k !== o.key) })} /> {o.name || o.key}</label>)}</fieldset>}
             <label className="ap-check"><input type="checkbox" checked={!!st.isConditional} onChange={(e) => patchStage(index, { isConditional: e.target.checked })} /> Only needed for some garments (optional stage)</label>
+            <label className="ap-check"><input type="checkbox" checked={!!st.requiresApproval} onChange={(e) => patchStage(index, { requiresApproval: e.target.checked })} /> A manager must approve this step before it counts as done</label>
           </div>;
         })}
         <Pager page={pagedStages.page} pages={pagedStages.pages} total={pagedStages.total} size={pagedStages.size} onPage={pagedStages.setPage} label="Stages pages" />

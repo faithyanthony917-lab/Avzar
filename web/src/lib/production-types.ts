@@ -9,7 +9,7 @@ export interface TaskSummary {
   stageOrder: number;
   title: string;
   quantity: number;
-  status: 'Pending' | 'Scheduled' | 'InProgress' | 'Paused' | 'Blocked' | 'Completed' | 'Cancelled' | string;
+  status: 'Pending' | 'Scheduled' | 'InProgress' | 'Paused' | 'AwaitingApproval' | 'Blocked' | 'Completed' | 'Cancelled' | string;
   priority: 'Low' | 'Normal' | 'High' | 'Urgent' | string;
   deadlineUtc: string | null;
   isOverdue: boolean;
@@ -42,6 +42,7 @@ export interface TaskDetail {
   completedChecks: string[];
   requiredMaterials: { name: string; quantity: number; unit: string }[];
   completionNotes: string | null;
+  approvalNote?: string | null;
   plannedStartUtc: string | null;
   plannedEndUtc: string | null;
   actualStartUtc: string | null;

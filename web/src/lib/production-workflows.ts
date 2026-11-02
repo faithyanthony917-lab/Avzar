@@ -5,6 +5,7 @@ export type WorkflowStageInput = {
   requiredSkill?: string | null;
   defaultMinutes?: number | null;
   isConditional?: boolean;
+  requiresApproval?: boolean;
   completionChecks?: string[];
   dependsOn?: string[];
 };

@@ -1,6 +1,6 @@
 import type { TaskSummary } from './production-types';
 
-export const TASK_STATUSES = ['Pending', 'Scheduled', 'InProgress', 'Paused', 'Blocked', 'Completed', 'Cancelled'] as const;
+export const TASK_STATUSES = ['Pending', 'Scheduled', 'InProgress', 'Paused', 'AwaitingApproval', 'Blocked', 'Completed', 'Cancelled'] as const;
 export type TaskStatusFilter = typeof TASK_STATUSES[number] | '';
 export type TaskShow = 'open' | 'all' | 'completed';
 
@@ -51,6 +51,7 @@ export function workerTaskApiQuery(show: TaskShow, page = 1): string {
 
 export function taskStatusLabel(status: string): string {
   if (status === 'InProgress') return 'In progress';
+  if (status === 'AwaitingApproval') return 'Awaiting approval';
   return status || 'Unknown';
 }
 
@@ -65,5 +66,5 @@ export function taskPageCount(total: number, pageSize: number): number {
 }
 
 export function taskNeedsAttention(task: Pick<TaskSummary, 'isOverdue' | 'status' | 'unmetDependencies' | 'isEligible'>): boolean {
-  return task.isOverdue || task.status === 'Blocked' || (task.unmetDependencies > 0 && !task.isEligible);
+  return task.isOverdue || task.status === 'Blocked' || task.status === 'AwaitingApproval' || (task.unmetDependencies > 0 && !task.isEligible);
 }

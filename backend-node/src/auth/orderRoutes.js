@@ -147,6 +147,7 @@ const workflowSchema = z.object({
     requiredSkill: z.string().trim().max(60).nullish(),
     defaultMinutes: z.number().int().min(1).max(1440).nullish(),
     isConditional: z.boolean().default(false),
+    requiresApproval: z.boolean().default(false),
     completionChecks: z.array(z.string().trim().min(1).max(200)).max(10).default([]),
     dependsOn: z.array(z.string().regex(/^[a-z][a-z0-9_]{0,39}$/)).max(30).optional(),
   })).min(1).max(30),
@@ -193,6 +194,8 @@ const overrideTaskSchema = z.object({
   action: ciEnum(['Start', 'Complete']),
   reason: z.string().trim().min(5).max(500),
 });
+const approveTaskSchema = z.object({ note: z.string().trim().max(500).nullish() }).strict();
+const rejectTaskSchema = z.object({ note: z.string().trim().min(3).max(500) }).strict();
 const completeTaskSchema = z.object({
   notes: z.string().trim().max(2000).nullish(),
   completedChecks: z.array(z.string().trim().max(200)).max(10).default([]),
@@ -266,6 +269,11 @@ function validateWorkflow(payload) {
     if (deps.some((key) => !keys.includes(key))) problems.push(`Stage '${stage.key}' depends on an unknown stage.`);
     dependencies.set(stage.key, deps);
   });
+  for (const stage of payload.stages) {
+    if (!stage.requiresApproval) continue;
+    const optional = payload.stages.find((other) => other.isConditional && (dependencies.get(other.key) ?? []).includes(stage.key));
+    if (optional) problems.push(`Stage '${stage.key}' needs approval, so the optional stage '${optional.key}' cannot depend on it. Alterations are requested when a step is submitted.`);
+  }
   const visited = new Set();
   const visiting = new Set();
   function hasCycle(key) {
@@ -559,7 +567,7 @@ async function generateProductionTasks(db, businessId, orderId, actorUserId, wor
   const workflowIds = workflows.map((workflow) => workflow.Id);
   const { rows: stages } = workflowIds.length ? await db.query(`
     SELECT "Id", "WorkflowId", "Name", "SortOrder", "Instructions", "RequiredSkill", "DefaultMinutes",
-      "IsConditional", "CompletionChecks"
+      "IsConditional", "CompletionChecks", "RequiresApproval"
     FROM "Stages" WHERE "BusinessId" = $1 AND "WorkflowId" = ANY($2::uuid[])
     ORDER BY "WorkflowId", "SortOrder"`,
   [businessId, workflowIds]) : { rows: [] };
@@ -651,7 +659,7 @@ async function loadWorkflow(db, businessId, id) {
   const workflow = workflowRows[0];
   const { rows: stages } = await db.query(`
     SELECT "Id", "Key", "Name", "SortOrder", "Instructions", "RequiredSkill", "DefaultMinutes",
-      "IsConditional", "CompletionChecks"
+      "IsConditional", "CompletionChecks", "RequiresApproval"
     FROM "Stages" WHERE "BusinessId" = $1 AND "WorkflowId" = $2 ORDER BY "SortOrder"`,
   [businessId, id]);
   const stageIds = stages.map((stage) => stage.Id);
@@ -677,6 +685,7 @@ async function loadWorkflow(db, businessId, id) {
       requiredSkill: stage.RequiredSkill,
       defaultMinutes: stage.DefaultMinutes,
       isConditional: stage.IsConditional,
+      requiresApproval: stage.RequiresApproval ?? false,
       completionChecks: stage.CompletionChecks ?? [],
       dependsOn: dependencyRows.filter((dependency) => dependency.StageId === stage.Id)
         .map((dependency) => dependency.DependsOnKey).sort(),
@@ -756,7 +765,7 @@ export async function loadTaskDetail(db, businessId, taskId, allowed, includeCus
   const row = await loadTaskSummary(db, businessId, taskId, allowed);
   const { rows: taskRows } = await db.query(`
     SELECT t."Instructions", t."RequiredChecks", t."CompletedChecks", t."RequiredMaterialsJson",
-      t."CompletionNotes", t."PlannedStartUtc", t."PlannedEndUtc", t."ActualStartUtc", t."CompletedAtUtc",
+      t."CompletionNotes", t."ApprovalNote", t."PlannedStartUtc", t."PlannedEndUtc", t."ActualStartUtc", t."CompletedAtUtc",
       g."Name" AS "GarmentName", g."Category", g."Quantity" AS "GarmentQuantity", g."Fabric", g."Colour",
       g."StyleInstructions", g."AlterationNotes", g."MeasurementSnapshotJson",
       ${includeCustomer ? 'c."FullName" AS "CustomerName"' : 'NULL::text AS "CustomerName"'}
@@ -790,6 +799,7 @@ export async function loadTaskDetail(db, businessId, taskId, allowed, includeCus
     completedChecks: task.CompletedChecks ?? [],
     requiredMaterials: requiredMaterials ?? [],
     completionNotes: task.CompletionNotes,
+    approvalNote: task.ApprovalNote ?? null,
     plannedStartUtc: task.PlannedStartUtc,
     plannedEndUtc: task.PlannedEndUtc,
     actualStartUtc: task.ActualStartUtc,
@@ -844,7 +854,7 @@ async function syncOrderFromTasks(db, businessId, orderId) {
   [businessId, orderId]);
   if (!rows.length) return;
   const allDone = rows.every((task) => task.Status === 'Completed');
-  const started = rows.some((task) => ['InProgress', 'Paused', 'Completed'].includes(task.Status));
+  const started = rows.some((task) => ['InProgress', 'Paused', 'AwaitingApproval', 'Completed'].includes(task.Status));
   if (allDone && canTransition(orderRows[0].Status, 'Ready')) {
     const { rows: ready } = await db.query(`
       UPDATE "Orders" SET "Status" = 'Ready', "ReadyAtUtc" = now(), "UpdatedAtUtc" = now()
@@ -1103,7 +1113,7 @@ async function assignProductionTask(db, req, taskId, payload, allowed) {
   [businessId, taskId, allowed]);
   if (!taskRows.length) throw AppError.notFound('task_not_found', 'Task not found.');
   const task = taskRows[0];
-  if (['Completed', 'Cancelled', 'InProgress'].includes(task.Status)) {
+  if (['Completed', 'Cancelled', 'InProgress', 'AwaitingApproval'].includes(task.Status)) {
     throw AppError.conflict('task_not_assignable', `A ${task.Status} task cannot be reassigned. Pause it first if it is in progress.`);
   }
   const membershipId = payload.membershipId ?? null;
@@ -1336,10 +1346,12 @@ async function workerTaskCompletion(db, req, taskId, payload) {
   [businessId, req.currentUser.userId]);
   if (!membershipRows.length) throw AppError.forbidden('no_active_membership', 'Your account is not an active member of this business.');
   const { rows: taskRows } = await db.query(`
-    SELECT t."Id", t."OrderId", t."OrderGarmentId", t."Status", t."RequiredChecks"
+    SELECT t."Id", t."OrderId", t."OrderGarmentId", t."Status", t."RequiredChecks",
+      COALESCE(s."RequiresApproval", FALSE) AS "RequiresApproval"
     FROM "ProductionTasks" t
+    LEFT JOIN "Stages" s ON s."BusinessId" = t."BusinessId" AND s."Id" = t."StageId"
     WHERE t."BusinessId" = $1 AND t."Id" = $2 AND t."AssignedMembershipId" = $3
-    FOR UPDATE`,
+    FOR UPDATE OF t`,
   [businessId, taskId, membershipRows[0].Id]);
   if (!taskRows.length) throw AppError.notFound('task_not_found', 'Task not found.');
   const task = taskRows[0];
@@ -1352,6 +1364,23 @@ async function workerTaskCompletion(db, req, taskId, payload) {
   const missing = requiredChecks.filter((check) => !completedChecks.has(check.toLowerCase()));
   if (missing.length) {
     throw AppError.badRequest('checks_incomplete', `Tick every checklist item first. Missing: ${missing.join('; ')}.`);
+  }
+
+  if (task.RequiresApproval) {
+    // Step 18b: the work is handed in, not finished. Dependent tasks and the order wait for the manager's decision.
+    if (payload.alterationsRequired) {
+      throw AppError.badRequest('alterations_with_approval', 'This step needs approval. Submit it without alterations; the manager decides.');
+    }
+    await db.query(`
+      UPDATE "ProductionTasks" SET "Status" = 'AwaitingApproval', "CompletedChecks" = "RequiredChecks", "CompletionNotes" = $1,
+        "ApprovalNote" = NULL, "ApprovalDecidedByUserId" = NULL, "ApprovalDecidedAtUtc" = NULL,
+        "UpdatedByUserId" = $2, "UpdatedAtUtc" = now()
+      WHERE "BusinessId" = $3 AND "Id" = $4`,
+    [clean(payload.notes), req.currentUser.userId, businessId, taskId]);
+    await recordTaskEvent(db, businessId, taskId, 'submitted_for_approval', 'InProgress', 'AwaitingApproval',
+      req.currentUser.userId, clean(payload.notes));
+    await syncOrderFromTasks(db, businessId, task.OrderId);
+    return;
   }
 
   let activated = [];
@@ -1431,6 +1460,59 @@ async function workerTaskCompletion(db, req, taskId, payload) {
   await recordTaskEvent(db, businessId, taskId, 'completed', 'InProgress', 'Completed',
     req.currentUser.userId, clean(payload.notes), { newlyEligible, alterationsRequested: payload.alterationsRequired });
   await queueTaskNextStepNotifications(db, businessId, newlyEligible, req.currentUser.userId);
+  await syncOrderFromTasks(db, businessId, task.OrderId);
+}
+
+// Step 18b: a manager approves or rejects a task that a worker submitted. The assignee cannot decide their own task.
+async function decideTaskApproval(db, req, taskId, decision, note, allowed) {
+  const businessId = req.currentUser.businessId;
+  const actorId = req.currentUser.userId;
+  const { rows } = await db.query(`
+    SELECT t."Id", t."OrderId", t."Status", m."UserId" AS "AssigneeUserId"
+    FROM "ProductionTasks" t
+    JOIN "Orders" o ON o."BusinessId" = t."BusinessId" AND o."Id" = t."OrderId"
+    LEFT JOIN "Memberships" m ON m."BusinessId" = t."BusinessId" AND m."Id" = t."AssignedMembershipId"
+    WHERE t."BusinessId" = $1 AND t."Id" = $2 AND ($3::uuid[] IS NULL OR o."LocationId" = ANY($3::uuid[]))
+    FOR UPDATE OF t`,
+  [businessId, taskId, allowed]);
+  if (!rows.length) throw AppError.notFound('task_not_found', 'Task not found.');
+  const task = rows[0];
+  if (task.Status !== 'AwaitingApproval') throw AppError.conflict('not_awaiting_approval', 'This task is not waiting for approval.');
+  if (task.AssigneeUserId && String(task.AssigneeUserId) === String(actorId)) {
+    throw AppError.forbidden('cannot_decide_own_task', 'You cannot approve or reject a task assigned to you.');
+  }
+  if (decision === 'approve') {
+    await db.query(`
+      UPDATE "ProductionTasks" SET "Status" = 'Completed', "CompletedAtUtc" = now(), "ApprovalNote" = $1,
+        "ApprovalDecidedByUserId" = $2, "ApprovalDecidedAtUtc" = now(), "UpdatedByUserId" = $2, "UpdatedAtUtc" = now()
+      WHERE "BusinessId" = $3 AND "Id" = $4`,
+    [note, actorId, businessId, taskId]);
+    const { rows: dependents } = await db.query(`
+      SELECT DISTINCT t."Id" FROM "TaskDependencies" d
+      JOIN "ProductionTasks" t ON t."BusinessId" = d."BusinessId" AND t."Id" = d."TaskId"
+      WHERE d."BusinessId" = $1 AND d."DependsOnTaskId" = $2 AND t."Status" IN ('Pending', 'Scheduled')`,
+    [businessId, taskId]);
+    const newlyEligible = [];
+    for (const dependent of dependents) {
+      const { rows: unmet } = await db.query(`
+        SELECT 1 FROM "TaskDependencies" d
+        JOIN "ProductionTasks" p ON p."BusinessId" = d."BusinessId" AND p."Id" = d."DependsOnTaskId"
+        WHERE d."BusinessId" = $1 AND d."TaskId" = $2 AND p."Status" NOT IN ('Completed', 'Cancelled') LIMIT 1`,
+      [businessId, dependent.Id]);
+      if (!unmet.length) newlyEligible.push(dependent.Id);
+    }
+    await recordTaskEvent(db, businessId, taskId, 'approved', 'AwaitingApproval', 'Completed', actorId, note, { newlyEligible });
+    await auditTask(db, req, 'task.approved', taskId, { note: note ?? null });
+    await queueTaskNextStepNotifications(db, businessId, newlyEligible, actorId);
+  } else {
+    await db.query(`
+      UPDATE "ProductionTasks" SET "Status" = 'Paused', "ApprovalNote" = $1,
+        "ApprovalDecidedByUserId" = $2, "ApprovalDecidedAtUtc" = now(), "UpdatedByUserId" = $2, "UpdatedAtUtc" = now()
+      WHERE "BusinessId" = $3 AND "Id" = $4`,
+    [note, actorId, businessId, taskId]);
+    await recordTaskEvent(db, businessId, taskId, 'approval_rejected', 'AwaitingApproval', 'Paused', actorId, note);
+    await auditTask(db, req, 'task.approval_rejected', taskId, { note });
+  }
   await syncOrderFromTasks(db, businessId, task.OrderId);
 }
 
@@ -1681,19 +1763,19 @@ async function writeWorkflow(db, req, payload, dependencies, workflowId = random
     const stageId = stageIds.get(stage.key);
     const values = [stageId, businessId, workflowId, stage.key, stage.name, index,
       clean(stage.instructions), clean(stage.requiredSkill)?.toLowerCase() ?? null, stage.defaultMinutes ?? null,
-      stage.isConditional, stage.completionChecks];
+      stage.isConditional, stage.completionChecks, stage.requiresApproval];
     if (currentByKey.has(stage.key)) {
       await db.query(`
         UPDATE "Stages" SET "Name" = $1, "SortOrder" = $2, "Instructions" = $3, "RequiredSkill" = $4,
-          "DefaultMinutes" = $5, "IsConditional" = $6, "CompletionChecks" = $7::text[], "UpdatedAtUtc" = now()
+          "DefaultMinutes" = $5, "IsConditional" = $6, "CompletionChecks" = $7::text[], "RequiresApproval" = $11, "UpdatedAtUtc" = now()
         WHERE "BusinessId" = $8 AND "WorkflowId" = $9 AND "Id" = $10`,
       [stage.name, index, values[6], values[7], values[8], stage.isConditional, stage.completionChecks,
-        businessId, workflowId, stageId]);
+        businessId, workflowId, stageId, stage.requiresApproval]);
     } else {
       await db.query(`
         INSERT INTO "Stages" ("Id", "BusinessId", "WorkflowId", "Key", "Name", "SortOrder", "Instructions",
-          "RequiredSkill", "DefaultMinutes", "IsConditional", "CompletionChecks", "CreatedAtUtc")
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::text[], now())`, values);
+          "RequiredSkill", "DefaultMinutes", "IsConditional", "CompletionChecks", "RequiresApproval", "CreatedAtUtc")
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::text[], $12, now())`, values);
     }
   }
   for (const stage of payload.stages) {
@@ -2824,7 +2906,7 @@ export function createOrderRouter({ env, pool }) {
     const allowed = await allowedLocations(pool, req.currentUser);
     const values = [req.currentUser.businessId, allowed];
     const filters = ['t."BusinessId" = $1', '($2::uuid[] IS NULL OR o."LocationId" = ANY($2::uuid[]))'];
-    const statuses = ['Pending', 'Scheduled', 'InProgress', 'Paused', 'Blocked', 'Completed', 'Cancelled'];
+    const statuses = ['Pending', 'Scheduled', 'InProgress', 'Paused', 'AwaitingApproval', 'Blocked', 'Completed', 'Cancelled'];
     const priorities = ['Low', 'Normal', 'High', 'Urgent'];
     for (const [field, column, allowedValues] of [
       ['status', 't."Status"', statuses], ['priority', 't."Priority"', priorities],
@@ -2987,6 +3069,19 @@ export function createOrderRouter({ env, pool }) {
       transitionProductionTask(client, req, req.params.id, 'cancel', payload, allowed));
     return res.status(200).json(await loadTaskDetail(pool, req.currentUser.businessId, req.params.id, allowed));
   });
+
+  async function handleTaskDecision(req, res, decision) {
+    if (!isUuid(req.params.id)) throw AppError.badRequest('invalid_task_id', 'The task ID is invalid.');
+    const payload = parse(decision === 'approve' ? approveTaskSchema : rejectTaskSchema, req.body ?? {});
+    const allowed = await allowedLocations(pool, req.currentUser);
+    await transaction(pool, (client) => decideTaskApproval(client, req, req.params.id, decision, clean(payload.note), allowed));
+    const detail = await loadTaskDetail(pool, req.currentUser.businessId, req.params.id, allowed);
+    publishTaskUpdated(req.currentUser.businessId, detail);
+    return res.status(200).json(detail);
+  }
+
+  router.post('/tasks/:id/approve', ...requireTasksManage, (req, res) => handleTaskDecision(req, res, 'approve'));
+  router.post('/tasks/:id/reject', ...requireTasksManage, (req, res) => handleTaskDecision(req, res, 'reject'));
 
   router.post('/tasks/:id/override', ...requireTasksOverride, async (req, res) => {
     if (!isUuid(req.params.id)) throw AppError.badRequest('invalid_task_id', 'The task ID is invalid.');
